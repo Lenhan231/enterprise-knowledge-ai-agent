@@ -1,0 +1,53 @@
+{
+  "application_commit": "a2f57e67e45b965cda4e901d3e2647861655e4c5",
+  "sources": {
+    "artifacts/sql-agent-bussiness/cases.json": {
+      "commit": "a2f57e67e45b965cda4e901d3e2647861655e4c5",
+      "sha256": "93b88c56b84c7e594d83c77a3e619aaf2f6aa1ff32868c686e937fe2f67063d4",
+      "last_change": "c0d28cce445a99139517a0d7a91975a22a72ecda"
+    },
+    "artifacts/sql-agent-bussiness/runs/pilot5-origin-main-e6f3b909/reference.json": {
+      "commit": "a2f57e67e45b965cda4e901d3e2647861655e4c5",
+      "sha256": "295c53652e5fe3a7fc8c3c35cffb9ecf4f6bc23e44b6db861955e369d0932a17",
+      "last_change": "8e4abbd1e0a1352c93d747c825c15bf1aff3a1b4"
+    },
+    "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md": {
+      "commit": "a2f57e67e45b965cda4e901d3e2647861655e4c5",
+      "sha256": "e11a1baca9f2efaedb1715232dc30116593dd6b4efaa16cab57e01f3e4ddc823",
+      "last_change": "da2ce09a00224977050753e82981fe80ef3d91a1"
+    },
+    "artifacts/sql-agent-bussiness/40-case-preparation/FREEZE_MANIFEST.json": {
+      "commit": "a2f57e67e45b965cda4e901d3e2647861655e4c5",
+      "sha256": "9726e827a6c0bc3df57372095f758a4220b922cb4adadd76b94c8ce9cc4f8baa",
+      "last_change": "7b2d6424e81b986e99afbe172f5bc01bfca1a671"
+    },
+    "artifacts/evaluation/vietstyle-v3/MANIFEST.json": {
+      "commit": "f290f553af13f976cfd60862e013604892aabe71",
+      "sha256": "c169f7acd16328e29b4a82b125c2bd527aa0feb17c2f1c8bfba4a40384b33f9d"
+    },
+    "artifacts/evaluation/vietstyle-v3/test-v3.json": {
+      "commit": "f290f553af13f976cfd60862e013604892aabe71",
+      "sha256": "b5bf399be721a1fb15dd8fa2b7008bd9f87389b45d6378305d4effedeaa49105"
+    },
+    "artifacts/evaluation/vietstyle-v3/REVIEW-test.md": {
+      "commit": "f290f553af13f976cfd60862e013604892aabe71",
+      "sha256": "b1923075ed13e69dc31a52916bcb144c58981b42d9d14ea4fe4eae953c3efe5d"
+    },
+    "artifacts/evaluation/vietstyle-v3/runs/MANIFEST.json": {
+      "commit": "f290f553af13f976cfd60862e013604892aabe71",
+      "sha256": "b6289c3e44a7f875431f36a31aced6c16bc0a39f91cbb88f1cc0f3461dae977f"
+    },
+    "artifacts/evaluation/vietstyle-v3/runs/modal/test-versions-scores.json": {
+      "commit": "f290f553af13f976cfd60862e013604892aabe71",
+      "sha256": "c155d11530c35ece7cc4571334a466777a623ab746f5866df775437c9adf422b"
+    }
+  },
+  "frozen_sha256": {
+    "evidence.json": "cf76e6c68f121dde0b0d002a0ec77a9069a7617241cef49b76c1737ed71cbb60",
+    "dashboard_cases.json": "3fcdb5858c5fd4ea3083fb33098e1b2023a8dbab8819a3c059efd338821b8f39",
+    "report_cases.json": "5497baf142b76dca4c81926701ebf9eaf5c896df9bfc70ef901d7ac1c8ee3a0e"
+  },
+  "sql_reference": "published frozen five-case pilot, retained for continuity",
+  "knowledge_benchmark": "f290f553af13f976cfd60862e013604892aabe71",
+  "upstream_calls": 0
+}

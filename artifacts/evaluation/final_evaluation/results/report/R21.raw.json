@@ -1,0 +1,6 @@
+{
+  "exception": "ValueError",
+  "message": "Unsupported template placeholder; use standalone {{report:Heading}} or {{report:rows}}",
+  "repository_calls": [],
+  "retrieval_calls": 0
+}

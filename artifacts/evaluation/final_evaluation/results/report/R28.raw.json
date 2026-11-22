@@ -1,0 +1,152 @@
+{
+  "result": {
+    "answer": "No verified observations for the requested snapshot/filter. Missing observations are not zero inventory.",
+    "agent": "report",
+    "evidence": [],
+    "data": {},
+    "metadata": {
+      "ok": false,
+      "status": "failed",
+      "limitations": [
+        "No verified observations for the requested snapshot/filter. Missing observations are not zero inventory."
+      ],
+      "failure_type": "validation_failed",
+      "coverage": {
+        "stock": {
+          "requested": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.",
+          "returned": 5,
+          "included": 0,
+          "omitted": 5,
+          "completeness": "unavailable"
+        }
+      },
+      "issues": {
+        "stock": "invalid_source_facts",
+        "Inventory Overview": "unavailable_or_unsupported_template_section",
+        "table_1": "Unavailable template table in Inventory Overview: snapshot_date, product_id, product_name, stock_on_hand"
+      },
+      "plan": {
+        "purpose": "Inventory observations",
+        "sections": [
+          {
+            "heading": "Inventory Overview",
+            "tasks": [
+              "stock"
+            ],
+            "table_columns": []
+          }
+        ],
+        "tasks": [
+          {
+            "id": "stock",
+            "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.",
+            "mapping": {
+              "domain": "inventory",
+              "metrics": [
+                "stock_on_hand"
+              ],
+              "dimensions": [
+                "product_id",
+                "product_name"
+              ],
+              "filters": [],
+              "time": {
+                "mode": "snapshot",
+                "start": "2026-11-13",
+                "end": null
+              },
+              "ranking": {
+                "metric": "stock_on_hand",
+                "direction": "desc",
+                "limit": 5,
+                "then": []
+              },
+              "representation": "product",
+              "clarification": null
+            },
+            "product_columns": [],
+            "product_filters": []
+          }
+        ],
+        "unsupported_requirements": [],
+        "clarification": null,
+        "compare_periods": false,
+        "template_mismatches": []
+      },
+      "verification_scope": "Quantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.",
+      "report_type": "inventory_risk",
+      "section_mapping": {
+        "Inventory Overview": {
+          "capability": "inventory",
+          "tasks": [
+            "stock"
+          ]
+        }
+      },
+      "timing": {
+        "total_ms": 94
+      }
+    }
+  },
+  "rendered": "No verified observations for the requested snapshot/filter. Missing observations are not zero inventory.",
+  "http": {
+    "status_code": 422,
+    "detail": {
+      "status": "failed",
+      "code": "validation_failed",
+      "error_code": "validation_failed",
+      "limitations": [
+        "No verified observations for the requested snapshot/filter. Missing observations are not zero inventory."
+      ]
+    }
+  },
+  "media_type": "text/markdown; charset=utf-8",
+  "repository_calls": [
+    {
+      "sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.stock_on_hand AS stock_on_hand FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = $1 ORDER BY commerce.inventory.stock_on_hand DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 5",
+      "parameters": [
+        "2026-11-13"
+      ]
+    }
+  ],
+  "retrieval_calls": 0,
+  "scripted_drafts": [
+    {
+      "purpose": "Inventory observations",
+      "tasks": [
+        {
+          "id": "stock",
+          "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.",
+          "mapping": {
+            "metrics": [
+              "stock_on_hand"
+            ],
+            "dimensions": [
+              "product_id",
+              "product_name"
+            ],
+            "representation": "product",
+            "time": {
+              "mode": "snapshot",
+              "start": "2026-11-13",
+              "end": "2026-11-13"
+            },
+            "ranking": {
+              "metric": "stock_on_hand",
+              "direction": "desc",
+              "limit": 5
+            }
+          }
+        }
+      ],
+      "sections": [
+        {
+          "heading": "Inventory Overview",
+          "tasks": [
+            "stock"
+          ]
+        }
+      ]
+    }
+  ]
+}

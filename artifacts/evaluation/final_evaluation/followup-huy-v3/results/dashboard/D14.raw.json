@@ -1,0 +1,239 @@
+{
+  "document": {
+    "title": "Show a monthly revenue line chart and table.",
+    "queries": [
+      {
+        "id": "q0",
+        "question": "Show a monthly revenue line chart and table."
+      },
+      {
+        "id": "q1",
+        "question": "Total revenue for the same scope"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "q0_main",
+        "title": "Line: revenue",
+        "kind": "line",
+        "query_id": "q0",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "month",
+        "span": 2
+      },
+      {
+        "id": "q0_table",
+        "title": "Table:",
+        "kind": "table",
+        "query_id": "q0",
+        "measures": [],
+        "dimension": null,
+        "span": 2
+      },
+      {
+        "id": "q1_main",
+        "title": "Kpi: revenue",
+        "kind": "kpi",
+        "query_id": "q1",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": null,
+        "span": 1
+      }
+    ],
+    "id": "a8586d2f36aa4601866a4c7fcfa45155",
+    "description": "Show a monthly revenue line chart and table.",
+    "scope": "",
+    "clarifications": [],
+    "revision": 1,
+    "created_at": "2026-11-22T03:34:38.216609Z",
+    "updated_at": "2026-11-22T03:34:38.216609Z",
+    "data_updated_at": "2026-11-22T03:34:38.217638Z",
+    "results": [
+      {
+        "id": "q0",
+        "question": "Show a monthly revenue line chart and table.",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "month": "2025-01-01",
+              "revenue": 10
+            },
+            {
+              "month": "2025-02-01",
+              "revenue": 20
+            }
+          ],
+          "sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.revenue) AS revenue FROM commerce.sales s GROUP BY 1 ORDER BY 1 LIMIT 12",
+          "parameters": [],
+          "metadata": {
+            "dashboard_outputs": [
+              {
+                "id": "main",
+                "kind": "line",
+                "measures": [
+                  "revenue"
+                ],
+                "dimension": "month"
+              },
+              {
+                "id": "table",
+                "kind": "table",
+                "measures": [],
+                "dimension": null
+              }
+            ]
+          },
+          "query_status": "executed"
+        },
+        "message": ""
+      },
+      {
+        "id": "q1",
+        "question": "Total revenue for the same scope",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "revenue": "30"
+            }
+          ],
+          "sql": "SELECT SUM(s.revenue) AS revenue FROM commerce.sales s LIMIT 1",
+          "parameters": [],
+          "metadata": {
+            "dashboard_outputs": [
+              {
+                "id": "main",
+                "kind": "kpi",
+                "measures": [
+                  "revenue"
+                ],
+                "dimension": null
+              }
+            ]
+          },
+          "query_status": "executed"
+        },
+        "message": ""
+      }
+    ],
+    "tile_status": {
+      "q0_main": {
+        "status": "complete",
+        "message": ""
+      },
+      "q0_table": {
+        "status": "complete",
+        "message": ""
+      },
+      "q1_main": {
+        "status": "complete",
+        "message": ""
+      }
+    },
+    "status": "complete"
+  },
+  "charts": [
+    {
+      "type": "line",
+      "title": "Line: revenue",
+      "categories": [
+        "2025-01-01",
+        "2025-02-01"
+      ],
+      "series": [
+        {
+          "name": "Revenue",
+          "values": [
+            10.0,
+            20.0
+          ]
+        }
+      ],
+      "unit": "currency (unconfirmed)",
+      "x_label": "Month",
+      "y_label": "currency (unconfirmed)",
+      "temporal": true,
+      "scope": {
+        "time": null,
+        "filters": [],
+        "dates": {},
+        "snapshot_dates": [],
+        "sources": [],
+        "policy": null
+      }
+    }
+  ],
+  "forwarded_question": "Show a monthly revenue line chart and table.",
+  "source_response": {
+    "datasets": [
+      {
+        "question": "Show a monthly revenue line chart and table.",
+        "payload": {
+          "query_status": "executed",
+          "ok": true,
+          "rows": [
+            {
+              "month": "2025-01-01",
+              "revenue": 10
+            },
+            {
+              "month": "2025-02-01",
+              "revenue": 20
+            }
+          ],
+          "sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.revenue) AS revenue FROM commerce.sales s GROUP BY 1 ORDER BY 1 LIMIT 12",
+          "parameters": [],
+          "metadata": {
+            "dashboard_outputs": [
+              {
+                "id": "main",
+                "kind": "line",
+                "measures": [
+                  "revenue"
+                ],
+                "dimension": "month"
+              },
+              {
+                "id": "table",
+                "kind": "table",
+                "measures": [],
+                "dimension": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "question": "Total revenue for the same scope",
+        "payload": {
+          "query_status": "executed",
+          "ok": true,
+          "rows": [
+            {
+              "revenue": "30"
+            }
+          ],
+          "sql": "SELECT SUM(s.revenue) AS revenue FROM commerce.sales s LIMIT 1",
+          "parameters": [],
+          "metadata": {
+            "dashboard_outputs": [
+              {
+                "id": "main",
+                "kind": "kpi",
+                "measures": [
+                  "revenue"
+                ],
+                "dimension": null
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

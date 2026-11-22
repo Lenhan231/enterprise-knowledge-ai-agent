@@ -1,0 +1,313 @@
+{
+  "result": {
+    "answer": "Report status: complete",
+    "agent": "report",
+    "evidence": [
+      {
+        "citation_id": "S1",
+        "source_type": "database",
+        "source": "Validated report query: stock",
+        "content": "[{\"snapshot_date\": \"2026-11-13\", \"product_id\": 1974, \"product_name\": \"UrbanVN RP-49\", \"stock_on_hand\": 60}, {\"snapshot_date\": \"2026-11-13\", \"product_id\": 2091, \"product_name\": \"UrbanVN UC-26\", \"stock_on_hand\": 60}, {\"snapshot_date\": \"2026-11-13\", \"product_id\": 556, \"product_name\": \"SaigonFlex UC-21\", \"stock_on_hand\": 59}, {\"snapshot_date\": \"2026-11-13\", \"product_id\": 2180, \"product_name\": \"PhoenixWear UC-10\", \"stock_on_hand\": 59}, {\"snapshot_date\": \"2026-11-13\", \"product_id\": 2219, \"product_name\": \"VietMotion RP-16\", \"stock_on_hand\": 59}]",
+        "metadata": {
+          "task_id": "stock",
+          "sources": [
+            "commerce.inventory",
+            "commerce.products"
+          ]
+        }
+      },
+      {
+        "citation_id": "S2",
+        "source_type": "document",
+        "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+        "content": "Không coi thiếu sản phẩm trong snapshot là tồn bằng không.",
+        "metadata": {
+          "document_id": "VSC-OPS-POL-001",
+          "character_offset": 0
+        }
+      }
+    ],
+    "data": {
+      "report_format": "markdown",
+      "section_count": 1
+    },
+    "metadata": {
+      "ok": true,
+      "status": "complete",
+      "sections": {
+        "Inventory Overview": "complete"
+      },
+      "coverage": {
+        "stock": {
+          "requested": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.",
+          "returned": 5,
+          "included": 5,
+          "omitted": 0,
+          "completeness": "returned_query_scope",
+          "snapshots": [
+            "2026-11-13"
+          ]
+        }
+      },
+      "narrative_coverage": {
+        "Inventory Overview": {
+          "facts_available": 5,
+          "facts_included": 5,
+          "facts_omitted": 0,
+          "documents_included": 1,
+          "documents_omitted": 0
+        }
+      },
+      "limitations": [
+        "Historical monthly observations; every answer must state the selected snapshot date.",
+        "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+        "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+        "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+        "stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown",
+        "Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export."
+      ],
+      "issues": {},
+      "facts": [
+        {
+          "id": "F1",
+          "evidence_id": "S1",
+          "task_id": "stock",
+          "metric": "stock_on_hand",
+          "value": "60",
+          "unit": "units",
+          "dimensions": {
+            "product_id": "1974",
+            "product_name": "UrbanVN RP-49"
+          },
+          "filters": [],
+          "snapshot_date": "2026-11-13",
+          "formula": "SUM(stock_on_hand) within one snapshot",
+          "operands": [],
+          "approval_status": "team_accepted",
+          "source_row": null
+        },
+        {
+          "id": "F2",
+          "evidence_id": "S1",
+          "task_id": "stock",
+          "metric": "stock_on_hand",
+          "value": "60",
+          "unit": "units",
+          "dimensions": {
+            "product_id": "2091",
+            "product_name": "UrbanVN UC-26"
+          },
+          "filters": [],
+          "snapshot_date": "2026-11-13",
+          "formula": "SUM(stock_on_hand) within one snapshot",
+          "operands": [],
+          "approval_status": "team_accepted",
+          "source_row": null
+        },
+        {
+          "id": "F3",
+          "evidence_id": "S1",
+          "task_id": "stock",
+          "metric": "stock_on_hand",
+          "value": "59",
+          "unit": "units",
+          "dimensions": {
+            "product_id": "556",
+            "product_name": "SaigonFlex UC-21"
+          },
+          "filters": [],
+          "snapshot_date": "2026-11-13",
+          "formula": "SUM(stock_on_hand) within one snapshot",
+          "operands": [],
+          "approval_status": "team_accepted",
+          "source_row": null
+        },
+        {
+          "id": "F4",
+          "evidence_id": "S1",
+          "task_id": "stock",
+          "metric": "stock_on_hand",
+          "value": "59",
+          "unit": "units",
+          "dimensions": {
+            "product_id": "2180",
+            "product_name": "PhoenixWear UC-10"
+          },
+          "filters": [],
+          "snapshot_date": "2026-11-13",
+          "formula": "SUM(stock_on_hand) within one snapshot",
+          "operands": [],
+          "approval_status": "team_accepted",
+          "source_row": null
+        },
+        {
+          "id": "F5",
+          "evidence_id": "S1",
+          "task_id": "stock",
+          "metric": "stock_on_hand",
+          "value": "59",
+          "unit": "units",
+          "dimensions": {
+            "product_id": "2219",
+            "product_name": "VietMotion RP-16"
+          },
+          "filters": [],
+          "snapshot_date": "2026-11-13",
+          "formula": "SUM(stock_on_hand) within one snapshot",
+          "operands": [],
+          "approval_status": "team_accepted",
+          "source_row": null
+        }
+      ],
+      "caveats": [
+        "Historical monthly observations; every answer must state the selected snapshot date.",
+        "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+        "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+        "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+        "stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown"
+      ],
+      "clarifications": [],
+      "completeness": {
+        "tasks": {
+          "stock": "returned_query_scope"
+        },
+        "sections": {
+          "Inventory Overview": "complete"
+        }
+      },
+      "fact_validation": {
+        "validated": 5,
+        "narrative_semantics": "limited"
+      },
+      "template_mode": "generated",
+      "timing": {
+        "planned_report_ms": 93,
+        "total_ms": 93
+      },
+      "plan": {
+        "purpose": "Inventory observations",
+        "sections": [
+          {
+            "heading": "Inventory Overview",
+            "tasks": [
+              "stock"
+            ],
+            "table_columns": []
+          }
+        ],
+        "tasks": [
+          {
+            "id": "stock",
+            "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.",
+            "mapping": {
+              "domain": "inventory",
+              "metrics": [
+                "stock_on_hand"
+              ],
+              "dimensions": [
+                "product_id",
+                "product_name"
+              ],
+              "filters": [],
+              "time": {
+                "mode": "snapshot",
+                "start": "2026-11-13",
+                "end": null
+              },
+              "ranking": {
+                "metric": "stock_on_hand",
+                "direction": "desc",
+                "limit": 5,
+                "then": []
+              },
+              "representation": "product",
+              "clarification": null
+            },
+            "product_columns": [],
+            "product_filters": []
+          }
+        ],
+        "unsupported_requirements": [],
+        "clarification": null,
+        "compare_periods": false,
+        "template_mismatches": []
+      },
+      "verification_scope": "Quantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.",
+      "report_type": "inventory_risk",
+      "section_mapping": {
+        "Inventory Overview": {
+          "capability": "inventory",
+          "tasks": [
+            "stock"
+          ]
+        }
+      }
+    }
+  },
+  "rendered": "# Inventory Overview\n\nA missing product in a snapshot should be treated as missing data. [S2]\n\n| snapshot_date | product_id | product_name | stock_on_hand |\n| --- | --- | --- | --- |\n| 2026-11-13 | 1974 | UrbanVN RP-49 | 60 [F1] [S1] |\n| 2026-11-13 | 2091 | UrbanVN UC-26 | 60 [F2] [S1] |\n| 2026-11-13 | 556 | SaigonFlex UC-21 | 59 [F3] [S1] |\n| 2026-11-13 | 2180 | PhoenixWear UC-10 | 59 [F4] [S1] |\n| 2026-11-13 | 2219 | VietMotion RP-16 | 59 [F5] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 1, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n[S2] artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md; character offset 0\n",
+  "http": {
+    "status_code": 200,
+    "headers": {
+      "content-disposition": "attachment; filename=\"report.md\"",
+      "x-report-status": "complete",
+      "x-report-summary": "{\"complete\":1,\"failed\":0,\"unavailable\":0,\"omitted_from_narrative\":0,\"reasons\":[]}",
+      "access-control-expose-headers": "X-Report-Status, X-Report-Summary, Content-Disposition",
+      "content-type": "text/markdown; charset=utf-8"
+    }
+  },
+  "media_type": "text/markdown; charset=utf-8",
+  "repository_calls": [
+    {
+      "sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.stock_on_hand AS stock_on_hand FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = $1 ORDER BY commerce.inventory.stock_on_hand DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 5",
+      "parameters": [
+        "2026-11-13"
+      ]
+    }
+  ],
+  "retrieval_calls": 1,
+  "scripted_drafts": [
+    {
+      "purpose": "Inventory observations",
+      "tasks": [
+        {
+          "id": "stock",
+          "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.",
+          "mapping": {
+            "metrics": [
+              "stock_on_hand"
+            ],
+            "dimensions": [
+              "product_id",
+              "product_name"
+            ],
+            "representation": "product",
+            "time": {
+              "mode": "snapshot",
+              "start": "2026-11-13",
+              "end": "2026-11-13"
+            },
+            "ranking": {
+              "metric": "stock_on_hand",
+              "direction": "desc",
+              "limit": 5
+            }
+          }
+        }
+      ],
+      "sections": [
+        {
+          "heading": "Inventory Overview",
+          "tasks": [
+            "stock"
+          ]
+        }
+      ]
+    },
+    {
+      "sections": {
+        "Inventory Overview": "A missing product in a snapshot should be treated as missing data. [S2]"
+      },
+      "claims": []
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "dashboard": {
+    "deterministic": {
+      "planned": 20,
+      "blocked": 0,
+      "accuracy": {
+        "numerator": 17,
+        "denominator": 20,
+        "rate": 0.85
+      },
+      "invalid_detection": {
+        "numerator": 5,
+        "denominator": 8,
+        "rate": 0.625
+      },
+      "false_rejection": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0
+      },
+      "numerical_exact_match": {
+        "numerator": 28,
+        "denominator": 30,
+        "rate": 0.933333
+      },
+      "template_compliance": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "categories": {
+        "fidelity": {
+          "numerator": 3,
+          "denominator": 4,
+          "rate": 0.75
+        },
+        "chart": {
+          "numerator": 4,
+          "denominator": 4,
+          "rate": 1.0
+        },
+        "filters": {
+          "numerator": 3,
+          "denominator": 4,
+          "rate": 0.75
+        },
+        "kpi": {
+          "numerator": 3,
+          "denominator": 4,
+          "rate": 0.75
+        },
+        "failure": {
+          "numerator": 4,
+          "denominator": 4,
+          "rate": 1.0
+        }
+      },
+      "latency": {
+        "n": 20,
+        "p50_ms": 12.75,
+        "p95_ms": 21.34
+      }
+    },
+    "semantic": {
+      "coverage": {
+        "numerator": 6,
+        "denominator": 6,
+        "rate": 1.0
+      },
+      "blocked_or_unscored": 0,
+      "latency": {
+        "n": 6,
+        "p50_ms": 87161.6,
+        "p95_ms": 160296.13
+      },
+      "usage_observed": 6,
+      "total_tokens": 6724,
+      "dimensions": {
+        "chart_suitability": {
+          "eligible": 6,
+          "scored": 6,
+          "mean": 1.833,
+          "full_credit": {
+            "numerator": 5,
+            "denominator": 6,
+            "rate": 0.833333
+          },
+          "partial_credit": 1,
+          "zero_credit": 0
+        }
+      }
+    },
+    "failed_cases": [
+      "D04",
+      "D12",
+      "D16"
+    ],
+    "blocked_cases": []
+  },
+  "report": {
+    "deterministic": {
+      "planned": 40,
+      "blocked": 0,
+      "accuracy": {
+        "numerator": 38,
+        "denominator": 40,
+        "rate": 0.95
+      },
+      "invalid_detection": {
+        "numerator": 18,
+        "denominator": 20,
+        "rate": 0.9
+      },
+      "false_rejection": {
+        "numerator": 0,
+        "denominator": 20,
+        "rate": 0.0
+      },
+      "numerical_exact_match": {
+        "numerator": 4,
+        "denominator": 4,
+        "rate": 1.0
+      },
+      "template_compliance": {
+        "numerator": 3,
+        "denominator": 3,
+        "rate": 1.0
+      },
+      "categories": {
+        "numerical": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0
+        },
+        "citation": {
+          "numerator": 6,
+          "denominator": 8,
+          "rate": 0.75
+        },
+        "template": {
+          "numerator": 6,
+          "denominator": 6,
+          "rate": 1.0
+        },
+        "missing": {
+          "numerator": 6,
+          "denominator": 6,
+          "rate": 1.0
+        },
+        "rbac": {
+          "numerator": 6,
+          "denominator": 6,
+          "rate": 1.0
+        },
+        "delivery": {
+          "numerator": 4,
+          "denominator": 4,
+          "rate": 1.0
+        }
+      },
+      "latency": {
+        "n": 40,
+        "p50_ms": 90.5,
+        "p95_ms": 195.17
+      }
+    },
+    "semantic": {
+      "coverage": {
+        "numerator": 17,
+        "denominator": 17,
+        "rate": 1.0
+      },
+      "blocked_or_unscored": 0,
+      "latency": {
+        "n": 17,
+        "p50_ms": 35283.73,
+        "p95_ms": 62923.88
+      },
+      "usage_observed": 17,
+      "total_tokens": 30284,
+      "dimensions": {
+        "citation_support": {
+          "eligible": 6,
+          "scored": 6,
+          "mean": 1.5,
+          "full_credit": {
+            "numerator": 4,
+            "denominator": 6,
+            "rate": 0.666667
+          },
+          "partial_credit": 1,
+          "zero_credit": 1
+        },
+        "factual_consistency": {
+          "eligible": 7,
+          "scored": 7,
+          "mean": 1.571,
+          "full_credit": {
+            "numerator": 5,
+            "denominator": 7,
+            "rate": 0.714286
+          },
+          "partial_credit": 1,
+          "zero_credit": 1
+        },
+        "report_completeness": {
+          "eligible": 8,
+          "scored": 8,
+          "mean": 1.875,
+          "full_credit": {
+            "numerator": 7,
+            "denominator": 8,
+            "rate": 0.875
+          },
+          "partial_credit": 1,
+          "zero_credit": 0
+        }
+      }
+    },
+    "failed_cases": [
+      "R15",
+      "R16"
+    ],
+    "blocked_cases": []
+  }
+}

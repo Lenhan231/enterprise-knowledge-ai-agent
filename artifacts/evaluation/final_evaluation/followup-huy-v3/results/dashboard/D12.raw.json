@@ -1,0 +1,126 @@
+{
+  "document": {
+    "title": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng",
+    "queries": [
+      {
+        "id": "q0",
+        "question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần."
+      }
+    ],
+    "tiles": [
+      {
+        "id": "data",
+        "title": "Bảng dữ liệu",
+        "kind": "table",
+        "query_id": "q0",
+        "measures": [],
+        "dimension": null,
+        "span": 2
+      }
+    ],
+    "id": "b5b9b5c6d28043babca2d76c53f10eb5",
+    "description": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần.",
+    "scope": "snapshot 2026-11-13",
+    "clarifications": [],
+    "revision": 1,
+    "created_at": "2026-11-22T03:34:38.192897Z",
+    "updated_at": "2026-11-22T03:34:38.192897Z",
+    "data_updated_at": "2026-11-22T03:34:38.193916Z",
+    "results": [
+      {
+        "id": "q0",
+        "question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần.\nRequired dashboard date/filter scope: snapshot 2026-11-13",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ],
+          "sql": "SELECT i.product_id, i.product_name, i.stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.stock_on_hand IS NOT NULL ORDER BY i.stock_on_hand DESC, i.product_id ASC LIMIT 5",
+          "parameters": [
+            "2026-10-31"
+          ],
+          "metadata": {
+            "filters": [
+              "snapshot 2026-11-13"
+            ]
+          },
+          "query_status": "executed"
+        },
+        "message": ""
+      }
+    ],
+    "tile_status": {
+      "data": {
+        "status": "complete",
+        "message": ""
+      }
+    },
+    "status": "complete"
+  },
+  "charts": [],
+  "forwarded_question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần.\nRequired dashboard date/filter scope: snapshot 2026-11-13",
+  "source_response": {
+    "query_status": "executed",
+    "ok": true,
+    "rows": [
+      {
+        "product_id": 1974,
+        "product_name": "UrbanVN RP-49",
+        "stock_on_hand": 60
+      },
+      {
+        "product_id": 2091,
+        "product_name": "UrbanVN UC-26",
+        "stock_on_hand": 60
+      },
+      {
+        "product_id": 556,
+        "product_name": "SaigonFlex UC-21",
+        "stock_on_hand": 59
+      },
+      {
+        "product_id": 2180,
+        "product_name": "PhoenixWear UC-10",
+        "stock_on_hand": 59
+      },
+      {
+        "product_id": 2219,
+        "product_name": "VietMotion RP-16",
+        "stock_on_hand": 59
+      }
+    ],
+    "sql": "SELECT i.product_id, i.product_name, i.stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.stock_on_hand IS NOT NULL ORDER BY i.stock_on_hand DESC, i.product_id ASC LIMIT 5",
+    "parameters": [
+      "2026-10-31"
+    ],
+    "metadata": {
+      "filters": [
+        "snapshot 2026-11-13"
+      ]
+    }
+  }
+}

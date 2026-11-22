@@ -1,0 +1,843 @@
+[
+  {
+    "id": "D01",
+    "category": "fidelity",
+    "evidence": "P01",
+    "scenario": "revenue",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "kpi_matches_oracle": true,
+      "complete": true
+    },
+    "latency_ms": 84.047,
+    "judge_input": null
+  },
+  {
+    "id": "D02",
+    "category": "fidelity",
+    "evidence": "P02",
+    "scenario": "table",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "table_numeric_exact_match": true,
+      "complete": true
+    },
+    "latency_ms": 6.913,
+    "judge_input": null
+  },
+  {
+    "id": "D03",
+    "category": "fidelity",
+    "evidence": "P04",
+    "scenario": "bar",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "chart_values_0": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "svg_and_series_present": true,
+      "complete": true
+    },
+    "latency_ms": 14.561,
+    "judge_input": null
+  },
+  {
+    "id": "D04",
+    "category": "fidelity",
+    "evidence": "P01",
+    "scenario": "changed_row",
+    "expect": "reject",
+    "semantic": [],
+    "status": "fail",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "row_exact_match": false,
+      "bound_parameter_fidelity": true,
+      "invalid_detected": false
+    },
+    "latency_ms": 7.735,
+    "judge_input": null
+  },
+  {
+    "id": "D05",
+    "category": "chart",
+    "evidence": "P02",
+    "scenario": "bar",
+    "expect": "accept",
+    "semantic": [
+      "chart_suitability"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "chart_values_0": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "svg_and_series_present": true,
+      "complete": true
+    },
+    "latency_ms": 16.459,
+    "judge_input": {
+      "question": "Khách hàng nào có nhiều đơn hàng đã giao nhất trong năm 2025? Trả về top 5 customer_id và số đơn hàng; nếu bằng nhau sắp customer_id tăng dần. Show a bar chart.",
+      "expectation": "accept",
+      "candidate": {
+        "charts": [
+          {
+            "type": "bar",
+            "title": "Order Count by Customer Id",
+            "categories": [
+              "1924",
+              "41034",
+              "42962",
+              "102",
+              "6121"
+            ],
+            "series": [
+              {
+                "name": "Order Count",
+                "values": [
+                  4.0,
+                  4.0,
+                  4.0,
+                  3.0,
+                  3.0
+                ]
+              }
+            ],
+            "unit": "count",
+            "x_label": "Customer Id",
+            "y_label": "count",
+            "temporal": false,
+            "scope": {
+              "time": null,
+              "filters": [],
+              "dates": {},
+              "snapshot_dates": [],
+              "sources": [],
+              "policy": null
+            }
+          }
+        ],
+        "tiles": [
+          {
+            "id": "chart",
+            "title": "Order Count by Customer Id",
+            "kind": "bar",
+            "query_id": "q0",
+            "measures": [
+              "order_count"
+            ],
+            "dimension": "customer_id",
+            "span": 2
+          }
+        ],
+        "tile_status": {
+          "chart": {
+            "status": "complete",
+            "message": ""
+          }
+        }
+      },
+      "evidence": [
+        {
+          "id": "P02",
+          "rows": [
+            {
+              "customer_id": 1924,
+              "order_count": 4
+            },
+            {
+              "customer_id": 41034,
+              "order_count": 4
+            },
+            {
+              "customer_id": 42962,
+              "order_count": 4
+            },
+            {
+              "customer_id": 102,
+              "order_count": 3
+            },
+            {
+              "customer_id": 6121,
+              "order_count": 3
+            }
+          ],
+          "sql": "SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY o.customer_id ORDER BY order_count DESC, o.customer_id ASC LIMIT 5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "D06",
+    "category": "chart",
+    "evidence": "SYN-TREND",
+    "scenario": "line",
+    "expect": "accept",
+    "semantic": [
+      "chart_suitability"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "chart_values_0": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "svg_and_series_present": true,
+      "complete": true
+    },
+    "latency_ms": 11.487,
+    "judge_input": {
+      "question": "Show a monthly revenue line chart and table. Use a line chart.",
+      "expectation": "accept",
+      "candidate": {
+        "charts": [
+          {
+            "type": "line",
+            "title": "Revenue by Month",
+            "categories": [
+              "2025-01-01",
+              "2025-02-01"
+            ],
+            "series": [
+              {
+                "name": "Revenue",
+                "values": [
+                  10.0,
+                  20.0
+                ]
+              }
+            ],
+            "unit": "currency (unconfirmed)",
+            "x_label": "Month",
+            "y_label": "currency (unconfirmed)",
+            "temporal": true,
+            "scope": {
+              "time": null,
+              "filters": [],
+              "dates": {},
+              "snapshot_dates": [],
+              "sources": [],
+              "policy": null
+            }
+          }
+        ],
+        "tiles": [
+          {
+            "id": "chart",
+            "title": "Revenue by Month",
+            "kind": "line",
+            "query_id": "q0",
+            "measures": [
+              "revenue"
+            ],
+            "dimension": "month",
+            "span": 2
+          }
+        ],
+        "tile_status": {
+          "chart": {
+            "status": "complete",
+            "message": ""
+          }
+        }
+      },
+      "evidence": [
+        {
+          "id": "SYN-TREND",
+          "rows": [
+            {
+              "month": "2025-01-01",
+              "revenue": 10
+            },
+            {
+              "month": "2025-02-01",
+              "revenue": 20
+            }
+          ],
+          "sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.revenue) AS revenue FROM commerce.sales s GROUP BY 1 ORDER BY 1 LIMIT 12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "D07",
+    "category": "chart",
+    "evidence": "P04",
+    "scenario": "line",
+    "expect": "reject",
+    "semantic": [
+      "chart_suitability"
+    ],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "invalid_detected": true
+    },
+    "latency_ms": 16.912,
+    "judge_input": {
+      "question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần. Use a line chart.",
+      "expectation": "reject",
+      "candidate": {
+        "charts": [],
+        "tiles": [
+          {
+            "id": "chart",
+            "title": "Query result",
+            "kind": "line",
+            "query_id": "q0",
+            "measures": [],
+            "dimension": null,
+            "span": 2
+          }
+        ],
+        "tile_status": {
+          "chart": {
+            "status": "unavailable",
+            "message": "Chart unavailable: A line chart needs a date axis and at least two observed values."
+          }
+        }
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ],
+          "sql": "SELECT i.product_id, i.product_name, i.stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.stock_on_hand IS NOT NULL ORDER BY i.stock_on_hand DESC, i.product_id ASC LIMIT 5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "D08",
+    "category": "chart",
+    "evidence": "P03",
+    "scenario": "donut",
+    "expect": "reject",
+    "semantic": [
+      "chart_suitability"
+    ],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "invalid_detected": true
+    },
+    "latency_ms": 23.63,
+    "judge_input": {
+      "question": "Top 5 products by units sold from delivered orders between 2025-04-01 and 2025-06-30; return product_id and units, ties by product_id ascending. Show the top-five ranking as a donut chart.",
+      "expectation": "reject",
+      "candidate": {
+        "charts": [],
+        "tiles": [
+          {
+            "id": "chart",
+            "title": "Units Sold by Product Id",
+            "kind": "donut",
+            "query_id": "q0",
+            "measures": [
+              "units_sold"
+            ],
+            "dimension": "product_id",
+            "span": 2
+          }
+        ],
+        "tile_status": {
+          "chart": {
+            "status": "unavailable",
+            "message": "Chart unavailable: Donut charts require a complete, exclusive grouping of one additive, nonnegative measure."
+          }
+        }
+      },
+      "evidence": [
+        {
+          "id": "P03",
+          "rows": [
+            {
+              "product_id": 690,
+              "units_sold": 11
+            },
+            {
+              "product_id": 761,
+              "units_sold": 11
+            },
+            {
+              "product_id": 782,
+              "units_sold": 11
+            },
+            {
+              "product_id": 808,
+              "units_sold": 11
+            },
+            {
+              "product_id": 1059,
+              "units_sold": 11
+            }
+          ],
+          "sql": "SELECT oi.product_id, SUM(oi.quantity) AS units_sold FROM commerce.order_items AS oi JOIN commerce.orders AS o ON o.order_id = oi.order_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY oi.product_id ORDER BY units_sold DESC, oi.product_id ASC LIMIT 5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "D09",
+    "category": "filters",
+    "evidence": "P02",
+    "scenario": "scope_delivery",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "scope_forwarded": true,
+      "scope_retained": true,
+      "table_numeric_exact_match": true,
+      "complete": true
+    },
+    "latency_ms": 12.217,
+    "judge_input": null
+  },
+  {
+    "id": "D10",
+    "category": "filters",
+    "evidence": "P03",
+    "scenario": "scope_product",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "scope_forwarded": true,
+      "scope_retained": true,
+      "table_numeric_exact_match": true,
+      "complete": true
+    },
+    "latency_ms": 9.298,
+    "judge_input": null
+  },
+  {
+    "id": "D11",
+    "category": "filters",
+    "evidence": "SYN-CATEGORY",
+    "scenario": "scope_category",
+    "expect": "accept",
+    "semantic": [
+      "chart_suitability"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "chart_values_0": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "svg_and_series_present": true,
+      "scope_forwarded": true,
+      "scope_retained": true,
+      "complete": true
+    },
+    "latency_ms": 18.2,
+    "judge_input": {
+      "question": "Show a bar chart of stock on hand for category Apparel grouped by product.",
+      "expectation": "accept",
+      "candidate": {
+        "charts": [
+          {
+            "type": "bar",
+            "title": "Stock On Hand by Product Id",
+            "categories": [
+              "11",
+              "12"
+            ],
+            "series": [
+              {
+                "name": "Stock On Hand",
+                "values": [
+                  13.0,
+                  17.0
+                ]
+              }
+            ],
+            "unit": "units",
+            "x_label": "Product Id",
+            "y_label": "units",
+            "temporal": false,
+            "scope": {
+              "time": null,
+              "filters": [
+                "Category Apparel only, grouped by product_id"
+              ],
+              "dates": {},
+              "snapshot_dates": [],
+              "sources": [],
+              "policy": null
+            }
+          }
+        ],
+        "tiles": [
+          {
+            "id": "chart",
+            "title": "Stock On Hand by Product Id",
+            "kind": "bar",
+            "query_id": "q0",
+            "measures": [
+              "stock_on_hand"
+            ],
+            "dimension": "product_id",
+            "span": 2
+          }
+        ],
+        "tile_status": {
+          "chart": {
+            "status": "complete",
+            "message": ""
+          }
+        }
+      },
+      "evidence": [
+        {
+          "id": "SYN-CATEGORY",
+          "rows": [
+            {
+              "product_id": 11,
+              "stock_on_hand": 13
+            },
+            {
+              "product_id": 12,
+              "stock_on_hand": 17
+            }
+          ],
+          "sql": "SELECT p.product_id, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE p.category=$1 GROUP BY 1 LIMIT 10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "D12",
+    "category": "filters",
+    "evidence": "P04",
+    "scenario": "stale_snapshot",
+    "expect": "reject",
+    "semantic": [],
+    "status": "fail",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": false,
+      "scope_forwarded": true,
+      "scope_retained": true,
+      "invalid_detected": false
+    },
+    "latency_ms": 10.719,
+    "judge_input": null
+  },
+  {
+    "id": "D13",
+    "category": "kpi",
+    "evidence": "P01",
+    "scenario": "kpi_table",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "kpi_matches_oracle": true,
+      "table_matches_kpi": true,
+      "complete": true
+    },
+    "latency_ms": 9.939,
+    "judge_input": null
+  },
+  {
+    "id": "D14",
+    "category": "kpi",
+    "evidence": "SYN-TREND",
+    "scenario": "kpi_chart_table",
+    "expect": "accept",
+    "semantic": [
+      "chart_suitability"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "chart_values_0": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "svg_and_series_present": true,
+      "kpi_matches_oracle": true,
+      "chart_sums_to_kpi": true,
+      "table_numeric_exact_match": true,
+      "complete": true
+    },
+    "latency_ms": 14.986,
+    "judge_input": {
+      "question": "Show a monthly revenue line chart and table.",
+      "expectation": "accept",
+      "candidate": {
+        "charts": [
+          {
+            "type": "line",
+            "title": "Line: revenue",
+            "categories": [
+              "2025-01-01",
+              "2025-02-01"
+            ],
+            "series": [
+              {
+                "name": "Revenue",
+                "values": [
+                  10.0,
+                  20.0
+                ]
+              }
+            ],
+            "unit": "currency (unconfirmed)",
+            "x_label": "Month",
+            "y_label": "currency (unconfirmed)",
+            "temporal": true,
+            "scope": {
+              "time": null,
+              "filters": [],
+              "dates": {},
+              "snapshot_dates": [],
+              "sources": [],
+              "policy": null
+            }
+          }
+        ],
+        "tiles": [
+          {
+            "id": "q0_main",
+            "title": "Line: revenue",
+            "kind": "line",
+            "query_id": "q0",
+            "measures": [
+              "revenue"
+            ],
+            "dimension": "month",
+            "span": 2
+          },
+          {
+            "id": "q0_table",
+            "title": "Table:",
+            "kind": "table",
+            "query_id": "q0",
+            "measures": [],
+            "dimension": null,
+            "span": 2
+          },
+          {
+            "id": "q1_main",
+            "title": "Kpi: revenue",
+            "kind": "kpi",
+            "query_id": "q1",
+            "measures": [
+              "revenue"
+            ],
+            "dimension": null,
+            "span": 1
+          }
+        ],
+        "tile_status": {
+          "q0_main": {
+            "status": "complete",
+            "message": ""
+          },
+          "q0_table": {
+            "status": "complete",
+            "message": ""
+          },
+          "q1_main": {
+            "status": "complete",
+            "message": ""
+          }
+        }
+      },
+      "evidence": [
+        {
+          "id": "SYN-TREND",
+          "rows": [
+            {
+              "month": "2025-01-01",
+              "revenue": 10
+            },
+            {
+              "month": "2025-02-01",
+              "revenue": 20
+            }
+          ],
+          "sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.revenue) AS revenue FROM commerce.sales s GROUP BY 1 ORDER BY 1 LIMIT 12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "D15",
+    "category": "kpi",
+    "evidence": "P03",
+    "scenario": "grouped_kpi",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "invalid_detected": true
+    },
+    "latency_ms": 16.646,
+    "judge_input": null
+  },
+  {
+    "id": "D16",
+    "category": "kpi",
+    "evidence": "P01",
+    "scenario": "inconsistent_kpi",
+    "expect": "reject",
+    "semantic": [],
+    "status": "fail",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "kpi_matches_oracle": false,
+      "invalid_detected": false
+    },
+    "latency_ms": 10.327,
+    "judge_input": null
+  },
+  {
+    "id": "D17",
+    "category": "failure",
+    "evidence": "P04",
+    "scenario": "empty",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "safe_result_status": true,
+      "no_rendered_fake_value": true,
+      "empty_is_explicit": true
+    },
+    "latency_ms": 4.041,
+    "judge_input": null
+  },
+  {
+    "id": "D18",
+    "category": "failure",
+    "evidence": "P05",
+    "scenario": "unsupported",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "schema": true,
+      "safe_result_status": true,
+      "no_rendered_fake_value": true,
+      "unsupported_is_explicit": true
+    },
+    "latency_ms": 3.583,
+    "judge_input": null
+  },
+  {
+    "id": "D19",
+    "category": "failure",
+    "evidence": "P05",
+    "scenario": "failed_rows",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "schema": true,
+      "safe_result_status": true,
+      "no_rendered_fake_value": true,
+      "invalid_detected": true
+    },
+    "latency_ms": 4.162,
+    "judge_input": null
+  },
+  {
+    "id": "D20",
+    "category": "failure",
+    "evidence": "P03",
+    "scenario": "invalid_field",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "schema": true,
+      "row_exact_match": true,
+      "bound_parameter_fidelity": true,
+      "invalid_detected": true
+    },
+    "latency_ms": 18.711,
+    "judge_input": null
+  }
+]

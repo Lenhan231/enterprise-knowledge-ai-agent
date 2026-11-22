@@ -1,0 +1,2164 @@
+[
+  {
+    "id": "R01",
+    "category": "numerical",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_value",
+    "expect": "accept",
+    "semantic": [
+      "factual_consistency"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "sales_json_schema": true,
+      "numerical_exact": true,
+      "period_exact": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 144.095,
+    "judge_input": {
+      "question": "Sales performance report for 2025.",
+      "expectation": "partial",
+      "candidate": {
+        "status": "partial",
+        "request": {
+          "period": {
+            "start": "2025-01-01",
+            "end_exclusive": "2026-01-01"
+          },
+          "granularity": "month",
+          "dimension": "all",
+          "dimension_value": null
+        },
+        "metrics": [
+          {
+            "id": "company_revenue",
+            "label": "Company revenue",
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": 13299821.25,
+            "status": "available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_cogs",
+            "label": "Company COGS",
+            "source": "commerce.sales",
+            "formula": "SUM(cogs)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_gross_profit",
+            "label": "Company gross profit",
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)-SUM(cogs)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_gross_margin_pct",
+            "label": "Company gross margin",
+            "source": "commerce.sales",
+            "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "percent",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+          }
+        ],
+        "sections": {
+          "executive_summary": {
+            "revenue_overview": "Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].",
+            "profitability_overview": null,
+            "order_activity": null
+          },
+          "sales_kpis": {
+            "company_revenue": 13299821.25,
+            "company_cogs": null,
+            "company_gross_profit": null,
+            "company_gross_margin_pct": null,
+            "company_revenue_change_pct": null,
+            "order_count": null,
+            "delivered_line_revenue": null,
+            "delivered_average_order_value": null,
+            "promotion_discount": null,
+            "sessions": null
+          },
+          "performance_analysis": {
+            "company_revenue_trend": "Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].",
+            "delivered_order_line_breakdown": null,
+            "discount_activity": null,
+            "web_traffic": null
+          },
+          "key_findings_and_explanations": {
+            "revenue_movement": null,
+            "profitability": null,
+            "order_activity": null
+          },
+          "decision_support": {
+            "rule_ids": [
+              "S01",
+              "S02",
+              "S03",
+              "S04"
+            ]
+          }
+        },
+        "limitations": [
+          "Synthetic commerce demo data; currency unspecified. Company sales and delivered-line revenue are separate sources.",
+          "Order and traffic source completeness is unverified; totals describe matching records, not certified complete periods. No causal explanations are established.",
+          "Missing count describes absent company sales dates. Null dimension labels are retained as unknown; unmatched dimension counts are unverified.",
+          "Company daily coverage is incomplete or unknown; comparison rules require complete current and prior periods.",
+          "Period-over-period comparison uses calendar-month totals. Daily records verify source coverage only. 2025-01-01 to 2026-01-01 (end excluded): unknown of unknown days; 2024-01-01 to 2025-01-01 (end excluded): unknown of unknown days. Whole-period revenue change and aggregate comparison-dependent decisions are unavailable; monthly decisions use separate calendar-month baselines. Current-period revenue and profitability remain usable."
+        ]
+      },
+      "evidence": [
+        {
+          "id": "P01",
+          "rows": [
+            {
+              "revenue": "13299821.25"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "R02",
+    "category": "numerical",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_scope",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "sales_json_schema": true,
+      "numerical_exact": true,
+      "period_exact": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 204.722,
+    "judge_input": null
+  },
+  {
+    "id": "R03",
+    "category": "numerical",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_unit",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "sales_validator_rejected_mutation": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 117.427,
+    "judge_input": null
+  },
+  {
+    "id": "R04",
+    "category": "numerical",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_nonfinite",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "sales_validator_rejected_mutation": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 124.268,
+    "judge_input": null
+  },
+  {
+    "id": "R05",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "stock_value",
+    "expect": "accept",
+    "semantic": [
+      "factual_consistency"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "numerical_exact": true,
+      "visible_numeric_values": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 186.271,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.",
+      "expectation": "complete",
+      "candidate": {
+        "status": "complete",
+        "report": "# Inventory Overview\n\nstock_on_hand: 60 (units; product_id=1974, product_name=UrbanVN RP-49; snapshot=2026-11-13) [F1] [S1]\n\n| snapshot_date | product_id | product_name | stock_on_hand |\n| --- | --- | --- | --- |\n| 2026-11-13 | 1974 | UrbanVN RP-49 | 60 [F1] [S1] |\n| 2026-11-13 | 2091 | UrbanVN UC-26 | 60 [F2] [S1] |\n| 2026-11-13 | 556 | SaigonFlex UC-21 | 59 [F3] [S1] |\n| 2026-11-13 | 2180 | PhoenixWear UC-10 | 59 [F4] [S1] |\n| 2026-11-13 | 2219 | VietMotion RP-16 | 59 [F5] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 0, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n"
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "R06",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "RATIO"
+    ],
+    "scenario": "ratio_value",
+    "expect": "accept",
+    "semantic": [
+      "factual_consistency"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "numerical_exact": true,
+      "visible_numeric_values": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 82.658,
+    "judge_input": {
+      "question": "Inventory risk report: stored product fill rate at snapshot 2026-11-13.",
+      "expectation": "complete",
+      "candidate": {
+        "status": "complete",
+        "report": "# Inventory Overview\n\nstored_fill_rate: 25% (percent; product_id=11, product_name=fixture; snapshot=2026-11-13) [F1] [S1]\n\n| snapshot_date | product_id | product_name | stored_fill_rate |\n| --- | --- | --- | --- |\n| 2026-11-13 | 11 | fixture | 25% [F1] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stored_fill_rate: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: stored product fill rate at snapshot 2026-11-13.\", \"returned\": 1, \"included\": 1, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 1, \"facts_included\": 1, \"facts_omitted\": 0, \"documents_included\": 0, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n"
+      },
+      "evidence": [
+        {
+          "id": "RATIO",
+          "rows": [
+            {
+              "snapshot_date": "2026-11-13",
+              "product_id": 11,
+              "product_name": "fixture",
+              "stored_fill_rate": "0.25"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "R07",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "fact_value",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "mutation_rejected_by_production": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 96.138,
+    "judge_input": null
+  },
+  {
+    "id": "R08",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "fact_unit",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "mutation_rejected_by_production": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 84.15,
+    "judge_input": null
+  },
+  {
+    "id": "R09",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "fact_period",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "mutation_rejected_by_production": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 105.92,
+    "judge_input": null
+  },
+  {
+    "id": "R10",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "fact_entity",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "mutation_rejected_by_production": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 90.467,
+    "judge_input": null
+  },
+  {
+    "id": "R11",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_supported",
+    "expect": "accept",
+    "semantic": [
+      "citation_support",
+      "factual_consistency"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "document_reference_valid": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 95.584,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13. Include relevant policy.",
+      "expectation": "complete",
+      "candidate": {
+        "status": "complete",
+        "report": "# Inventory Overview\n\nA missing product in a snapshot should be treated as missing data. [S2]\n\n| snapshot_date | product_id | product_name | stock_on_hand |\n| --- | --- | --- | --- |\n| 2026-11-13 | 1974 | UrbanVN RP-49 | 60 [F1] [S1] |\n| 2026-11-13 | 2091 | UrbanVN UC-26 | 60 [F2] [S1] |\n| 2026-11-13 | 556 | SaigonFlex UC-21 | 59 [F3] [S1] |\n| 2026-11-13 | 2180 | PhoenixWear UC-10 | 59 [F4] [S1] |\n| 2026-11-13 | 2219 | VietMotion RP-16 | 59 [F5] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 1, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n[S2] artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md; character offset 0\n"
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+          "content": "Không coi thiếu sản phẩm trong snapshot là tồn bằng không.",
+          "metadata": {
+            "document_id": "VSC-OPS-POL-001",
+            "character_offset": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "R12",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_supported_second",
+    "expect": "accept",
+    "semantic": [
+      "citation_support",
+      "factual_consistency"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "document_reference_valid": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 90.657,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13. Include relevant policy.",
+      "expectation": "complete",
+      "candidate": {
+        "status": "complete",
+        "report": "# Inventory Overview\n\nStock quantities should never be summed across dates. [S2]\n\n| snapshot_date | product_id | product_name | stock_on_hand |\n| --- | --- | --- | --- |\n| 2026-11-13 | 1974 | UrbanVN RP-49 | 60 [F1] [S1] |\n| 2026-11-13 | 2091 | UrbanVN UC-26 | 60 [F2] [S1] |\n| 2026-11-13 | 556 | SaigonFlex UC-21 | 59 [F3] [S1] |\n| 2026-11-13 | 2180 | PhoenixWear UC-10 | 59 [F4] [S1] |\n| 2026-11-13 | 2219 | VietMotion RP-16 | 59 [F5] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 1, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n[S2] artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md; character offset 0\n"
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+          "content": "Không cộng số lượng qua ngày; mỗi hàng là trạng thái/chỉ số tại ngày đó.",
+          "metadata": {
+            "document_id": "VSC-OPS-POL-001",
+            "character_offset": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "R13",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_unknown",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "document_reference_valid": true,
+      "mutation_rejected_by_production": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 84.928,
+    "judge_input": null
+  },
+  {
+    "id": "R14",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_uncited",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "document_reference_valid": true,
+      "mutation_rejected_by_production": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 110.76,
+    "judge_input": null
+  },
+  {
+    "id": "R15",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_wrong_support",
+    "expect": "reject",
+    "semantic": [
+      "citation_support",
+      "factual_consistency"
+    ],
+    "status": "fail",
+    "accepted": true,
+    "checks": {
+      "document_reference_valid": true,
+      "contradictory_fixture_supplied": true,
+      "mutation_rejected_by_production": false,
+      "expected_acceptance": false
+    },
+    "latency_ms": 88.368,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13. Include relevant policy.",
+      "expectation": "complete",
+      "candidate": {
+        "status": "complete",
+        "report": "# Inventory Overview\n\nA product missing from a snapshot should be treated as zero inventory. [S2]\n\n| snapshot_date | product_id | product_name | stock_on_hand |\n| --- | --- | --- | --- |\n| 2026-11-13 | 1974 | UrbanVN RP-49 | 60 [F1] [S1] |\n| 2026-11-13 | 2091 | UrbanVN UC-26 | 60 [F2] [S1] |\n| 2026-11-13 | 556 | SaigonFlex UC-21 | 59 [F3] [S1] |\n| 2026-11-13 | 2180 | PhoenixWear UC-10 | 59 [F4] [S1] |\n| 2026-11-13 | 2219 | VietMotion RP-16 | 59 [F5] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 1, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n[S2] artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md; character offset 0\n"
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+          "content": "Không coi thiếu sản phẩm trong snapshot là tồn bằng không.",
+          "metadata": {
+            "document_id": "VSC-OPS-POL-001",
+            "character_offset": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "R16",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_wrong_support_second",
+    "expect": "reject",
+    "semantic": [
+      "citation_support",
+      "factual_consistency"
+    ],
+    "status": "fail",
+    "accepted": true,
+    "checks": {
+      "document_reference_valid": true,
+      "contradictory_fixture_supplied": true,
+      "mutation_rejected_by_production": false,
+      "expected_acceptance": false
+    },
+    "latency_ms": 89.502,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13. Include relevant policy.",
+      "expectation": "complete",
+      "candidate": {
+        "status": "complete",
+        "report": "# Inventory Overview\n\nStock quantities should be summed across dates. [S2]\n\n| snapshot_date | product_id | product_name | stock_on_hand |\n| --- | --- | --- | --- |\n| 2026-11-13 | 1974 | UrbanVN RP-49 | 60 [F1] [S1] |\n| 2026-11-13 | 2091 | UrbanVN UC-26 | 60 [F2] [S1] |\n| 2026-11-13 | 556 | SaigonFlex UC-21 | 59 [F3] [S1] |\n| 2026-11-13 | 2180 | PhoenixWear UC-10 | 59 [F4] [S1] |\n| 2026-11-13 | 2219 | VietMotion RP-16 | 59 [F5] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 1, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n[S2] artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md; character offset 0\n"
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+          "content": "Không cộng số lượng qua ngày; mỗi hàng là trạng thái/chỉ số tại ngày đó.",
+          "metadata": {
+            "document_id": "VSC-OPS-POL-001",
+            "character_offset": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "R17",
+    "category": "citation",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_citation",
+    "expect": "accept",
+    "semantic": [
+      "citation_support"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "sales_json_schema": true,
+      "period_exact": true,
+      "citation_references_result": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 136.293,
+    "judge_input": {
+      "question": "Sales performance report for 2025.",
+      "expectation": "partial",
+      "candidate": {
+        "status": "partial",
+        "request": {
+          "period": {
+            "start": "2025-01-01",
+            "end_exclusive": "2026-01-01"
+          },
+          "granularity": "month",
+          "dimension": "all",
+          "dimension_value": null
+        },
+        "metrics": [
+          {
+            "id": "company_revenue",
+            "label": "Company revenue",
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": 13299821.25,
+            "status": "available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_cogs",
+            "label": "Company COGS",
+            "source": "commerce.sales",
+            "formula": "SUM(cogs)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_gross_profit",
+            "label": "Company gross profit",
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)-SUM(cogs)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_gross_margin_pct",
+            "label": "Company gross margin",
+            "source": "commerce.sales",
+            "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "percent",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+          }
+        ],
+        "sections": {
+          "executive_summary": {
+            "revenue_overview": "Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].",
+            "profitability_overview": null,
+            "order_activity": null
+          },
+          "sales_kpis": {
+            "company_revenue": 13299821.25,
+            "company_cogs": null,
+            "company_gross_profit": null,
+            "company_gross_margin_pct": null,
+            "company_revenue_change_pct": null,
+            "order_count": null,
+            "delivered_line_revenue": null,
+            "delivered_average_order_value": null,
+            "promotion_discount": null,
+            "sessions": null
+          },
+          "performance_analysis": {
+            "company_revenue_trend": "Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].",
+            "delivered_order_line_breakdown": null,
+            "discount_activity": null,
+            "web_traffic": null
+          },
+          "key_findings_and_explanations": {
+            "revenue_movement": null,
+            "profitability": null,
+            "order_activity": null
+          },
+          "decision_support": {
+            "rule_ids": [
+              "S01",
+              "S02",
+              "S03",
+              "S04"
+            ]
+          }
+        },
+        "limitations": [
+          "Synthetic commerce demo data; currency unspecified. Company sales and delivered-line revenue are separate sources.",
+          "Order and traffic source completeness is unverified; totals describe matching records, not certified complete periods. No causal explanations are established.",
+          "Missing count describes absent company sales dates. Null dimension labels are retained as unknown; unmatched dimension counts are unverified.",
+          "Company daily coverage is incomplete or unknown; comparison rules require complete current and prior periods.",
+          "Period-over-period comparison uses calendar-month totals. Daily records verify source coverage only. 2025-01-01 to 2026-01-01 (end excluded): unknown of unknown days; 2024-01-01 to 2025-01-01 (end excluded): unknown of unknown days. Whole-period revenue change and aggregate comparison-dependent decisions are unavailable; monthly decisions use separate calendar-month baselines. Current-period revenue and profitability remain usable."
+        ]
+      },
+      "evidence": [
+        {
+          "id": "P01",
+          "rows": [
+            {
+              "revenue": "13299821.25"
+            }
+          ]
+        },
+        {
+          "id": "200f38f24fb50a06",
+          "source": "commerce.sales",
+          "filters": {
+            "period": {
+              "start": "2025-01-01",
+              "end_exclusive": "2026-01-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "verified_reference": "P01",
+          "rows": [
+            {
+              "revenue": "13299821.25"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "R18",
+    "category": "citation",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_missing_citation",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "sales_validator_rejected_mutation": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 128.652,
+    "judge_input": null
+  },
+  {
+    "id": "R19",
+    "category": "template",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "marked_template",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "template_compliant": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 94.903,
+    "judge_input": null
+  },
+  {
+    "id": "R20",
+    "category": "template",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "generated_table",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "template_compliant": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 105.296,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.",
+      "expectation": "complete",
+      "candidate": {
+        "status": "complete",
+        "report": "# Inventory Overview\n\nstock_on_hand: 60 (units; product_id=1974, product_name=UrbanVN RP-49; snapshot=2026-11-13) [F1] [S1]\n\n| snapshot_date | product_id | product_name | stock_on_hand |\n| --- | --- | --- | --- |\n| 2026-11-13 | 1974 | UrbanVN RP-49 | 60 [F1] [S1] |\n| 2026-11-13 | 2091 | UrbanVN UC-26 | 60 [F2] [S1] |\n| 2026-11-13 | 556 | SaigonFlex UC-21 | 59 [F3] [S1] |\n| 2026-11-13 | 2180 | PhoenixWear UC-10 | 59 [F4] [S1] |\n| 2026-11-13 | 2219 | VietMotion RP-16 | 59 [F5] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 0, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n"
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "R21",
+    "category": "template",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "bad_placeholder",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "expected_rejection": true,
+      "no_protected_access": true
+    },
+    "latency_ms": 1.177,
+    "judge_input": null
+  },
+  {
+    "id": "R22",
+    "category": "template",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "wrong_heading",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "mutation_rejected_by_production": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 106.708,
+    "judge_input": null
+  },
+  {
+    "id": "R23",
+    "category": "template",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_template",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "sales_json_schema": true,
+      "period_exact": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 103.004,
+    "judge_input": null
+  },
+  {
+    "id": "R24",
+    "category": "template",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_removed_section",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "sales_validator_rejected_mutation": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 120.861,
+    "judge_input": null
+  },
+  {
+    "id": "R25",
+    "category": "missing",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "inventory_empty",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "empty_or_invalid_safe": true,
+      "failure_reason": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 95.702,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.",
+      "expectation": "failed",
+      "candidate": {
+        "status": "failed",
+        "report": "No verified observations for the requested snapshot/filter. Missing observations are not zero inventory."
+      },
+      "evidence": [
+        {
+          "id": "EMPTY",
+          "rows": [],
+          "scope": "Controlled empty replay for the requested snapshot."
+        }
+      ]
+    }
+  },
+  {
+    "id": "R26",
+    "category": "missing",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "P05"
+    ],
+    "scenario": "unsupported",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "empty_or_invalid_safe": true,
+      "failure_reason": true,
+      "unsupported_before_repository": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 13.448,
+    "judge_input": {
+      "question": "Inventory risk report: show warehouse-level inventory and supplier lead time for 2026-11-13.",
+      "expectation": "unsupported",
+      "candidate": {
+        "status": "unsupported",
+        "report": "Supplier lead time is unavailable from the approved source. Choose a report supported by the approved schema and metric definitions."
+      },
+      "evidence": [
+        {
+          "id": "P05",
+          "content": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+          "reference_outcome": "Warehouse inventory and supplier lead time are not available in the published SQL pilot snapshot."
+        }
+      ]
+    }
+  },
+  {
+    "id": "R27",
+    "category": "missing",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "P05"
+    ],
+    "scenario": "partial_table",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "delivery_status": true,
+      "partial_explained": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 96.39,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13. Also include supplier lead time.",
+      "expectation": "partial",
+      "candidate": {
+        "status": "partial",
+        "report": "# Inventory Overview\n\nstock_on_hand: 60 (units; product_id=1974, product_name=UrbanVN RP-49; snapshot=2026-11-13) [F1] [S1]\n\n| snapshot_date | product_id | product_name | stock_on_hand |\n| --- | --- | --- | --- |\n| 2026-11-13 | 1974 | UrbanVN RP-49 | 60 [F1] [S1] |\n| 2026-11-13 | 2091 | UrbanVN UC-26 | 60 [F2] [S1] |\n| 2026-11-13 | 556 | SaigonFlex UC-21 | 59 [F3] [S1] |\n| 2026-11-13 | 2180 | PhoenixWear UC-10 | 59 [F4] [S1] |\n| 2026-11-13 | 2219 | VietMotion RP-16 | 59 [F5] [S1] |\n\n\n## Report status and sources\nStatus: partial\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown\n- Supplier lead time is unavailable from the approved source.\n- Unsupported requested inventory dimension: supplier\n- Unsupported requested inventory dimension: supplier lead time\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 0, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n"
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ]
+        },
+        {
+          "id": "P05",
+          "content": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+          "reference_outcome": "Warehouse inventory and supplier lead time are not available in the published SQL pilot snapshot."
+        }
+      ]
+    }
+  },
+  {
+    "id": "R28",
+    "category": "missing",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "wrong_snapshot",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "empty_or_invalid_safe": true,
+      "failure_reason": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 96.384,
+    "judge_input": null
+  },
+  {
+    "id": "R29",
+    "category": "missing",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "missing_metric",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "empty_or_invalid_safe": true,
+      "failure_reason": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 130.012,
+    "judge_input": null
+  },
+  {
+    "id": "R30",
+    "category": "missing",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_unavailable",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "unavailable_not_zero": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 89.825,
+    "judge_input": {
+      "question": "Sales performance report for 2025. Group by category.",
+      "expectation": "partial",
+      "candidate": {
+        "status": "partial",
+        "request": {
+          "period": {
+            "start": "2025-01-01",
+            "end_exclusive": "2026-01-01"
+          },
+          "granularity": "month",
+          "dimension": "category",
+          "dimension_value": null
+        },
+        "metrics": [
+          {
+            "id": "company_revenue",
+            "label": "Company revenue",
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [],
+            "notes": null
+          },
+          {
+            "id": "company_cogs",
+            "label": "Company COGS",
+            "source": "commerce.sales",
+            "formula": "SUM(cogs)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [],
+            "notes": null
+          },
+          {
+            "id": "company_gross_profit",
+            "label": "Company gross profit",
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)-SUM(cogs)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [],
+            "notes": null
+          },
+          {
+            "id": "company_gross_margin_pct",
+            "label": "Company gross margin",
+            "source": "commerce.sales",
+            "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "percent",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [],
+            "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+          }
+        ],
+        "sections": {
+          "executive_summary": {
+            "revenue_overview": null,
+            "profitability_overview": null,
+            "order_activity": null
+          },
+          "sales_kpis": {
+            "company_revenue": null,
+            "company_cogs": null,
+            "company_gross_profit": null,
+            "company_gross_margin_pct": null,
+            "company_revenue_change_pct": null,
+            "order_count": null,
+            "delivered_line_revenue": null,
+            "delivered_average_order_value": null,
+            "promotion_discount": null,
+            "sessions": null
+          },
+          "performance_analysis": {
+            "company_revenue_trend": null,
+            "delivered_order_line_breakdown": null,
+            "discount_activity": null,
+            "web_traffic": null
+          },
+          "key_findings_and_explanations": {
+            "revenue_movement": null,
+            "profitability": null,
+            "order_activity": null
+          },
+          "decision_support": {
+            "rule_ids": [
+              "S01",
+              "S02",
+              "S03",
+              "S04"
+            ]
+          }
+        },
+        "limitations": [
+          "Synthetic commerce demo data; currency unspecified. Company sales and delivered-line revenue are separate sources.",
+          "Order and traffic source completeness is unverified; totals describe matching records, not certified complete periods. No causal explanations are established.",
+          "Missing count describes absent company sales dates. Null dimension labels are retained as unknown; unmatched dimension counts are unverified.",
+          "Company daily coverage is incomplete or unknown; comparison rules require complete current and prior periods.",
+          "Period-over-period comparison uses calendar-month totals. Daily records verify source coverage only. 2025-01-01 to 2026-01-01 (end excluded): unknown of unknown days; 2024-01-01 to 2025-01-01 (end excluded): unknown of unknown days. Whole-period revenue change and aggregate comparison-dependent decisions are unavailable; monthly decisions use separate calendar-month baselines. Current-period revenue and profitability remain usable.",
+          "Company-level KPIs and comparison decisions are unsupported for this dimension. Company sales cannot be allocated to order-line dimensions."
+        ]
+      },
+      "evidence": [
+        {
+          "id": "P01",
+          "rows": [
+            {
+              "revenue": "13299821.25"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "R31",
+    "category": "rbac",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "anonymous",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "expected_rejection": true,
+      "no_protected_access": true
+    },
+    "latency_ms": 1.116,
+    "judge_input": null
+  },
+  {
+    "id": "R32",
+    "category": "rbac",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "no_document_scope",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "expected_rejection": true,
+      "no_protected_access": true
+    },
+    "latency_ms": 1.034,
+    "judge_input": null
+  },
+  {
+    "id": "R33",
+    "category": "rbac",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "no_analytics_scope",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "expected_rejection": true,
+      "no_protected_access": true
+    },
+    "latency_ms": 1.139,
+    "judge_input": null
+  },
+  {
+    "id": "R34",
+    "category": "rbac",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "authorized_combined",
+    "expect": "accept",
+    "semantic": [
+      "citation_support"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "document_reference_valid": true,
+      "authorized_sources_queried": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 95.893,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13. Include relevant policy.",
+      "expectation": "complete",
+      "candidate": {
+        "status": "complete",
+        "report": "# Inventory Overview\n\nA missing product in a snapshot should be treated as missing data. [S2]\n\n| snapshot_date | product_id | product_name | stock_on_hand |\n| --- | --- | --- | --- |\n| 2026-11-13 | 1974 | UrbanVN RP-49 | 60 [F1] [S1] |\n| 2026-11-13 | 2091 | UrbanVN UC-26 | 60 [F2] [S1] |\n| 2026-11-13 | 556 | SaigonFlex UC-21 | 59 [F3] [S1] |\n| 2026-11-13 | 2180 | PhoenixWear UC-10 | 59 [F4] [S1] |\n| 2026-11-13 | 2219 | VietMotion RP-16 | 59 [F5] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 1, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n[S2] artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md; character offset 0\n"
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+          "content": "Không coi thiếu sản phẩm trong snapshot là tồn bằng không.",
+          "metadata": {
+            "document_id": "VSC-OPS-POL-001",
+            "character_offset": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "R35",
+    "category": "rbac",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_no_documents",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "sales_json_schema": true,
+      "period_exact": true,
+      "no_document_leak": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 141.202,
+    "judge_input": null
+  },
+  {
+    "id": "R36",
+    "category": "rbac",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_no_analytics",
+    "expect": "reject",
+    "semantic": [],
+    "status": "pass",
+    "accepted": false,
+    "checks": {
+      "expected_rejection": true,
+      "no_protected_access": true
+    },
+    "latency_ms": 1.341,
+    "judge_input": null
+  },
+  {
+    "id": "R37",
+    "category": "delivery",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "markdown",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "delivery_status": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 96.171,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.",
+      "expectation": "complete",
+      "candidate": {
+        "status": "complete",
+        "report": "# Inventory Overview\n\nstock_on_hand: 60 (units; product_id=1974, product_name=UrbanVN RP-49; snapshot=2026-11-13) [F1] [S1]\n\n| snapshot_date | product_id | product_name | stock_on_hand |\n| --- | --- | --- | --- |\n| 2026-11-13 | 1974 | UrbanVN RP-49 | 60 [F1] [S1] |\n| 2026-11-13 | 2091 | UrbanVN UC-26 | 60 [F2] [S1] |\n| 2026-11-13 | 556 | SaigonFlex UC-21 | 59 [F3] [S1] |\n| 2026-11-13 | 2180 | PhoenixWear UC-10 | 59 [F4] [S1] |\n| 2026-11-13 | 2219 | VietMotion RP-16 | 59 [F5] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 0, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n"
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "R38",
+    "category": "delivery",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "P05"
+    ],
+    "scenario": "partial_docx",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "delivery_status": true,
+      "partial_explained": true,
+      "docx_table_and_headings": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 532.015,
+    "judge_input": {
+      "question": "Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13. Also include supplier lead time.",
+      "expectation": "partial",
+      "candidate": {
+        "status": "partial",
+        "report": {
+          "headings": [
+            "Inventory Overview"
+          ],
+          "paragraphs": [
+            "Inventory Overview",
+            "stock_on_hand: 60 (units; product_id=1974, product_name=UrbanVN RP-49; snapshot=2026-11-13) [F1] [S1]",
+            "## Report status and sources",
+            "Status: partial",
+            "Quantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.",
+            "Section Inventory Overview: complete",
+            "- Historical monthly observations; every answer must state the selected snapshot date.",
+            "- Missing product snapshots are not zero inventory; denominators cover observed products only.",
+            "- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+            "- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+            "- stock_on_hand: approval=team_accepted; currency=dataset_currency_unknown",
+            "- Supplier lead time is unavailable from the approved source.",
+            "- Unsupported requested inventory dimension: supplier",
+            "- Unsupported requested inventory dimension: supplier lead time",
+            "- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.",
+            "Coverage stock: {\"requested\": \"Inventory risk report: top 5 products by stock on hand at snapshot 2026-11-13.\", \"returned\": 5, \"included\": 5, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}",
+            "Narrative coverage Inventory Overview: {\"facts_available\": 5, \"facts_included\": 5, \"facts_omitted\": 0, \"documents_included\": 0, \"documents_omitted\": 0}",
+            "[S1] Validated report query: stock"
+          ],
+          "tables": [
+            [
+              [
+                "snapshot_date",
+                "product_id",
+                "product_name",
+                "stock_on_hand"
+              ],
+              [
+                "2026-11-13",
+                "1974",
+                "UrbanVN RP-49",
+                "60 [F1] [S1]"
+              ],
+              [
+                "2026-11-13",
+                "2091",
+                "UrbanVN UC-26",
+                "60 [F2] [S1]"
+              ],
+              [
+                "2026-11-13",
+                "556",
+                "SaigonFlex UC-21",
+                "59 [F3] [S1]"
+              ],
+              [
+                "2026-11-13",
+                "2180",
+                "PhoenixWear UC-10",
+                "59 [F4] [S1]"
+              ],
+              [
+                "2026-11-13",
+                "2219",
+                "VietMotion RP-16",
+                "59 [F5] [S1]"
+              ]
+            ]
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "id": "P04",
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ]
+        },
+        {
+          "id": "P05",
+          "content": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+          "reference_outcome": "Warehouse inventory and supplier lead time are not available in the published SQL pilot snapshot."
+        }
+      ]
+    }
+  },
+  {
+    "id": "R39",
+    "category": "delivery",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "failed_delivery",
+    "expect": "accept",
+    "semantic": [],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "empty_or_invalid_safe": true,
+      "failure_reason": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 83.555,
+    "judge_input": null
+  },
+  {
+    "id": "R40",
+    "category": "delivery",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_json",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ],
+    "status": "pass",
+    "accepted": true,
+    "checks": {
+      "sales_json_schema": true,
+      "period_exact": true,
+      "http_json_contract": true,
+      "expected_acceptance": true
+    },
+    "latency_ms": 119.145,
+    "judge_input": {
+      "question": "Sales performance report for 2025.",
+      "expectation": "partial",
+      "candidate": {
+        "status": "partial",
+        "request": {
+          "period": {
+            "start": "2025-01-01",
+            "end_exclusive": "2026-01-01"
+          },
+          "granularity": "month",
+          "dimension": "all",
+          "dimension_value": null
+        },
+        "metrics": [
+          {
+            "id": "company_revenue",
+            "label": "Company revenue",
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": 13299821.25,
+            "status": "available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_cogs",
+            "label": "Company COGS",
+            "source": "commerce.sales",
+            "formula": "SUM(cogs)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_gross_profit",
+            "label": "Company gross profit",
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)-SUM(cogs)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_gross_margin_pct",
+            "label": "Company gross margin",
+            "source": "commerce.sales",
+            "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "percent",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+          }
+        ],
+        "sections": {
+          "executive_summary": {
+            "revenue_overview": "Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].",
+            "profitability_overview": null,
+            "order_activity": null
+          },
+          "sales_kpis": {
+            "company_revenue": 13299821.25,
+            "company_cogs": null,
+            "company_gross_profit": null,
+            "company_gross_margin_pct": null,
+            "company_revenue_change_pct": null,
+            "order_count": null,
+            "delivered_line_revenue": null,
+            "delivered_average_order_value": null,
+            "promotion_discount": null,
+            "sessions": null
+          },
+          "performance_analysis": {
+            "company_revenue_trend": "Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].",
+            "delivered_order_line_breakdown": null,
+            "discount_activity": null,
+            "web_traffic": null
+          },
+          "key_findings_and_explanations": {
+            "revenue_movement": null,
+            "profitability": null,
+            "order_activity": null
+          },
+          "decision_support": {
+            "rule_ids": [
+              "S01",
+              "S02",
+              "S03",
+              "S04"
+            ]
+          }
+        },
+        "limitations": [
+          "Synthetic commerce demo data; currency unspecified. Company sales and delivered-line revenue are separate sources.",
+          "Order and traffic source completeness is unverified; totals describe matching records, not certified complete periods. No causal explanations are established.",
+          "Missing count describes absent company sales dates. Null dimension labels are retained as unknown; unmatched dimension counts are unverified.",
+          "Company daily coverage is incomplete or unknown; comparison rules require complete current and prior periods.",
+          "Period-over-period comparison uses calendar-month totals. Daily records verify source coverage only. 2025-01-01 to 2026-01-01 (end excluded): unknown of unknown days; 2024-01-01 to 2025-01-01 (end excluded): unknown of unknown days. Whole-period revenue change and aggregate comparison-dependent decisions are unavailable; monthly decisions use separate calendar-month baselines. Current-period revenue and profitability remain usable."
+        ]
+      },
+      "evidence": [
+        {
+          "id": "P01",
+          "rows": [
+            {
+              "revenue": "13299821.25"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

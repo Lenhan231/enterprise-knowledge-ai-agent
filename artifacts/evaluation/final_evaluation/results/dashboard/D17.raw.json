@@ -1,0 +1,84 @@
+{
+  "document": {
+    "title": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng",
+    "queries": [
+      {
+        "id": "q0",
+        "question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần. Show a table."
+      }
+    ],
+    "tiles": [
+      {
+        "id": "main",
+        "title": "Table:",
+        "kind": "table",
+        "query_id": "q0",
+        "measures": [],
+        "dimension": null,
+        "span": 2
+      }
+    ],
+    "id": "9c3eadb9687f4801bec49e0dd24798ee",
+    "description": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần. Show a table.",
+    "scope": "",
+    "clarifications": [],
+    "revision": 1,
+    "created_at": "2026-11-21T09:25:36.027527Z",
+    "updated_at": "2026-11-21T09:25:36.027527Z",
+    "data_updated_at": "2026-11-21T09:25:36.027527Z",
+    "results": [
+      {
+        "id": "q0",
+        "question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần. Show a table.",
+        "status": "empty",
+        "payload": {
+          "rows": [],
+          "sql": "SELECT i.product_id, i.product_name, i.stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.stock_on_hand IS NOT NULL ORDER BY i.stock_on_hand DESC, i.product_id ASC LIMIT 5",
+          "parameters": [
+            "2026-11-13"
+          ],
+          "metadata": {
+            "dashboard_outputs": [
+              {
+                "id": "main",
+                "kind": "table",
+                "measures": [],
+                "dimension": null
+              }
+            ]
+          },
+          "query_status": "executed"
+        },
+        "message": ""
+      }
+    ],
+    "tile_status": {
+      "main": {
+        "status": "empty",
+        "message": ""
+      }
+    },
+    "status": "complete"
+  },
+  "charts": [],
+  "forwarded_question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần. Show a table.",
+  "source_response": {
+    "query_status": "executed",
+    "ok": true,
+    "rows": [],
+    "sql": "SELECT i.product_id, i.product_name, i.stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.stock_on_hand IS NOT NULL ORDER BY i.stock_on_hand DESC, i.product_id ASC LIMIT 5",
+    "parameters": [
+      "2026-11-13"
+    ],
+    "metadata": {
+      "dashboard_outputs": [
+        {
+          "id": "main",
+          "kind": "table",
+          "measures": [],
+          "dimension": null
+        }
+      ]
+    }
+  }
+}

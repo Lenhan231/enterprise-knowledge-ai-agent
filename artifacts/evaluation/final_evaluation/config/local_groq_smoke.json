@@ -1,0 +1,19 @@
+{
+  "model": "qwen/qwen3.8-27b",
+  "sql_model": "qwen/qwen3.8-27b",
+  "key_count": 3,
+  "slots": [
+    {
+      "index": 1,
+      "status": "pass"
+    },
+    {
+      "index": 2,
+      "status": "pass"
+    },
+    {
+      "index": 3,
+      "status": "pass"
+    }
+  ]
+}

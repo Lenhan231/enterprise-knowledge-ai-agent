@@ -1,0 +1,240 @@
+{
+  "result": {
+    "answer": "Report status: complete",
+    "agent": "report",
+    "evidence": [
+      {
+        "citation_id": "S1",
+        "source_type": "database",
+        "source": "Validated report query: stock",
+        "content": "[{\"snapshot_date\": \"2026-11-13\", \"product_id\": 11, \"product_name\": \"fixture\", \"stored_fill_rate\": \"0.25\"}]",
+        "metadata": {
+          "task_id": "stock",
+          "sources": [
+            "commerce.inventory",
+            "commerce.products"
+          ]
+        }
+      }
+    ],
+    "data": {
+      "report_format": "markdown",
+      "section_count": 1
+    },
+    "metadata": {
+      "ok": true,
+      "status": "complete",
+      "sections": {
+        "Inventory Overview": "complete"
+      },
+      "coverage": {
+        "stock": {
+          "requested": "Inventory risk report: stored product fill rate at snapshot 2026-11-13.",
+          "returned": 1,
+          "included": 1,
+          "omitted": 0,
+          "completeness": "returned_query_scope",
+          "snapshots": [
+            "2026-11-13"
+          ]
+        }
+      },
+      "narrative_coverage": {
+        "Inventory Overview": {
+          "facts_available": 1,
+          "facts_included": 1,
+          "facts_omitted": 0,
+          "documents_included": 0,
+          "documents_omitted": 0
+        }
+      },
+      "limitations": [
+        "Historical monthly observations; every answer must state the selected snapshot date.",
+        "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+        "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+        "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+        "stored_fill_rate: approval=team_accepted; currency=dataset_currency_unknown",
+        "Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export."
+      ],
+      "issues": {},
+      "facts": [
+        {
+          "id": "F1",
+          "evidence_id": "S1",
+          "task_id": "stock",
+          "metric": "stored_fill_rate",
+          "value": "0.25",
+          "unit": "percent",
+          "dimensions": {
+            "product_id": "11",
+            "product_name": "fixture"
+          },
+          "filters": [],
+          "snapshot_date": "2026-11-13",
+          "formula": "fill_rate within one snapshot",
+          "operands": [],
+          "approval_status": "team_accepted",
+          "source_row": null
+        }
+      ],
+      "caveats": [
+        "Historical monthly observations; every answer must state the selected snapshot date.",
+        "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+        "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+        "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+        "stored_fill_rate: approval=team_accepted; currency=dataset_currency_unknown"
+      ],
+      "clarifications": [],
+      "completeness": {
+        "tasks": {
+          "stock": "returned_query_scope"
+        },
+        "sections": {
+          "Inventory Overview": "complete"
+        }
+      },
+      "fact_validation": {
+        "validated": 1,
+        "narrative_semantics": "limited"
+      },
+      "template_mode": "generated",
+      "timing": {
+        "planned_report_ms": 78,
+        "total_ms": 78
+      },
+      "plan": {
+        "purpose": "Inventory observations",
+        "sections": [
+          {
+            "heading": "Inventory Overview",
+            "tasks": [
+              "stock"
+            ],
+            "table_columns": []
+          }
+        ],
+        "tasks": [
+          {
+            "id": "stock",
+            "question": "Inventory risk report: stored product fill rate at snapshot 2026-11-13.",
+            "mapping": {
+              "domain": "inventory",
+              "metrics": [
+                "stored_fill_rate"
+              ],
+              "dimensions": [
+                "product_id",
+                "product_name"
+              ],
+              "filters": [],
+              "time": {
+                "mode": "snapshot",
+                "start": "2026-11-13",
+                "end": null
+              },
+              "ranking": null,
+              "representation": "product",
+              "clarification": null
+            },
+            "product_columns": [],
+            "product_filters": []
+          }
+        ],
+        "unsupported_requirements": [],
+        "clarification": null,
+        "compare_periods": false,
+        "template_mismatches": []
+      },
+      "verification_scope": "Quantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.",
+      "report_type": "inventory_risk",
+      "section_mapping": {
+        "Inventory Overview": {
+          "capability": "inventory",
+          "tasks": [
+            "stock"
+          ]
+        }
+      }
+    }
+  },
+  "rendered": "# Inventory Overview\n\nstored_fill_rate: 25% (percent; product_id=11, product_name=fixture; snapshot=2026-11-13) [F1] [S1]\n\n| snapshot_date | product_id | product_name | stored_fill_rate |\n| --- | --- | --- | --- |\n| 2026-11-13 | 11 | fixture | 25% [F1] [S1] |\n\n\n## Report status and sources\nStatus: complete\nQuantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.\nSection Inventory Overview: complete\n- Historical monthly observations; every answer must state the selected snapshot date.\n- Missing product snapshots are not zero inventory; denominators cover observed products only.\n- No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\n- Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\n- stored_fill_rate: approval=team_accepted; currency=dataset_currency_unknown\n- Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.\nCoverage stock: {\"requested\": \"Inventory risk report: stored product fill rate at snapshot 2026-11-13.\", \"returned\": 1, \"included\": 1, \"omitted\": 0, \"completeness\": \"returned_query_scope\", \"snapshots\": [\"2026-11-13\"]}\nNarrative coverage Inventory Overview: {\"facts_available\": 1, \"facts_included\": 1, \"facts_omitted\": 0, \"documents_included\": 0, \"documents_omitted\": 0}\n[S1] Validated report query: stock\n",
+  "http": {
+    "status_code": 200,
+    "headers": {
+      "content-disposition": "attachment; filename=\"report.md\"",
+      "x-report-status": "complete",
+      "x-report-summary": "{\"complete\":1,\"failed\":0,\"unavailable\":0,\"omitted_from_narrative\":0,\"reasons\":[]}",
+      "access-control-expose-headers": "X-Report-Status, X-Report-Summary, Content-Disposition",
+      "content-type": "text/markdown; charset=utf-8"
+    }
+  },
+  "media_type": "text/markdown; charset=utf-8",
+  "repository_calls": [
+    {
+      "sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.fill_rate AS stored_fill_rate FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = $1 ORDER BY commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 200",
+      "parameters": [
+        "2026-11-13"
+      ]
+    }
+  ],
+  "retrieval_calls": 0,
+  "scripted_drafts": [
+    {
+      "purpose": "Inventory observations",
+      "tasks": [
+        {
+          "id": "stock",
+          "question": "Inventory risk report: stored product fill rate at snapshot 2026-11-13.",
+          "mapping": {
+            "metrics": [
+              "stored_fill_rate"
+            ],
+            "dimensions": [
+              "product_id",
+              "product_name"
+            ],
+            "representation": "product",
+            "time": {
+              "mode": "snapshot",
+              "start": "2026-11-13",
+              "end": "2026-11-13"
+            }
+          }
+        }
+      ],
+      "sections": [
+        {
+          "heading": "Inventory Overview",
+          "tasks": [
+            "stock"
+          ]
+        }
+      ]
+    },
+    {
+      "sections": {
+        "Inventory Overview": "[F1] [S1]"
+      },
+      "claims": [
+        {
+          "id": "F1",
+          "evidence_id": "S1",
+          "task_id": "stock",
+          "metric": "stored_fill_rate",
+          "value": "0.25",
+          "unit": "percent",
+          "dimensions": {
+            "product_id": "11",
+            "product_name": "fixture"
+          },
+          "filters": [],
+          "snapshot_date": "2026-11-13",
+          "formula": "fill_rate within one snapshot",
+          "operands": [],
+          "approval_status": "team_accepted",
+          "source_row": null
+        }
+      ]
+    }
+  ]
+}

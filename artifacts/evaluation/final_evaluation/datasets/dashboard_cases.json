@@ -1,0 +1,174 @@
+[
+  {
+    "id": "D01",
+    "category": "fidelity",
+    "evidence": "P01",
+    "scenario": "revenue",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "D02",
+    "category": "fidelity",
+    "evidence": "P02",
+    "scenario": "table",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "D03",
+    "category": "fidelity",
+    "evidence": "P04",
+    "scenario": "bar",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "D04",
+    "category": "fidelity",
+    "evidence": "P01",
+    "scenario": "changed_row",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "D05",
+    "category": "chart",
+    "evidence": "P02",
+    "scenario": "bar",
+    "expect": "accept",
+    "semantic": [
+      "chart_suitability"
+    ]
+  },
+  {
+    "id": "D06",
+    "category": "chart",
+    "evidence": "SYN-TREND",
+    "scenario": "line",
+    "expect": "accept",
+    "semantic": [
+      "chart_suitability"
+    ]
+  },
+  {
+    "id": "D07",
+    "category": "chart",
+    "evidence": "P04",
+    "scenario": "line",
+    "expect": "reject",
+    "semantic": [
+      "chart_suitability"
+    ]
+  },
+  {
+    "id": "D08",
+    "category": "chart",
+    "evidence": "P03",
+    "scenario": "donut",
+    "expect": "reject",
+    "semantic": [
+      "chart_suitability"
+    ]
+  },
+  {
+    "id": "D09",
+    "category": "filters",
+    "evidence": "P02",
+    "scenario": "scope_delivery",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "D10",
+    "category": "filters",
+    "evidence": "P03",
+    "scenario": "scope_product",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "D11",
+    "category": "filters",
+    "evidence": "SYN-CATEGORY",
+    "scenario": "scope_category",
+    "expect": "accept",
+    "semantic": [
+      "chart_suitability"
+    ]
+  },
+  {
+    "id": "D12",
+    "category": "filters",
+    "evidence": "P04",
+    "scenario": "stale_snapshot",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "D13",
+    "category": "kpi",
+    "evidence": "P01",
+    "scenario": "kpi_table",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "D14",
+    "category": "kpi",
+    "evidence": "SYN-TREND",
+    "scenario": "kpi_chart_table",
+    "expect": "accept",
+    "semantic": [
+      "chart_suitability"
+    ]
+  },
+  {
+    "id": "D15",
+    "category": "kpi",
+    "evidence": "P03",
+    "scenario": "grouped_kpi",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "D16",
+    "category": "kpi",
+    "evidence": "P01",
+    "scenario": "inconsistent_kpi",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "D17",
+    "category": "failure",
+    "evidence": "P04",
+    "scenario": "empty",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "D18",
+    "category": "failure",
+    "evidence": "P05",
+    "scenario": "unsupported",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "D19",
+    "category": "failure",
+    "evidence": "P05",
+    "scenario": "failed_rows",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "D20",
+    "category": "failure",
+    "evidence": "P03",
+    "scenario": "invalid_field",
+    "expect": "reject",
+    "semantic": []
+  }
+]

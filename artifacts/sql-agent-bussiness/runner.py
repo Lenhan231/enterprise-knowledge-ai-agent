@@ -11,6 +11,7 @@ import importlib.util
 import inspect
 import json
 import importlib.metadata
+import math
 import os
 import re
 import subprocess
@@ -370,6 +371,7 @@ def normalize_payload(case, payload, instrumentation, latency_ms):
         },
         "calls": dict(instrumentation.calls),
         "latency_ms": round(latency_ms, 3),
+        "provider_calls": list(instrumentation.provider_calls),
         "metadata": normalized_metadata,
     }
 
@@ -464,6 +466,7 @@ class Instrumentation:
         self.schema_selector_status = "not_attempted"
         self.schema_selector_http_status = None
         self.execution_events = []
+        self.provider_calls = []
 
 
 def instrument_agent(agent, instrumentation):
@@ -475,6 +478,8 @@ def instrument_agent(agent, instrumentation):
 
     @functools.wraps(original_generate)
     async def counted_generate(provider, prompt, *, timeout=15, max_output_tokens=None):
+        started = time.perf_counter()
+        stage = "sql_generation" if generating_sql.get() else "metric_interpretation"
         if generating_sql.get():
             instrumentation.calls["general_sql_generation"] += 1
             attempts = sql_provider_attempts.get() or 0
@@ -483,8 +488,29 @@ def instrument_agent(agent, instrumentation):
             sql_provider_attempts.set(attempts + 1)
         else:
             instrumentation.calls["metric_interpretation"] += 1
-        return await original_generate(provider, prompt, timeout=timeout,
-                                       max_output_tokens=max_output_tokens)
+        try:
+            result = await original_generate(provider, prompt, timeout=timeout,
+                                             max_output_tokens=max_output_tokens)
+        except Exception as error:
+            instrumentation.provider_calls.append({
+                "stage": stage,
+                "provider": type(provider).__name__,
+                "model": getattr(provider, "model_name", None) or getattr(provider, "model", None),
+                "status": "failed",
+                "error_type": type(error).__name__,
+                "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+                "usage": None,
+            })
+            raise
+        instrumentation.provider_calls.append({
+            "stage": stage,
+            "provider": type(provider).__name__,
+            "model": getattr(provider, "model_name", None) or getattr(provider, "model", None),
+            "status": "completed",
+            "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+            "usage": _redact_structure(getattr(provider, "last_usage", None)),
+        })
+        return result
 
     original_local_codex = sql_module.generate_with_local_codex
 
@@ -706,6 +732,7 @@ async def run_cases(agent, case_set, store, *, delay_between_cases=0):
                                      "schema_selector_status": instrumentation.schema_selector_status,
                                      "schema_selector_http_status": instrumentation.schema_selector_http_status},
                 "calls": {**instrumentation.calls, **repository_calls},
+                "provider_calls": list(instrumentation.provider_calls),
                 "execution_events": execution_events,
                 "attempts": current_attempts,
                 "latency_ms": round((time.perf_counter() - started) * 1000, 3),
@@ -832,6 +859,45 @@ def render_v33_report(case_set, scores, experiment):
         decision: sum(item.get("decision") == decision for item in semantic_decisions.values())
         for decision in ("PASS", "FAIL", "REVIEW_REQUIRED", "INDETERMINATE")
     }
+    call_names = (
+        "general_sql_generation", "sql_repair", "provider_fallback_calls",
+        "local_codex_fallback_calls", "schema_selector_attempts", "schema_discovery",
+        "repository_execution_attempts", "repository_execution",
+        "approved_repository_execution", "unverified_repository_execution",
+    )
+    call_totals = {
+        name: sum((item.get("calls") or {}).get(name, 0) for item in observations.values())
+        for name in call_names
+    }
+    provider_calls = [call for item in observations.values() for call in item.get("provider_calls", [])]
+    token_totals = {name: 0 for name in ("input_tokens", "output_tokens", "total_tokens")}
+    token_usage_calls = 0
+    token_fields = {
+        "input_tokens": ("input_tokens", "prompt_tokens"),
+        "output_tokens": ("output_tokens", "completion_tokens"),
+        "total_tokens": ("total_tokens",),
+    }
+    for call in provider_calls:
+        usage = call.get("usage") or {}
+        if not isinstance(usage, dict):
+            continue
+        token_usage_calls += 1
+        for target, keys in token_fields.items():
+            value = next((usage[key] for key in keys if isinstance(usage.get(key), int)
+                          and not isinstance(usage.get(key), bool)), None)
+            if value is not None:
+                token_totals[target] += value
+    elapsed = sorted(
+        item["latency_ms"] for item in observations.values()
+        if isinstance(item.get("latency_ms"), (int, float))
+    )
+    latency = {
+        "observed_cases": len(elapsed),
+        "total_ms": round(sum(elapsed), 3),
+        "median_ms": round((elapsed[(len(elapsed) - 1) // 2] + elapsed[len(elapsed) // 2]) / 2, 3)
+        if elapsed else None,
+        "p95_ms": round(elapsed[max(0, math.ceil(0.95 * len(elapsed)) - 1)], 3) if elapsed else None,
+    }
     lines = [
         "# SQL Agent 40-case benchmark report",
         "",
@@ -846,6 +912,10 @@ def render_v33_report(case_set, scores, experiment):
         f"- Case statuses: {json.dumps(outcome_counts, ensure_ascii=False, sort_keys=True)}",
         f"- Business E2E decisions: {json.dumps(e2e_counts, ensure_ascii=False, sort_keys=True)}",
         f"- SQL semantic audit decisions: {json.dumps(semantic_counts, ensure_ascii=False, sort_keys=True)}",
+        f"- Provider calls: {json.dumps(call_totals, ensure_ascii=False, sort_keys=True)}",
+        f"- Provider call records: {len(provider_calls)}; calls reporting token usage: {token_usage_calls}; "
+        f"token totals: {json.dumps(token_totals, ensure_ascii=False, sort_keys=True) if token_usage_calls else 'NOT REPORTED'}; cost: NOT REPORTED",
+        f"- Case latency (ms): {json.dumps(latency, ensure_ascii=False, sort_keys=True)}",
         "",
         "| Metric | Numerator | Denominator | Value / status |",
         "|---|---:|---:|---|",
@@ -865,6 +935,10 @@ def render_v33_report(case_set, scores, experiment):
             f"{comparison.get('business_result_decision', 'NOT APPLICABLE')} | "
             f"{comparison.get('business_end_to_end', {}).get('decision', 'NOT APPLICABLE')} |"
         )
+    hashes = scores.get("scoring_input_hashes", {})
+    if hashes:
+        lines.extend(["", "## Scoring input hashes", ""])
+        lines.extend(f"- `{name}`: `{value or 'NOT PROVIDED'}`" for name, value in sorted(hashes.items()))
     return "\n".join(lines) + "\n"
 
 
@@ -880,7 +954,14 @@ def score_saved_run(*, cases_path, reference_path, run_dir, scorer_path,
     case_set = json.loads(Path(cases_path).read_text(encoding="utf-8"))
     reference = json.loads(Path(reference_path).read_text(encoding="utf-8"))
     scorer = _load_scorer(scorer_path)
-    if hasattr(scorer, "SCORER_VERSION"):
+    if callable(getattr(scorer, "score", None)):
+        expected_case_hash = _canonical_hash(case_set)
+        if data.get("case_set_sha256") != expected_case_hash:
+            raise ValueError("Saved experiment does not match the supplied frozen case set.")
+        saved_fingerprint = (data.get("manifest") or {}).get("dataset_fingerprint_sha256")
+        reference_fingerprint = reference.get("database_fingerprint_sha256")
+        if not saved_fingerprint or saved_fingerprint != reference_fingerprint:
+            raise ValueError("Saved experiment database fingerprint does not match frozen Gold results.")
         data["independent_semantic_audits"] = _audit_records(
             semantic_audit_path, "independent_semantic_audits"
         )
@@ -888,6 +969,15 @@ def score_saved_run(*, cases_path, reference_path, run_dir, scorer_path,
             output_safety_audit_path, "additional_output_safety_audits"
         )
         scores = scorer.score(case_set, reference, data)
+        scores["scoring_input_hashes"] = {
+            "cases_sha256": sha256_file(cases_path),
+            "case_set_canonical_sha256": expected_case_hash,
+            "gold_reference_sha256": sha256_file(reference_path),
+            "raw_observations_sha256": sha256_file(data_path),
+            "scorer_sha256": sha256_file(scorer_path),
+            "semantic_audit_sha256": sha256_file(semantic_audit_path) if semantic_audit_path else None,
+            "output_safety_audit_sha256": sha256_file(output_safety_audit_path) if output_safety_audit_path else None,
+        }
         report = render_v33_report(case_set, scores, data)
     else:
         scores = scorer.score_experiment(case_set, data)

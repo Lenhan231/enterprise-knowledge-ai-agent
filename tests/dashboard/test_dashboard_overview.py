@@ -18,8 +18,8 @@ from core.models.agents import AgentRequest, VerifiedIdentity
 
 
 class OverviewRepository:
-    def __init__(self, *, fail=None, negative=False):
-        self.calls=[];self.fail=fail;self.negative=negative
+    def __init__(self, *, fail=None, negative=False, categories=None):
+        self.calls=[];self.fail=fail;self.negative=negative;self.categories=categories
         self.queries={validate_commerce_sql(sql).sql:key for key,sql in OVERVIEW_QUERIES.items()}
 
     async def execute_approved_query(self, sql, *args):
@@ -28,8 +28,8 @@ class OverviewRepository:
         key=self.queries[sql]
         if key==self.fail:raise ConnectionError('offline')
         return {
-            'stock':[{'product_id':1,'product_name':'One','stock_on_hand':Decimal('1234567.5'),'invalid_balances':1 if self.negative else 0},
-                     {'product_id':None,'product_name':'Other products','stock_on_hand':10,'invalid_balances':0}],
+            'stock':self.categories or [{'category':'Outdoor','stock_on_hand':Decimal('1234567.5'),'invalid_balances':1 if self.negative else 0},
+                     {'category':'Casual','stock_on_hand':10,'invalid_balances':0}],
             'purchases':[{'category':'A','units_purchased':12}],
             'sales':[{'month':date(2026,11,1),'revenue':Decimal('1234567.5')},{'month':date(2026,10,1),'revenue':Decimal('500.25')}],
         }[key]
@@ -60,7 +60,8 @@ class OverviewTest(unittest.IsolatedAsyncioTestCase):
         provider.generate.assert_not_called()
         html=render_dashboard(document,charts=charts,saved=False)
         self.assertEqual(html.count('<svg '),3)
-        self.assertIn('Other products',html)
+        self.assertIn('Outdoor',html)
+        self.assertNotIn('Other products',html)
         self.assertIn('11/2026',html)
         self.assertIn('1.234.568',html)
         self.assertNotIn('₫',html)
@@ -82,6 +83,12 @@ class OverviewTest(unittest.IsolatedAsyncioTestCase):
         document,charts=await build_overview(SQLAnalyticsAgent(OverviewRepository(negative=True),inventory_only=False),identity())
         self.assertNotIn(document.tiles[0].id,charts)
         self.assertEqual(document.status,'partial')
+
+    async def test_too_many_categories_never_become_a_truncated_composition(self):
+        rows=[{'category':f'C{i}','stock_on_hand':1,'invalid_balances':0} for i in range(50)]
+        document,charts=await build_overview(SQLAnalyticsAgent(OverviewRepository(categories=rows),inventory_only=False),identity())
+        self.assertNotIn('stock',charts)
+        self.assertEqual(document.results[0].status,'failed')
 
     async def test_deployment_source_allowlist_remains_in_force(self):
         repository=OverviewRepository()
@@ -146,13 +153,11 @@ class OverviewSQLTest(unittest.IsolatedAsyncioTestCase):
         async with self.lock,self.connection.transaction(readonly=True):
             return [dict(row) for row in await self.connection.fetch(sql,*args)]
 
-    async def test_top_five_other_delivered_quantities_and_latest_twelve_months(self):
+    async def test_stock_by_category_delivered_quantities_and_latest_twelve_months(self):
         document,charts=await build_overview(SQLAnalyticsAgent(self,inventory_only=False),identity())
         self.assertEqual(document.status,'complete')
         stock=document.results[0].payload['rows']
-        self.assertEqual(len(stock),6)
-        self.assertEqual(sum(row['stock_on_hand'] for row in stock),36)
-        self.assertEqual(next(row['stock_on_hand'] for row in stock if row['product_id'] is None),6)
+        self.assertEqual([(row['category'],row['stock_on_hand']) for row in stock],[('B',26),('A',10)])
         self.assertEqual({row['category']:row['units_purchased'] for row in document.results[1].payload['rows']},{'A':5,'B':7})
         months=document.results[2].payload['rows']
         self.assertEqual(len(months),12)

@@ -94,6 +94,8 @@
   }
   function preview() {
     if (selected) SalesPerformanceReport.render(el('sales-report-output'), selected.report, {title:selected.title, presentation:selected.presentation, monthly_decisions:selected.monthly_decisions, insights:selected.insights, inventory_context:selected.inventory_context});
+    // restart the entrance so each newly shown report rises in, section by section
+    const out = el('sales-report-output'); if (out?.classList && selected) { out.classList.remove('n-enter'); void out.offsetWidth; out.classList.add('n-enter'); }
   }
   function showTab(edit) {
     el('rw-edit-panel').hidden = !edit; el('sales-report-output').hidden = edit || !selected;

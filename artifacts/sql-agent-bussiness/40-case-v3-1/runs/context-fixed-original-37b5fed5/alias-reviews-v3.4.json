@@ -1,0 +1,13 @@
+{
+  "raw_observations_sha256": "3a4cfc293a9f221ba5b35042dbdb2be0dbe40ac1f5f32465c45d43f63ce4c7bf",
+  "reviews": [
+    {
+      "case_id": "B40-002",
+      "query_sha256": "4575ebd12f92f234a4de14055719bc6948693436b013c29d454d5242fde9fcfb",
+      "aliases": {
+        "avg_delivery_time": "average_delivery_days"
+      },
+      "evidence": "AVG(delivery_date - ship_date) is the average calendar-day interval for delivered shipments. PostgreSQL AVG excludes NULL deliveries. The observation uses the same 2025 ship-month groups and separately counts missing delivery dates."
+    }
+  ]
+}

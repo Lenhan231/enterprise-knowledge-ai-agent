@@ -1,0 +1,500 @@
+{
+  "format_version": "sql-agent-additional-output-safety-decisions.v1",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "auditor_id": "Codex AI-assisted output safety reviewer",
+  "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring",
+  "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+  "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+  "decisions": [
+    {
+      "case_id": "B40-003",
+      "column_name": "return_records",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed return_records projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-013",
+      "column_name": "snapshot_date",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": true,
+          "evidence": "The scorer verified required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": true,
+          "evidence": "Matching required-field rows establish cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed snapshot_date projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-021",
+      "column_name": "snapshot_date",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed snapshot_date projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-021",
+      "column_name": "count_stockout",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed count_stockout projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-022",
+      "column_name": "with_days_of_supply",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed with_days_of_supply projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-022",
+      "column_name": "without_days_of_supply",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed without_days_of_supply projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-023",
+      "column_name": "before_snapshot_date",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed before_snapshot_date projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-023",
+      "column_name": "before",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed before projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-023",
+      "column_name": "after_snapshot_date",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed after_snapshot_date projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-023",
+      "column_name": "after",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed after projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-023",
+      "column_name": "diff",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed diff projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-025",
+      "column_name": "total",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed total projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-025",
+      "column_name": "null_count",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer did not verify the required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "Grain and population equivalence for this unapproved output is not certified."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed null_count projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    },
+    {
+      "case_id": "B40-030",
+      "column_name": "days_of_supply",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": true,
+          "evidence": "The scorer verified required-field row values."
+        },
+        "row_cardinality_preserved": {
+          "passed": true,
+          "evidence": "Matching required-field rows establish cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": true,
+          "evidence": "The extra projection does not affect the single-snapshot product grain or top-five population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": true,
+          "evidence": "The extra projection does not alter stockout_days or the ranking."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The prior turn requested days_of_supply, but the current turn ranks stockout_days. The schema contract flags the recorded days_of_supply values as anomalously high and unvalidated for decisions."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The observed days_of_supply projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+        }
+      }
+    }
+  ]
+}

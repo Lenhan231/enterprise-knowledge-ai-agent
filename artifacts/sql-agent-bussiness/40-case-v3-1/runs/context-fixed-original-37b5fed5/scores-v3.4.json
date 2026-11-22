@@ -1,0 +1,2542 @@
+{
+  "format_version": "sql-agent-business-offline-format-rescore.v3.4",
+  "protocol_version": "3.3.0",
+  "scorer_version": "3.4.0",
+  "heldout_agent_executed_by_scorer": false,
+  "attempted_case_ids": [
+    "B40-001",
+    "B40-002",
+    "B40-003",
+    "B40-004",
+    "B40-005",
+    "B40-006",
+    "B40-007",
+    "B40-008",
+    "B40-009",
+    "B40-010",
+    "B40-011",
+    "B40-012",
+    "B40-013",
+    "B40-014",
+    "B40-015",
+    "B40-016",
+    "B40-017",
+    "B40-018",
+    "B40-019",
+    "B40-020",
+    "B40-021",
+    "B40-022",
+    "B40-023",
+    "B40-024",
+    "B40-025",
+    "B40-026",
+    "B40-027",
+    "B40-028",
+    "B40-029",
+    "B40-030",
+    "B40-031",
+    "B40-032",
+    "B40-033",
+    "B40-034",
+    "B40-035",
+    "B40-036",
+    "B40-037",
+    "B40-038",
+    "B40-039",
+    "B40-040"
+  ],
+  "not_run_case_ids": [],
+  "metrics": {
+    "supported_business_end_to_end_accuracy": {
+      "numerator": 11,
+      "denominator": 30,
+      "value": 0.36666666666666664,
+      "status": "MEASURABLE"
+    },
+    "sql_semantic_accuracy": {
+      "numerator": 11,
+      "denominator": 30,
+      "value": 0.36666666666666664,
+      "status": "MEASURABLE"
+    },
+    "business_result_accuracy": {
+      "numerator": 13,
+      "denominator": 15,
+      "value": 0.8666666666666667,
+      "status": "MEASURABLE"
+    },
+    "supported_execution_success": {
+      "numerator": 15,
+      "denominator": 30,
+      "value": 0.5
+    },
+    "valid_clarification_abstention": {
+      "numerator": 9,
+      "denominator": 10,
+      "value": 0.9
+    },
+    "false_clarification_abstention": {
+      "numerator": 11,
+      "denominator": 30,
+      "value": 0.36666666666666664
+    },
+    "supported_noncompletion": {
+      "numerator": 19,
+      "denominator": 30,
+      "value": 0.6333333333333333
+    },
+    "validation_blocked_supported": {
+      "numerator": 10,
+      "denominator": 30,
+      "value": 0.3333333333333333
+    },
+    "repair_recovery": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "overall_task_success_rate": {
+      "numerator": 20,
+      "denominator": 40,
+      "value": 0.5,
+      "status": "MEASURABLE"
+    },
+    "strict_result_exact_match_optional": {
+      "numerator": 2,
+      "denominator": 30,
+      "value": 0.06666666666666667
+    },
+    "unsafe_execution_count": {
+      "count": 0,
+      "target": 0,
+      "passed": true
+    },
+    "provider_network_failure_count": {
+      "count": 0,
+      "interpret_as_semantic_refusal": false
+    },
+    "schema_selector_raw_recall_at_5": {
+      "numerator": 41,
+      "denominator": 41,
+      "value": 1.0,
+      "applicable_cases": 30,
+      "status": "MEASURABLE"
+    },
+    "latency_ms": {
+      "p50_nearest_rank": 8558.545,
+      "p95_nearest_rank": 28734.298,
+      "sample_count": 40,
+      "denominator": 40
+    },
+    "provider_calls": {
+      "sql_generation_provider_submissions": 62,
+      "metric_interpretation_provider_submissions": 8,
+      "schema_selection_provider_requests": 40,
+      "local_codex_fallback_calls": 8,
+      "total_model_calls": 118,
+      "secondary_sql_provider_fallback_submissions": 31
+    },
+    "pipeline_calls": {
+      "approved_repository_execution": 17,
+      "approved_repository_execution_attempts": 17,
+      "fixed_compilation_calls": 40,
+      "fixed_compiler_matches": 0,
+      "fixed_compiler_plans": 0,
+      "fixed_match_calls": 40,
+      "general_sql_generation": 62,
+      "intent_interpretation": 0,
+      "inventory_compilation_calls": 5,
+      "inventory_compiler_plans": 5,
+      "local_codex_fallback_calls": 8,
+      "metric_interpretation": 8,
+      "provider_fallback_calls": 31,
+      "repository_execution": 17,
+      "repository_execution_attempts": 17,
+      "schema_discovery": 40,
+      "schema_selection": 40,
+      "schema_selector_attempts": 40,
+      "schema_selector_successes": 39,
+      "sql_generation_entries": 31,
+      "sql_repair": 7,
+      "unverified_repository_execution": 0,
+      "unverified_repository_execution_attempts": 0
+    },
+    "independent_semantic_audit_accuracy": {
+      "numerator": 11,
+      "denominator": 16,
+      "value": 0.6875,
+      "status": "MEASURABLE"
+    },
+    "independent_semantic_audit_coverage": {
+      "numerator": 16,
+      "denominator": 30,
+      "value": 0.5333333333333333,
+      "status": "MEASURABLE"
+    },
+    "semantic_audit_unresolved": {
+      "count": 14,
+      "denominator": 30,
+      "decisions": {
+        "REVIEW_REQUIRED": 0,
+        "INDETERMINATE": 14
+      }
+    },
+    "output_contract_compliance": {
+      "numerator": 12,
+      "denominator": 15,
+      "value": 0.8,
+      "status": "MEASURABLE"
+    },
+    "business_result_review_required": {
+      "count": 0,
+      "denominator": 15
+    },
+    "output_contract_review_required": {
+      "count": 0,
+      "denominator": 15
+    },
+    "business_end_to_end_review_required": {
+      "count": 0,
+      "denominator": 30
+    },
+    "business_end_to_end_failed": {
+      "count": 19,
+      "denominator": 30
+    },
+    "additional_output_safety_review": {
+      "pass": 0,
+      "fail": 0,
+      "review_required": 3,
+      "denominator": 3
+    },
+    "business_end_to_end_accuracy": {
+      "numerator": 11,
+      "denominator": 30,
+      "value": 0.36666666666666664,
+      "status": "MEASURABLE"
+    }
+  },
+  "applicability": {
+    "supported_attempts": 30,
+    "unsupported_attempts": 10,
+    "executed_supported": 15,
+    "repaired_supported": 0
+  },
+  "case_comparisons": {
+    "B40-001": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": true,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "month": "month",
+        "traffic_source": "traffic_source",
+        "sessions": "sessions"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 48,
+        "actual_rows": 48,
+        "matched_rows": 48,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-002": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "month": "month",
+        "avg_delivery_time": "average_delivery_days",
+        "missing_delivery_count": "missing_delivery_date_count"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 12,
+        "actual_rows": 12,
+        "matched_rows": 12,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-003": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": true,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "month": "month",
+        "return_count": "return_count"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 11,
+        "actual_rows": 11,
+        "matched_rows": 11,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-004": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": true,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "month": "month",
+        "average_order_value": "average_order_value"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 12,
+        "actual_rows": 12,
+        "matched_rows": 12,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-005": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-006": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": true,
+      "strict_rows_match": true,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "customer_count": "customer_count"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 1,
+        "actual_rows": 1,
+        "matched_rows": 1,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-007": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-008": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "return_reason": "return_reason",
+        "total_refund_amount": "refund_amount"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 3,
+        "actual_rows": 3,
+        "matched_rows": 3,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-009": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-010": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": true,
+      "strict_rows_match": true,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "order_count": "order_count"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 1,
+        "actual_rows": 1,
+        "matched_rows": 1,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-011": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "FAIL",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_failed",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-012": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-013": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "FAIL",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [
+        "unexpected_extra_columns"
+      ],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [
+        "snapshot_date"
+      ],
+      "unexpected_extra_columns": [
+        "snapshot_date"
+      ],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "segment": "segment",
+        "units_received": "units_received"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 5,
+        "actual_rows": 5,
+        "matched_rows": 5,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": true,
+      "ordered_rows_match": true,
+      "semantic_audit_decision": "FAIL",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "additional_output_safety_review_required"
+        ],
+        "columns": {
+          "snapshot_date": {
+            "decision": "REVIEW_REQUIRED",
+            "reason_codes": [
+              "additional_output_safety_review_required"
+            ],
+            "auditor_id": "Codex AI-assisted output safety reviewer",
+            "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring",
+            "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+            "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+            "checks": {
+              "business_fields_unchanged": {
+                "passed": true,
+                "evidence": "The scorer verified required-field row values."
+              },
+              "row_cardinality_preserved": {
+                "passed": true,
+                "evidence": "Matching required-field rows establish cardinality."
+              },
+              "grain_and_population_preserved": {
+                "passed": false,
+                "evidence": "Grain and population equivalence for this unapproved output is not certified."
+              },
+              "metric_and_aggregation_unchanged": {
+                "passed": false,
+                "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+              },
+              "meaning_not_misleading": {
+                "passed": false,
+                "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+              },
+              "no_sensitive_data": {
+                "passed": true,
+                "evidence": "The observed snapshot_date projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+              },
+              "access_authorized": {
+                "passed": true,
+                "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+              }
+            },
+            "authenticated": false
+          }
+        },
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "independent_sql_semantic_audit_failed",
+          "additional_output_safety_review_required"
+        ]
+      }
+    },
+    "B40-014": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-015": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-016": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "city": "city",
+        "total_return_quantity": "returned_units"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 14,
+        "actual_rows": 14,
+        "matched_rows": 14,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-017": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "product_id": "product_id",
+        "total_returned_quantity": "returned_units"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 60,
+        "actual_rows": 60,
+        "matched_rows": 60,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-018": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-019": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "payment_method": "payment_method",
+        "total_payment_value": "payment_value"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 5,
+        "actual_rows": 5,
+        "matched_rows": 5,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "FAIL",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "independent_sql_semantic_audit_failed"
+        ]
+      }
+    },
+    "B40-020": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "city": "city",
+        "avg_shipping_fee": "average_shipping_fee",
+        "non_null_shipping_fee_count": "fee_observation_count"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 14,
+        "actual_rows": 14,
+        "matched_rows": 14,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-021": {
+      "business_result_decision": "FAIL",
+      "output_contract_decision": "FAIL",
+      "business_result_reason_codes": [
+        "missing_required_columns"
+      ],
+      "output_contract_reason_codes": [
+        "missing_required_columns",
+        "unexpected_extra_columns"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "missing_columns": [
+        "stockout_product_count"
+      ],
+      "duplicate_required_columns": [],
+      "extra_columns": [
+        "snapshot_date",
+        "observed_product_count"
+      ],
+      "unexpected_extra_columns": [
+        "snapshot_date",
+        "observed_product_count"
+      ],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "category": "category"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 4,
+        "actual_rows": 0,
+        "matched_rows": 0,
+        "missing_rows": 4,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "FAIL",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "additional_output_safety_review_required"
+        ],
+        "columns": {
+          "snapshot_date": {
+            "decision": "REVIEW_REQUIRED",
+            "reason_codes": [
+              "additional_output_safety_review_required"
+            ],
+            "auditor_id": "Codex AI-assisted output safety reviewer",
+            "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring",
+            "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+            "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+            "checks": {
+              "business_fields_unchanged": {
+                "passed": false,
+                "evidence": "The scorer did not verify the required-field row values."
+              },
+              "row_cardinality_preserved": {
+                "passed": false,
+                "evidence": "Required-field row equivalence is unresolved."
+              },
+              "grain_and_population_preserved": {
+                "passed": false,
+                "evidence": "Grain and population equivalence for this unapproved output is not certified."
+              },
+              "metric_and_aggregation_unchanged": {
+                "passed": false,
+                "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+              },
+              "meaning_not_misleading": {
+                "passed": false,
+                "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+              },
+              "no_sensitive_data": {
+                "passed": true,
+                "evidence": "The observed snapshot_date projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+              },
+              "access_authorized": {
+                "passed": true,
+                "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+              }
+            },
+            "authenticated": false
+          },
+          "observed_product_count": {
+            "decision": "REVIEW_REQUIRED",
+            "reason_codes": [
+              "additional_output_safety_review_required"
+            ],
+            "auditor_id": "Codex AI-assisted output safety reviewer",
+            "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring",
+            "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+            "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+            "checks": {
+              "business_fields_unchanged": {
+                "passed": false,
+                "evidence": "The scorer did not verify the required-field row values."
+              },
+              "row_cardinality_preserved": {
+                "passed": false,
+                "evidence": "Required-field row equivalence is unresolved."
+              },
+              "grain_and_population_preserved": {
+                "passed": false,
+                "evidence": "Grain and population equivalence for this unapproved output is not certified."
+              },
+              "metric_and_aggregation_unchanged": {
+                "passed": false,
+                "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+              },
+              "meaning_not_misleading": {
+                "passed": false,
+                "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+              },
+              "no_sensitive_data": {
+                "passed": true,
+                "evidence": "The observed observed_product_count projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+              },
+              "access_authorized": {
+                "passed": true,
+                "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+              }
+            },
+            "authenticated": false
+          }
+        },
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "independent_sql_semantic_audit_failed",
+          "business_result_mismatch",
+          "material_output_contract_violation",
+          "additional_output_safety_review_required"
+        ]
+      }
+    },
+    "B40-022": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-023": {
+      "business_result_decision": "FAIL",
+      "output_contract_decision": "FAIL",
+      "business_result_reason_codes": [
+        "missing_required_columns"
+      ],
+      "output_contract_reason_codes": [
+        "missing_required_columns",
+        "unexpected_extra_columns"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "missing_columns": [
+        "stock_before",
+        "stock_after",
+        "stock_delta"
+      ],
+      "duplicate_required_columns": [],
+      "extra_columns": [
+        "snapshot_date",
+        "stock_on_hand"
+      ],
+      "unexpected_extra_columns": [
+        "snapshot_date",
+        "stock_on_hand"
+      ],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "product_id": "product_id"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 97,
+        "actual_rows": 0,
+        "matched_rows": 0,
+        "missing_rows": 97,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "FAIL",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "additional_output_safety_review_required"
+        ],
+        "columns": {
+          "snapshot_date": {
+            "decision": "REVIEW_REQUIRED",
+            "reason_codes": [
+              "additional_output_safety_review_required"
+            ],
+            "auditor_id": "Codex AI-assisted output safety reviewer",
+            "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring",
+            "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+            "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+            "checks": {
+              "business_fields_unchanged": {
+                "passed": false,
+                "evidence": "The scorer did not verify the required-field row values."
+              },
+              "row_cardinality_preserved": {
+                "passed": false,
+                "evidence": "Required-field row equivalence is unresolved."
+              },
+              "grain_and_population_preserved": {
+                "passed": false,
+                "evidence": "Grain and population equivalence for this unapproved output is not certified."
+              },
+              "metric_and_aggregation_unchanged": {
+                "passed": false,
+                "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+              },
+              "meaning_not_misleading": {
+                "passed": false,
+                "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+              },
+              "no_sensitive_data": {
+                "passed": true,
+                "evidence": "The observed snapshot_date projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+              },
+              "access_authorized": {
+                "passed": true,
+                "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+              }
+            },
+            "authenticated": false
+          },
+          "stock_on_hand": {
+            "decision": "REVIEW_REQUIRED",
+            "reason_codes": [
+              "additional_output_safety_review_required"
+            ],
+            "auditor_id": "Codex AI-assisted output safety reviewer",
+            "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring",
+            "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+            "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+            "checks": {
+              "business_fields_unchanged": {
+                "passed": false,
+                "evidence": "The scorer did not verify the required-field row values."
+              },
+              "row_cardinality_preserved": {
+                "passed": false,
+                "evidence": "Required-field row equivalence is unresolved."
+              },
+              "grain_and_population_preserved": {
+                "passed": false,
+                "evidence": "Grain and population equivalence for this unapproved output is not certified."
+              },
+              "metric_and_aggregation_unchanged": {
+                "passed": false,
+                "evidence": "Metric and aggregation equivalence for this unapproved output is not certified."
+              },
+              "meaning_not_misleading": {
+                "passed": false,
+                "evidence": "The frozen output contract does not recognize this projection as a required field or approved alias."
+              },
+              "no_sensitive_data": {
+                "passed": true,
+                "evidence": "The observed stock_on_hand projection contains an operational date, count, inventory quantity or aggregate, with no customer contact fields."
+              },
+              "access_authorized": {
+                "passed": true,
+                "evidence": "The read-only Commerce repository recorded a successful security-validated query."
+              }
+            },
+            "authenticated": false
+          }
+        },
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "independent_sql_semantic_audit_failed",
+          "business_result_mismatch",
+          "material_output_contract_violation",
+          "additional_output_safety_review_required"
+        ]
+      }
+    },
+    "B40-024": {
+      "business_result_decision": "PASS",
+      "output_contract_decision": "PASS",
+      "business_result_reason_codes": [],
+      "output_contract_reason_codes": [],
+      "business_rows_match": true,
+      "business_schema_match": true,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "missing_columns": [],
+      "duplicate_required_columns": [],
+      "extra_columns": [],
+      "unexpected_extra_columns": [],
+      "provenance_mismatches": [],
+      "canonical_column_mapping": {
+        "snapshot_date": "snapshot_date",
+        "stock_on_hand": "observed_stock_total"
+      },
+      "row_matching": {
+        "mode": "multiset",
+        "expected_rows": 3,
+        "actual_rows": 3,
+        "matched_rows": 3,
+        "missing_rows": 0,
+        "extra_rows": 0,
+        "mismatched_row_indexes": []
+      },
+      "ordered": false,
+      "ordered_rows_match": null,
+      "semantic_audit_decision": "PASS",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "PASS",
+        "reason_codes": [
+          "business_semantics_and_essential_output_requirements_passed"
+        ]
+      }
+    },
+    "B40-025": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-026": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-027": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-028": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-029": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "REVIEW_REQUIRED",
+        "reason_codes": [
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing"
+        ]
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "execution_security_evidence_missing",
+          "approved_execution_event_missing",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    },
+    "B40-030": {
+      "business_result_decision": "REVIEW_REQUIRED",
+      "output_contract_decision": "REVIEW_REQUIRED",
+      "business_result_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "output_contract_reason_codes": [
+        "observed_columns_missing_or_invalid"
+      ],
+      "business_rows_match": false,
+      "business_schema_match": false,
+      "strict_schema_match": false,
+      "strict_rows_match": false,
+      "row_matching": {
+        "mode": "unavailable"
+      },
+      "semantic_audit_decision": "INDETERMINATE",
+      "execution_safety": {
+        "decision": "PASS",
+        "reason_codes": [
+          "read_only_security_validation_passed"
+        ],
+        "validated_execution_events": 1
+      },
+      "additional_output_safety": {
+        "decision": "NOT_REQUIRED",
+        "reason_codes": [
+          "no_unapproved_additional_columns"
+        ],
+        "columns": {},
+        "authenticated": false
+      },
+      "business_end_to_end": {
+        "decision": "FAIL",
+        "reason_codes": [
+          "supported_sql_not_successfully_executed",
+          "independent_sql_semantic_audit_unresolved",
+          "business_result_unresolved",
+          "essential_output_contract_unresolved"
+        ]
+      }
+    }
+  },
+  "semantic_audits": {
+    "B40-001": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-002": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-003": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-004": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-005": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "INDETERMINATE",
+        "evidence": [
+          "sql_parse_error:TypeError"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-006": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-007": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-008": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-009": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-010": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-011": {
+      "decision": "FAIL",
+      "reason_codes": [
+        "ranking_key_0_mismatch"
+      ],
+      "ranking_check": {
+        "decision": "FAIL",
+        "evidence": [
+          "ranking_key_0_mismatch"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-012": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "INDETERMINATE",
+        "evidence": [
+          "sql_parse_error:TypeError"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-013": {
+      "decision": "FAIL",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "REVIEW_REQUIRED",
+        "evidence": [
+          "ranking_expression_0_needs_semantic_review"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-014": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "INDETERMINATE",
+        "evidence": [
+          "sql_parse_error:TypeError"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-015": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "INDETERMINATE",
+        "evidence": [
+          "sql_parse_error:TypeError"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-016": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-017": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-018": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-019": {
+      "decision": "FAIL",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-020": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-021": {
+      "decision": "FAIL",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-022": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-023": {
+      "decision": "FAIL",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-024": {
+      "decision": "PASS",
+      "reason_codes": [],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring"
+    },
+    "B40-025": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-026": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-027": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-028": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "NOT_REQUIRED",
+        "evidence": [
+          "row_order_is_not_semantic"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-029": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "INDETERMINATE",
+        "evidence": [
+          "sql_parse_error:TypeError"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    },
+    "B40-030": {
+      "decision": "INDETERMINATE",
+      "reason_codes": [
+        "audit_record_missing"
+      ],
+      "ranking_check": {
+        "decision": "INDETERMINATE",
+        "evidence": [
+          "sql_parse_error:TypeError"
+        ]
+      },
+      "auditor_id": null,
+      "auditor_version": null
+    }
+  },
+  "semantic_audit_policy": {
+    "agent_sql_semantic_valid_accepted": false,
+    "required_linkage": [
+      "case_id",
+      "sql_sha256",
+      "parameters_sha256",
+      "case_contract_sha256",
+      "case_set_sha256"
+    ],
+    "business_end_to_end_requires_audit_pass": true
+  },
+  "result_comparison_policy": {
+    "column_position_is_ignored": true,
+    "approved_aliases_are_accepted": true,
+    "projection_lineage_requires_identical_resolved_expression": true,
+    "fuzzy_column_mapping": false,
+    "extra_columns_affect_business_result_accuracy": false,
+    "extra_columns_affect_output_contract_compliance": true,
+    "unordered_rows_use_duplicate_preserving_multiset_matching": true,
+    "ordered_rows_require_position_match": true,
+    "business_end_to_end_requires_output_contract_compliance": false,
+    "extra_columns_require_linked_safety_review_for_business_end_to_end": true,
+    "extra_column_review_is_authenticated": false,
+    "missing_or_unresolved_extra_column_safety_evidence": "REVIEW_REQUIRED"
+  },
+  "business_end_to_end_policy": {
+    "requires_successful_execution": true,
+    "requires_linked_independent_sql_semantic_audit_pass": true,
+    "requires_business_result_pass": true,
+    "requires_runner_security_validation": true,
+    "requires_zero_unsafe_execution_count": true,
+    "essential_output_requirements_remain_mandatory": true,
+    "only_deviation_eligible_for_review_override": "unexpected_extra_columns",
+    "extra_columns_require_one_linked_safety_audit_each": true,
+    "unresolved_or_ambiguous_safety_evidence": "REVIEW_REQUIRED",
+    "safety_audit_authenticated": false
+  },
+  "official_v3_3_metrics": {
+    "supported_business_end_to_end_accuracy": {
+      "numerator": 7,
+      "denominator": 30,
+      "value": 0.23333333333333334,
+      "status": "MEASURABLE"
+    },
+    "sql_semantic_accuracy": {
+      "numerator": 11,
+      "denominator": 30,
+      "value": 0.36666666666666664,
+      "status": "MEASURABLE"
+    },
+    "business_result_accuracy": {
+      "numerator": 9,
+      "denominator": 15,
+      "value": 0.6,
+      "status": "MEASURABLE"
+    },
+    "supported_execution_success": {
+      "numerator": 15,
+      "denominator": 30,
+      "value": 0.5
+    },
+    "valid_clarification_abstention": {
+      "numerator": 9,
+      "denominator": 10,
+      "value": 0.9
+    },
+    "false_clarification_abstention": {
+      "numerator": 11,
+      "denominator": 30,
+      "value": 0.36666666666666664
+    },
+    "supported_noncompletion": {
+      "numerator": 19,
+      "denominator": 30,
+      "value": 0.6333333333333333
+    },
+    "validation_blocked_supported": {
+      "numerator": 10,
+      "denominator": 30,
+      "value": 0.3333333333333333
+    },
+    "repair_recovery": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "overall_task_success_rate": {
+      "numerator": 16,
+      "denominator": 40,
+      "value": 0.4,
+      "status": "MEASURABLE"
+    },
+    "strict_result_exact_match_optional": {
+      "numerator": 2,
+      "denominator": 30,
+      "value": 0.06666666666666667
+    },
+    "unsafe_execution_count": {
+      "count": 0,
+      "target": 0,
+      "passed": true
+    },
+    "provider_network_failure_count": {
+      "count": 0,
+      "interpret_as_semantic_refusal": false
+    },
+    "schema_selector_raw_recall_at_5": {
+      "numerator": 41,
+      "denominator": 41,
+      "value": 1.0,
+      "applicable_cases": 30,
+      "status": "MEASURABLE"
+    },
+    "latency_ms": {
+      "p50_nearest_rank": 8558.545,
+      "p95_nearest_rank": 28734.298,
+      "sample_count": 40,
+      "denominator": 40
+    },
+    "provider_calls": {
+      "sql_generation_provider_submissions": 62,
+      "metric_interpretation_provider_submissions": 8,
+      "schema_selection_provider_requests": 40,
+      "local_codex_fallback_calls": 8,
+      "total_model_calls": 118,
+      "secondary_sql_provider_fallback_submissions": 31
+    },
+    "pipeline_calls": {
+      "approved_repository_execution": 17,
+      "approved_repository_execution_attempts": 17,
+      "fixed_compilation_calls": 40,
+      "fixed_compiler_matches": 0,
+      "fixed_compiler_plans": 0,
+      "fixed_match_calls": 40,
+      "general_sql_generation": 62,
+      "intent_interpretation": 0,
+      "inventory_compilation_calls": 5,
+      "inventory_compiler_plans": 5,
+      "local_codex_fallback_calls": 8,
+      "metric_interpretation": 8,
+      "provider_fallback_calls": 31,
+      "repository_execution": 17,
+      "repository_execution_attempts": 17,
+      "schema_discovery": 40,
+      "schema_selection": 40,
+      "schema_selector_attempts": 40,
+      "schema_selector_successes": 39,
+      "sql_generation_entries": 31,
+      "sql_repair": 7,
+      "unverified_repository_execution": 0,
+      "unverified_repository_execution_attempts": 0
+    },
+    "independent_semantic_audit_accuracy": {
+      "numerator": 11,
+      "denominator": 16,
+      "value": 0.6875,
+      "status": "MEASURABLE"
+    },
+    "independent_semantic_audit_coverage": {
+      "numerator": 16,
+      "denominator": 30,
+      "value": 0.5333333333333333,
+      "status": "MEASURABLE"
+    },
+    "semantic_audit_unresolved": {
+      "count": 14,
+      "denominator": 30,
+      "decisions": {
+        "REVIEW_REQUIRED": 0,
+        "INDETERMINATE": 14
+      }
+    },
+    "output_contract_compliance": {
+      "numerator": 11,
+      "denominator": 15,
+      "value": 0.7333333333333333,
+      "status": "MEASURABLE"
+    },
+    "business_result_review_required": {
+      "count": 0,
+      "denominator": 15
+    },
+    "output_contract_review_required": {
+      "count": 0,
+      "denominator": 15
+    },
+    "business_end_to_end_review_required": {
+      "count": 0,
+      "denominator": 30
+    },
+    "business_end_to_end_failed": {
+      "count": 23,
+      "denominator": 30
+    },
+    "additional_output_safety_review": {
+      "pass": 0,
+      "fail": 0,
+      "review_required": 4,
+      "denominator": 4
+    },
+    "business_end_to_end_accuracy": {
+      "numerator": 7,
+      "denominator": 30,
+      "value": 0.23333333333333334,
+      "status": "MEASURABLE"
+    }
+  },
+  "formatting_changes": {
+    "B40-001": {
+      "normalized_month_starts": true,
+      "reviewed_aliases": {}
+    },
+    "B40-002": {
+      "normalized_month_starts": true,
+      "reviewed_aliases": {
+        "avg_delivery_time": "average_delivery_days"
+      }
+    },
+    "B40-003": {
+      "normalized_month_starts": true,
+      "reviewed_aliases": {}
+    },
+    "B40-004": {
+      "normalized_month_starts": true,
+      "reviewed_aliases": {}
+    }
+  },
+  "scoring_input_hashes": {
+    "observations": "3a4cfc293a9f221ba5b35042dbdb2be0dbe40ac1f5f32465c45d43f63ce4c7bf",
+    "cases": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+    "reference": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84",
+    "semantic_audits": "e96df41a517e3edbded25032991765daedeb9c50de1760425b66883e65a1c0ed",
+    "output_safety_audits": "7e83063e75a25e2c648c409526b6212aec818f2a5d61acd67f9323c154691edb",
+    "alias_reviews": "6dd5dba5e7c81834ce5080bdc00fbfbe0ec1ee61c8470174dff54d2b35bcb134",
+    "scorer_v3_3": "09736cff9ea4cb5edf40e470a0c1692c40b61f57e290e2384493e2f60c2a68f4",
+    "scorer_v3_4": "f73033153fca5c20e2522ffb350baa68807e9a39e95f940a046b9343068c0f20"
+  }
+}

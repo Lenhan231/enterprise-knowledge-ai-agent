@@ -1,0 +1,32 @@
+{
+  "raw_observations_sha256": "0bee923061578cf0fc718b92fc4ee45391aa6ee103b93d172aba7622e8edf6e8",
+  "reviews": [
+    {
+      "case_id": "B40-003",
+      "query_sha256": "f4a024335b26934becd72598c74847868762a2d3d71cf5272dbcd565c1d37a16",
+      "aliases": {
+        "return_records": "return_count"
+      },
+      "evidence": "COUNT(*) is equivalent to distinct return_id at the one-row-per-return primary-key grain. All 11 returned rows match after alias and UTC month-start alignment."
+    },
+    {
+      "case_id": "B40-022",
+      "query_sha256": "46f48cf709ca091012763ede47029e32c925f63d471d210cfc91b24e4b1dd53b",
+      "aliases": {
+        "with_days_of_supply": "products_with_days_of_supply",
+        "without_days_of_supply": "products_without_days_of_supply"
+      },
+      "evidence": "Distinct product IDs per snapshot are the inventory key. The CASE counts match the requested non-NULL and NULL counts across all 47 snapshot rows."
+    },
+    {
+      "case_id": "B40-023",
+      "query_sha256": "020479429ada8c06356138aa4de03de272e090f3be8a3be3bfa5a96c733acaf5",
+      "aliases": {
+        "before": "stock_before",
+        "after": "stock_after",
+        "diff": "stock_delta"
+      },
+      "evidence": "The exact-date CTEs return the requested beginning and ending stock balances with after minus before for the same product. The 97 required-field rows match. Date columns remain extra outputs."
+    }
+  ]
+}

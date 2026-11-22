@@ -1,0 +1,120 @@
+{
+  "format_version": "sql-semantic-audit-decisions.v1",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+  "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring",
+  "decisions": [
+    {
+      "case_id": "B40-001",
+      "decision": "PASS",
+      "evidence": [
+        "The half-open 2024 interval, sum of sessions, and grouping by calendar month and traffic source match the contract."
+      ]
+    },
+    {
+      "case_id": "B40-002",
+      "decision": "PASS",
+      "evidence": [
+        "The query filters 2025 ship dates, averages per-shipment delivery minus ship date with NULL delivery dates excluded, and separately counts missing deliveries by ship month."
+      ]
+    },
+    {
+      "case_id": "B40-003",
+      "decision": "PASS",
+      "evidence": [
+        "Returns have one row per non-null return_id, so counting that key matches the requested return records for each month in 2025."
+      ]
+    },
+    {
+      "case_id": "B40-004",
+      "decision": "PASS",
+      "evidence": [
+        "The query divides net item revenue by distinct delivered orders with line items in each calendar month of 2025."
+      ]
+    },
+    {
+      "case_id": "B40-006",
+      "decision": "PASS",
+      "evidence": [
+        "The 2024 signup interval, exact age and city filters, and many-to-one ZIP lookup preserve one counted row per customer."
+      ]
+    },
+    {
+      "case_id": "B40-008",
+      "decision": "PASS",
+      "evidence": [
+        "The query filters non-NULL return reasons in calendar 2024 and groups refund_amount by reason."
+      ]
+    },
+    {
+      "case_id": "B40-010",
+      "decision": "PASS",
+      "evidence": [
+        "The query counts one row per order for the exact paid_search, mobile and 2025 population."
+      ]
+    },
+    {
+      "case_id": "B40-011",
+      "decision": "PASS",
+      "evidence": [
+        "The query ranks the listed products.cogs field descending and breaks ties by ascending product ID. The repository ranking validation rejected this equivalent source expression before execution."
+      ]
+    },
+    {
+      "case_id": "B40-013",
+      "decision": "FAIL",
+      "evidence": [
+        "The query groups by the catalog products segment rather than the segment recorded for each inventory snapshot row."
+      ]
+    },
+    {
+      "case_id": "B40-016",
+      "decision": "PASS",
+      "evidence": [
+        "The query uses the return_date scope in 2025 and sums return quantity by the destination city reached through order ZIP."
+      ]
+    },
+    {
+      "case_id": "B40-017",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums return_quantity by product for the full 2023?2025 interval with no year grouping."
+      ]
+    },
+    {
+      "case_id": "B40-019",
+      "decision": "FAIL",
+      "evidence": [
+        "The requested breakdown is by payments.payment_method on payment fact rows. The query groups by orders.payment_method, which can disagree with the recorded payment method."
+      ]
+    },
+    {
+      "case_id": "B40-020",
+      "decision": "PASS",
+      "evidence": [
+        "The shipment date is restricted to 2025, the city is the order destination, and AVG and COUNT both use recorded non-NULL fees."
+      ]
+    },
+    {
+      "case_id": "B40-021",
+      "decision": "FAIL",
+      "evidence": [
+        "The query uses the current catalog category and filters stockout_flag before grouping, so both label provenance and retention of zero-count categories differ from the contract."
+      ]
+    },
+    {
+      "case_id": "B40-023",
+      "decision": "FAIL",
+      "evidence": [
+        "The query returns individual observations across a period and omits the inner intersection of products, before/after balances, and after-minus-before delta."
+      ]
+    },
+    {
+      "case_id": "B40-024",
+      "decision": "PASS",
+      "evidence": [
+        "The half-open range and per-snapshot grouping preserve the requested dates and prevent cross-date summation. The catalog join is many-to-one through the inventory product foreign key."
+      ]
+    }
+  ]
+}

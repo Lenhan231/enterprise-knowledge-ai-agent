@@ -10,16 +10,12 @@ from core.models.agents import ChartSpec, ChartSeries
 
 SNAPSHOT_SQL = 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i LIMIT 1'
 OVERVIEW_QUERIES = {
-    'stock': """WITH ranked AS (
-        SELECT i.product_id, p.product_name, i.stock_on_hand,
-        RANK() OVER (ORDER BY i.stock_on_hand DESC NULLS LAST, i.product_id) AS position
+    'stock': """SELECT p.category AS category,
+        CASE WHEN COUNT(i.stock_on_hand) = COUNT(*) THEN SUM(i.stock_on_hand) END AS stock_on_hand,
+        COUNT(*) FILTER (WHERE i.stock_on_hand IS NULL OR i.stock_on_hand < 0) AS invalid_balances
         FROM commerce.inventory AS i LEFT JOIN commerce.products AS p ON i.product_id = p.product_id
-        WHERE i.snapshot_date = $1)
-        SELECT CASE WHEN r.position <= 5 THEN r.product_id END AS product_id,
-        CASE WHEN r.position <= 5 THEN r.product_name ELSE 'Other products' END AS product_name,
-        CASE WHEN COUNT(r.stock_on_hand) = COUNT(*) THEN SUM(r.stock_on_hand) END AS stock_on_hand,
-        COUNT(*) FILTER (WHERE r.stock_on_hand IS NULL OR r.stock_on_hand < 0) AS invalid_balances
-        FROM ranked AS r GROUP BY 1, 2 ORDER BY stock_on_hand DESC NULLS LAST, product_id LIMIT 6""",
+        WHERE i.snapshot_date = $1 GROUP BY p.category
+        ORDER BY stock_on_hand DESC NULLS LAST, p.category LIMIT 50""",
     'purchases': """SELECT p.category AS category, SUM(oi.quantity) AS units_purchased
         FROM commerce.order_items AS oi JOIN commerce.orders AS o ON oi.order_id = o.order_id
         LEFT JOIN commerce.products AS p ON oi.product_id = p.product_id
@@ -33,12 +29,12 @@ OVERVIEW_QUERIES = {
 async def build_overview(agent, request):
     SQLAnalyticsAgent._authorize(request)
     specs = [QuerySpec(id=key, question=question) for key, question in (
-        ('stock', 'Top five products by stock on hand at the latest observed snapshot, with all remaining products grouped as Other products.'),
+        ('stock', 'Stock on hand by product category at the latest observed snapshot.'),
         ('purchases', 'Top ten categories by delivered item quantity across available order history.'),
         ('sales', 'Company revenue for the latest twelve observed calendar months; source currency is unconfirmed.'))]
     tiles = [TileSpec(id=key, query_id=key, title=title, kind=kind, dimension=dimension, measures=[measure], span=span)
              for key, title, kind, dimension, measure, span in (
-        ('stock', 'Product stock share', 'donut', 'product_name', 'stock_on_hand', 1),
+        ('stock', 'Stock by category', 'donut', 'category', 'stock_on_hand', 1),
         ('purchases', 'What customers buy most', 'bar', 'category', 'units_purchased', 1),
         ('sales', 'Monthly company revenue', 'line', 'month', 'revenue', 2))]
     snapshot, snapshot_error = None, None
@@ -75,10 +71,9 @@ async def build_overview(agent, request):
                 raise ValueError('No numeric observations are available for this source.')
             if spec.id == 'stock' and (any(value is None or value < 0 for value in values) or sum(values) <= 0):
                 raise ValueError('Stock shares require known, nonnegative balances and a positive total; no share can be inferred for this snapshot.')
-            if spec.id == 'stock':
-                labels = [f"{row.get('product_name') or 'Product'} (#{row['product_id']})" if row['product_id'] is not None else 'Other products' for row in rows]
-            else:
-                labels = [str(row.get(tile.dimension)) if row.get(tile.dimension) is not None else 'Unknown category' for row in rows]
+            if spec.id == 'stock' and len(rows) == 50:
+                raise ValueError('Stock shares need every category, and the snapshot has more categories than one chart can show.')
+            labels = [str(row.get(tile.dimension)) if row.get(tile.dimension) is not None else 'Unknown category' for row in rows]
             chart = ChartSpec(type=tile.kind, title=tile.title, categories=labels,
                 series=[ChartSeries(name=tile.measures[0].replace('_', ' ').title(), values=values)],
                 unit=unit, x_label=tile.dimension, y_label=unit, temporal=spec.id == 'sales')

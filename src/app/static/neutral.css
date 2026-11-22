@@ -436,3 +436,54 @@ html #home-overview-preview { height: 1000px; }
 /* Access matrix header: one band (the Role cell had its own grey), labels centred on one line height and wrapped evenly */
 :root .tab-panel .access-table thead th, :root .tab-panel .access-table thead th:first-child { background: var(--surface-2); vertical-align: middle; text-wrap: balance; height: 72px; padding-top: 10px; padding-bottom: 10px; }
 :root .tab-panel .access-table tbody tr:last-child > * { border-bottom: 0; }
+
+/* Wide screens: home, dashboards and chat use the full width; other pages keep the centred 1440px layout */
+:root #workspace-main.page:has(#workspace-home:not([hidden])),:root #workspace-main.page:has(#tab-dashboard:not([hidden])),:root #workspace-main.page:has(#tab-general-chat:not([hidden])){max-width:none}
+@media(min-width:1200px){:root .general-chat{width:100%}}
+:root .dashboard-workspace{max-width:none}
+/* wider charts are taller: give the embedded dashboards room so the last tile is not cut off */
+@media(min-width:1700px){html #home-overview-preview{height:1400px}html #dw-preview{height:1550px}}
+/* Chat on wide screens: the conversation is a column centred on the whole page; the sources column keeps the right edge.
+   Tracks: free space | conversation (up to --col) | sources (at least --src). When the page narrows, the left space goes first.
+   The question and composer sit outside the grid, so they repeat the same geometry: --l is the left space, --m the column width. */
+@media(min-width:1200px){
+  :root .general-chat{--src:420px;--col:800px;--l:max(0px,min(calc((100% - var(--col)) / 2),calc(100% - var(--col) - var(--src))));--m:min(var(--col),calc(100% - var(--src)))}
+  :root .general-chat .chat-turn-response{grid-template-columns:minmax(0,1fr) minmax(0,var(--col)) minmax(var(--src),1fr);column-gap:0}
+  :root .general-chat .chat-turn-response>*{grid-column:2}
+  :root .general-chat .chat-turn-response>.citations{grid-column:3;justify-self:end;width:calc(var(--src) - 40px)}
+  :root .general-chat .chat-turn-question{padding-left:var(--l);padding-right:calc(100% - var(--l) - var(--m))}
+  :root .general-chat:has(.chat-turn) .general-chat-composer,:root .general-chat:has(.chat-turn) .general-chat-note{width:var(--m);margin-left:var(--l);margin-right:0}
+}
+@media(min-width:1400px){:root .general-chat{--src:472px}:root .general-chat .chat-turn-response>.citations{width:calc(var(--src) - 72px)}}
+/* Empty chat: the welcome and composer form one compact centred block */
+:root .general-chat:not(:has(.chat-turn)) .general-chat-composer,:root .general-chat:not(:has(.chat-turn)) .general-chat-note,:root .general-chat:not(:has(.chat-turn)) .general-chat-welcome{width:100%;max-width:800px;margin-left:auto;margin-right:auto}
+/* Dashboard assistant: while a new dashboard is being described, heading, saved list and card form one centred 880px column */
+:root .dashboard-workspace:has(#dw-create:not([hidden]))>.dw-heading,:root .dashboard-workspace:has(#dw-create:not([hidden]))>#dw-status,:root .dashboard-workspace:has(#dw-create:not([hidden]))>.dw-layout{max-width:880px;margin-left:auto;margin-right:auto}
+/* Reports: heading, saved list and generate card form one centred column, so wide screens keep no empty right half */
+:root #workspace-main.page:has(#tab-knowledge:not([hidden])){max-width:1240px}
+:root #report-agent-form #report-agent-submit{display:flex;width:auto;min-width:168px;margin-left:auto;padding:0 22px}
+/* Reports: once a report is open, the page widens like a dashboard so tables and charts have room */
+:root #workspace-main.page:has(#tab-knowledge:not([hidden])):has(#rw-editor:not([hidden]),#sales-report-output:not([hidden])){max-width:none}
+/* Reports: a newly shown report rises in part by part instead of appearing all at once */
+@keyframes nReportIn { from { opacity: 0; transform: translateY(32px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  #sales-report-output.n-enter > * { animation: nReportIn .9s cubic-bezier(.16,.84,.3,1) both; animation-timeline: auto; }
+  #sales-report-output.n-enter > :nth-child(2) { animation-delay: 150ms; } #sales-report-output.n-enter > :nth-child(3) { animation-delay: 300ms; }
+  #sales-report-output.n-enter > :nth-child(4) { animation-delay: 450ms; } #sales-report-output.n-enter > :nth-child(5) { animation-delay: 600ms; }
+  #sales-report-output.n-enter > :nth-child(n+6) { animation-delay: 750ms; }
+}
+/* A status message already shown as a toast is hidden on the page but kept for screen readers; progress messages stay visible */
+#dw-status.is-toasted,#report-workspace-status.is-toasted{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* Toasts that are noticed: top centre, larger, an icon and a coloured bar, a draining timer line; errors are tinted red and nudge once */
+#toast-stack { top: 20px; bottom: auto; right: 50%; transform: translateX(50%); justify-items: center; gap: 10px; }
+.toast { position: relative; display: flex; align-items: center; gap: 12px; min-width: min(340px, calc(100vw - 40px)); max-width: min(520px, calc(100vw - 40px)); padding: 14px 20px 16px 16px; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 14px; font-size: 15px; font-weight: 500; box-shadow: 0 18px 48px rgba(15,23,42,.22), 0 2px 6px rgba(15,23,42,.08); pointer-events: auto; cursor: pointer; animation: toastDrop .45s cubic-bezier(.16,1,.3,1) both; }
+.toast::before { content: "\2713"; flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; }
+.toast::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--accent); opacity: .55; transform-origin: left; animation: toastTimer var(--toast-ms, 3200ms) linear both; }
+.toast-error { border-color: color-mix(in srgb, #dc2626 45%, transparent); background: color-mix(in srgb, #dc2626 9%, var(--bg)); color: color-mix(in srgb, #dc2626 70%, var(--ink)); animation: toastDrop .45s cubic-bezier(.16,1,.3,1) both, toastNudge .5s .45s ease-in-out; }
+.toast-error::before { content: "!"; background: #dc2626; }
+.toast-error::after { background: #dc2626; }
+.toast.is-leaving { opacity: 0; transform: translateY(-8px) scale(.98); transition: opacity .35s, transform .35s; }
+@keyframes toastDrop { from { opacity: 0; transform: translateY(-18px) scale(.96); } }
+@keyframes toastNudge { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+@keyframes toastTimer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@media (prefers-reduced-motion: reduce) { .toast, .toast-error, .toast::after { animation: none; } }

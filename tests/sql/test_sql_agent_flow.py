@@ -463,6 +463,70 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(ranking["measure_approval"], "unverified")
         self.assertEqual(result["metadata"]["metric_validation"]["status"], "unverified")
 
+    async def test_customer_count_ignores_ranking_added_by_focused_sql_task(self):
+        ranked = plan(
+            "SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count "
+            "FROM commerce.orders AS o GROUP BY o.customer_id "
+            "ORDER BY order_count DESC LIMIT 1",
+            ranking_contract={
+                "entity": "customer", "measure": {"metric_id": "order_count"},
+                "direction": "desc", "limit": 1, "partition_by": [],
+            },
+        )
+        counted = plan(
+            "SELECT COUNT(DISTINCT o.customer_id) AS customer_count "
+            "FROM commerce.orders AS o WHERE o.customer_id IS NOT NULL LIMIT 1"
+        )
+        repository = FakeRepository()
+        provider = FakeProvider([ranked, counted])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        orders = {"commerce.orders"}
+
+        with patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": set(orders), "required_tables": set(orders), "candidate_tables": set(orders),
+        }):
+            result = await agent.run_payload(AgentRequest(
+                question="Rank customers by purchase count to date",
+                metadata={"_original_question": "tính đến hiện tại có bao nhiêu khách hàng đã mua hàng"},
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        self.assertEqual(repository.execute_approved_query.await_count, 1)
+        self.assertEqual(repository.execute_approved_query.await_args.args[0], json.loads(counted)["sql"])
+        self.assertEqual(result["query_status"], "executed")
+        self.assertNotIn("ranking_validation", result["metadata"])
+
+    async def test_customer_spend_ranking_adds_payment_tables_when_schema_search_picks_invoices(self):
+        sql = (
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON o.order_id=p.order_id "
+            "GROUP BY o.customer_id ORDER BY total_payment DESC, o.customer_id LIMIT 1"
+        )
+        provider = FakeProvider([plan(sql, ranking_contract=PAYMENT_RANKING_CONTRACT)])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": {"commerce.invoices"},
+                "required_tables": {"commerce.invoices"},
+                "candidate_tables": {"commerce.invoices"},
+        }) as select_tables:
+            result = await agent.run_payload(AgentRequest(
+                question="khách hàng chi nhiều tiền nhất từ trước đến nay",
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertTrue(
+            {"commerce.orders", "commerce.payments"} <= select_tables.return_value["required_tables"]
+        )
+        self.assertIn("commerce.payments.payment_value", provider.prompts[-1])
+        self.assertEqual(repository.execute_approved_query.await_count, 1)
+        self.assertEqual(repository.execute_approved_query.await_args.args[0], sql)
+        self.assertEqual(result["query_status"], "executed")
+        self.assertEqual(result["metadata"]["ranking_validation"]["status"], "verified")
+        self.assertEqual(result["metadata"]["ranking_validation"]["measure_approval"], "unverified")
+
     async def test_offset_cannot_skip_top_rank_after_repair(self):
         wrong = plan(
             "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "

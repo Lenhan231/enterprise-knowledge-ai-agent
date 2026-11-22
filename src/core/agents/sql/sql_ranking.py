@@ -159,12 +159,30 @@ def _directions(text: str) -> tuple[bool, bool]:
     return ascending, descending
 
 
+def _customer_spend_requested(text: str) -> bool:
+    return bool(re.search(
+        r"\b(?:paid|pay(?:s|ing)?|payment|spent|spend(?:s|ing)?)\b.*\b(?:money|amount|value)\b|"
+        r"\b(?:money|amount|value)\b.*\b(?:paid|pay(?:s|ing)?|payment|spent|spend(?:s|ing)?)\b|"
+        r"(?:trả|thanh toán|chi tiêu|chi).{0,20}(?:tiền|số tiền|giá trị)|"
+        r"(?:tiền|số tiền|giá trị).{0,20}(?:trả|thanh toán|chi tiêu|chi)",
+        text,
+    ))
+
+
 def _measure_for(text: str, entity: str, metrics: set[str]) -> RankingMeasure | None:
     quantity_ratio = _has_term(text, ("ratio", "rate", "percentage", "percent", "tỷ lệ", "tỉ lệ", "phần trăm"))
     if entity == "promotion" and _has_term(text, ("revenue", "sales", "doanh thu")):
         return RankingMeasure(
             identity="promotion_net_item_revenue", metric_id=None, source="commerce.order_items",
             column=None, calculation="sum_order_item_net", approval_status="unverified",
+        )
+
+    if (entity == "customer" and _customer_spend_requested(text)
+            and not _has_term(text, ("invoice", "invoices", "hóa đơn", "hoá đơn"))):
+        return RankingMeasure(
+            identity="sum:commerce.payments.payment_value", metric_id=None,
+            source="commerce.payments", column="payment_value", calculation="sum_column",
+            approval_status="unverified",
         )
 
     if (not metrics and not quantity_ratio and _has_term(text, ("unit", "units", "quantity", "số lượng"))

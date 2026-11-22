@@ -307,9 +307,26 @@ class SQLRankingValidationTest(unittest.TestCase):
     def setUp(self):
         partial = resolve_ranking_intent(self.question)
         self.assertIsNotNone(partial)
-        self.assertTrue(partial.measure_contract_eligible)
-        self.intent = complete_ranking_intent(partial, self.payment_contract, APPROVED_COLUMNS)
+        self.intent = (complete_ranking_intent(partial, self.payment_contract, APPROVED_COLUMNS)
+                       if partial.measure_contract_eligible else partial)
         self.assertTrue(self.intent.resolved)
+
+    def test_customer_count_task_cannot_add_ranking_to_original_request(self):
+        original = 'tính đến hiện tại có bao nhiêu khách hàng đã mua hàng'
+        prompt = build_sql_prompt(
+            'Rank customers by purchase count to date', original_question=original,
+        )
+        self.assertIn('must not introduce a ranking the user did not ask for', prompt)
+        self.assertIn('needs a count, not a ranking', prompt)
+
+    def test_customer_spend_ranking_uses_payment_value_and_is_unverified(self):
+        intent = resolve_ranking_intent('khách hàng chi nhiều tiền nhất từ trước đến nay')
+        self.assertIsNotNone(intent)
+        self.assertEqual(intent.entity, 'customer')
+        self.assertEqual(intent.measure.identity, 'sum:commerce.payments.payment_value')
+        self.assertEqual(intent.measure.source, 'commerce.payments')
+        self.assertEqual(intent.measure.column, 'payment_value')
+        self.assertEqual(intent.measure.approval_status, 'unverified')
 
     def validate(self, sql, intent=None):
         return validate_ranking_semantics(sql, intent or self.intent, APPROVED_COLUMNS)
@@ -489,7 +506,8 @@ class SQLRankingValidationTest(unittest.TestCase):
         explicit = resolve_ranking_intent("Which customer ranks highest by net item value?")
         self.assertTrue(explicit.measure_contract_eligible)
         payment_amount = resolve_ranking_intent("Khách hàng nào trả nhiều tiền nhất?")
-        self.assertTrue(payment_amount.measure_contract_eligible)
+        self.assertTrue(payment_amount.resolved)
+        self.assertEqual(payment_amount.measure.identity, "sum:commerce.payments.payment_value")
         quantity_rate = resolve_ranking_intent(
             "Danh mục nào có tỷ lệ số lượng trả hàng cao nhất so với số lượng đã bán?"
         )

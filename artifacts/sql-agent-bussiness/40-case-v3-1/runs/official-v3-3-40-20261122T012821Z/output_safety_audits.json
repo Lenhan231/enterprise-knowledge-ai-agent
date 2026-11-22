@@ -1,0 +1,555 @@
+{
+  "format_version": "sql-agent-additional-output-safety-audit-records.v1",
+  "source_run_data_sha256": "123c26586f0438b35b6152a88a2116da129092645188a0766c2fad191f8d9876",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "auditor_id": "Codex AI-assisted output safety reviewer",
+  "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+  "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+  "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+  "authenticated": false,
+  "records": [
+    {
+      "format_version": "sql-agent-additional-output-safety-audit.v1",
+      "source": "reviewer_decisions_json",
+      "case_id": "B40-003",
+      "column_name": "return_records",
+      "sql_sha256": "610d5a5852b59ba68f62cbd971779052b3f7d50c30c089529fdcc3325501c56e",
+      "parameters_sha256": "9c9380fb50cd4f4f9e2032bd9a18645ae4fc1d30335672c62c897bcb9e099ba5",
+      "case_contract_sha256": "8be75f66e1fdc806a235102b5e2c826495bfbcd185f906b03af82f70b9767f30",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "output_column_values_sha256": "12ffaf67d3d57f72f64d38d16d772c30581cfa268e685cba406068c9d7466818",
+      "observed_result_sha256": "626429f109a1cef7f4cd82c7aa5a851c857f8703a134638b3fa4351f1592a761",
+      "auditor_id": "Codex AI-assisted output safety reviewer",
+      "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+      "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+      "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      },
+      "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+      "authenticated": false
+    },
+    {
+      "format_version": "sql-agent-additional-output-safety-audit.v1",
+      "source": "reviewer_decisions_json",
+      "case_id": "B40-013",
+      "column_name": "snapshot_date",
+      "sql_sha256": "377343eaa207058217c0115cecb547e37249f8d50ce14be15e810f2ce8989279",
+      "parameters_sha256": "fd79e4269a433a0135c0713a7d05bd8ddfa9f3a7a4f43b93f27c431de03c6165",
+      "case_contract_sha256": "7576a37db51d6537503557350542ab7208321adab6fc2399b85d44b1c8f6fe30",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "output_column_values_sha256": "55251654a05b641d0fb3e8db17933d5bbb3da14ee4c72c48fe477bbd910e34a1",
+      "observed_result_sha256": "1e8ba61997987fe73ae90a77e14dd3c6815908fb1dd704ec03f527dfc232cd12",
+      "auditor_id": "Codex AI-assisted output safety reviewer",
+      "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+      "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+      "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      },
+      "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+      "authenticated": false
+    },
+    {
+      "format_version": "sql-agent-additional-output-safety-audit.v1",
+      "source": "reviewer_decisions_json",
+      "case_id": "B40-021",
+      "column_name": "snapshot_date",
+      "sql_sha256": "cacce9f95bf4db7bf80d68a526e50755f94002f8fec213b9649949584f3c78e9",
+      "parameters_sha256": "fd79e4269a433a0135c0713a7d05bd8ddfa9f3a7a4f43b93f27c431de03c6165",
+      "case_contract_sha256": "db9a95e465e57abe0ce43a270cbfafb55e185816892e5323dbe6e86b4f5fe03c",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "output_column_values_sha256": "9390b05deb9c73fb5dbb6ff7bf47a0e3fcc8f7c2f73280a71c0d80ae31d9cd96",
+      "observed_result_sha256": "878cf9b7d4544bfa06933e2edd9e4c30fcdfbbc109dc1d26abc48240b5456bd1",
+      "auditor_id": "Codex AI-assisted output safety reviewer",
+      "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+      "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+      "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      },
+      "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+      "authenticated": false
+    },
+    {
+      "format_version": "sql-agent-additional-output-safety-audit.v1",
+      "source": "reviewer_decisions_json",
+      "case_id": "B40-021",
+      "column_name": "observed_product_count",
+      "sql_sha256": "cacce9f95bf4db7bf80d68a526e50755f94002f8fec213b9649949584f3c78e9",
+      "parameters_sha256": "fd79e4269a433a0135c0713a7d05bd8ddfa9f3a7a4f43b93f27c431de03c6165",
+      "case_contract_sha256": "db9a95e465e57abe0ce43a270cbfafb55e185816892e5323dbe6e86b4f5fe03c",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "output_column_values_sha256": "e6c222d1ea101b9dfb4a5e2a669d108af24aa703666ef83b694bcbc257586d31",
+      "observed_result_sha256": "878cf9b7d4544bfa06933e2edd9e4c30fcdfbbc109dc1d26abc48240b5456bd1",
+      "auditor_id": "Codex AI-assisted output safety reviewer",
+      "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+      "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+      "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      },
+      "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+      "authenticated": false
+    },
+    {
+      "format_version": "sql-agent-additional-output-safety-audit.v1",
+      "source": "reviewer_decisions_json",
+      "case_id": "B40-022",
+      "column_name": "count_with_days_of_supply",
+      "sql_sha256": "f70bb91bfcd881356d0e6da16a5639d5203b65542049924389e4098489806674",
+      "parameters_sha256": "c1c90c51c3c8df494789aa11967916b3b6d8c0cf17f9fb836ddb69b966e0b84a",
+      "case_contract_sha256": "aaf32036ef97f3a4b3fa28bb290d13f40f08207433917a80a8223bc1b3c68f83",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "output_column_values_sha256": "3e57f62b6eb3b55aefcfce46222ec2867f31fedecc88608db93fdd87a90802a8",
+      "observed_result_sha256": "055430f1a9b931d100a17821b841128a2496b8af161d656bdb5a30fb17556c22",
+      "auditor_id": "Codex AI-assisted output safety reviewer",
+      "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+      "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+      "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      },
+      "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+      "authenticated": false
+    },
+    {
+      "format_version": "sql-agent-additional-output-safety-audit.v1",
+      "source": "reviewer_decisions_json",
+      "case_id": "B40-022",
+      "column_name": "count_without_days_of_supply",
+      "sql_sha256": "f70bb91bfcd881356d0e6da16a5639d5203b65542049924389e4098489806674",
+      "parameters_sha256": "c1c90c51c3c8df494789aa11967916b3b6d8c0cf17f9fb836ddb69b966e0b84a",
+      "case_contract_sha256": "aaf32036ef97f3a4b3fa28bb290d13f40f08207433917a80a8223bc1b3c68f83",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "output_column_values_sha256": "d52744981411cdbb9585ef12c7bd09959440fa33c7f236439329d4c1aafddd16",
+      "observed_result_sha256": "055430f1a9b931d100a17821b841128a2496b8af161d656bdb5a30fb17556c22",
+      "auditor_id": "Codex AI-assisted output safety reviewer",
+      "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+      "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+      "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      },
+      "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+      "authenticated": false
+    },
+    {
+      "format_version": "sql-agent-additional-output-safety-audit.v1",
+      "source": "reviewer_decisions_json",
+      "case_id": "B40-023",
+      "column_name": "snapshot_date",
+      "sql_sha256": "0388e31f07dff88de1683cbf99e1607bcde4c562f19e9ae00d97c0afacf07ac7",
+      "parameters_sha256": "35a85ea2c6d440438a77d3ffbe1f8141f76c5f1ee5afb594c2fe07a9c083db3c",
+      "case_contract_sha256": "d582f8fcd0d19cca92a54794e0e7a0d856e998e097d583b0cba8a73607a87d55",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "output_column_values_sha256": "f030e77ae85a5cb3ccf781ec7e04d5b05196656ddf8ca9fc846dd9b80ac4c99f",
+      "observed_result_sha256": "425fee880cb16c312520063ba8f319fb734b82fedda37df35e0b3ec86b821188",
+      "auditor_id": "Codex AI-assisted output safety reviewer",
+      "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+      "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+      "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      },
+      "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+      "authenticated": false
+    },
+    {
+      "format_version": "sql-agent-additional-output-safety-audit.v1",
+      "source": "reviewer_decisions_json",
+      "case_id": "B40-023",
+      "column_name": "stock_on_hand",
+      "sql_sha256": "0388e31f07dff88de1683cbf99e1607bcde4c562f19e9ae00d97c0afacf07ac7",
+      "parameters_sha256": "35a85ea2c6d440438a77d3ffbe1f8141f76c5f1ee5afb594c2fe07a9c083db3c",
+      "case_contract_sha256": "d582f8fcd0d19cca92a54794e0e7a0d856e998e097d583b0cba8a73607a87d55",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "output_column_values_sha256": "d057cda6641e81c6c25217de4cbf3d5deb510dcdcea31dddab5384312265d562",
+      "observed_result_sha256": "425fee880cb16c312520063ba8f319fb734b82fedda37df35e0b3ec86b821188",
+      "auditor_id": "Codex AI-assisted output safety reviewer",
+      "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+      "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+      "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      },
+      "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+      "authenticated": false
+    },
+    {
+      "format_version": "sql-agent-additional-output-safety-audit.v1",
+      "source": "reviewer_decisions_json",
+      "case_id": "B40-025",
+      "column_name": "total",
+      "sql_sha256": "3171286bb131aa78d92e229e5f5cea8405bb41f983b39a9df1d4b28a44a6f361",
+      "parameters_sha256": "908296ffe339ca0875577740792b27a92c77065d9de0faa9417e4456d7b26f23",
+      "case_contract_sha256": "22fe6ea8f99ed79bf62e6406f92c0028a2a91c45c9e4f67457e6ec23e668c850",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "output_column_values_sha256": "c4f735281828c7aee544edc0fba57b8853e4ab2fc75afd2e14d597a5ec4c471d",
+      "observed_result_sha256": "1bf4ea63ae0e1076656a7496a4458e92e2beb5a611db3a8a31a1e0cdcc09a386",
+      "auditor_id": "Codex AI-assisted output safety reviewer",
+      "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+      "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+      "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      },
+      "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+      "authenticated": false
+    },
+    {
+      "format_version": "sql-agent-additional-output-safety-audit.v1",
+      "source": "reviewer_decisions_json",
+      "case_id": "B40-025",
+      "column_name": "null_count",
+      "sql_sha256": "3171286bb131aa78d92e229e5f5cea8405bb41f983b39a9df1d4b28a44a6f361",
+      "parameters_sha256": "908296ffe339ca0875577740792b27a92c77065d9de0faa9417e4456d7b26f23",
+      "case_contract_sha256": "22fe6ea8f99ed79bf62e6406f92c0028a2a91c45c9e4f67457e6ec23e668c850",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "output_column_values_sha256": "ef6858ef160fcae8599df9974b5f38b9f30e32ac4088f7c260699f41414518d1",
+      "observed_result_sha256": "1bf4ea63ae0e1076656a7496a4458e92e2beb5a611db3a8a31a1e0cdcc09a386",
+      "auditor_id": "Codex AI-assisted output safety reviewer",
+      "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+      "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+      "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      },
+      "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+      "authenticated": false
+    }
+  ],
+  "export": {
+    "format_version": "sql-agent-additional-output-safety-export.v1",
+    "source": "separate_reviewer_decisions_json",
+    "authenticated": false,
+    "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+    "auditor_id": "Codex AI-assisted output safety reviewer",
+    "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+    "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+    "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+    "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+    "reviewed_case_columns": [
+      {
+        "case_id": "B40-003",
+        "column_name": "return_records"
+      },
+      {
+        "case_id": "B40-013",
+        "column_name": "snapshot_date"
+      },
+      {
+        "case_id": "B40-021",
+        "column_name": "snapshot_date"
+      },
+      {
+        "case_id": "B40-021",
+        "column_name": "observed_product_count"
+      },
+      {
+        "case_id": "B40-022",
+        "column_name": "count_with_days_of_supply"
+      },
+      {
+        "case_id": "B40-022",
+        "column_name": "count_without_days_of_supply"
+      },
+      {
+        "case_id": "B40-023",
+        "column_name": "snapshot_date"
+      },
+      {
+        "case_id": "B40-023",
+        "column_name": "stock_on_hand"
+      },
+      {
+        "case_id": "B40-025",
+        "column_name": "total"
+      },
+      {
+        "case_id": "B40-025",
+        "column_name": "null_count"
+      }
+    ]
+  }
+}

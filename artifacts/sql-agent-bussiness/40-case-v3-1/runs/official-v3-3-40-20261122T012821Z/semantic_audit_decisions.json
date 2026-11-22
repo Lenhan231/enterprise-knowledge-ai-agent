@@ -1,0 +1,169 @@
+{
+  "format_version": "sql-semantic-audit-decisions.v1",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+  "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+  "decisions": [
+    {
+      "case_id": "B40-001",
+      "decision": "PASS",
+      "evidence": [
+        "commerce.web_traffic.date is DATE; EXTRACT(YEAR)=2024 selects calendar 2024. SUM(sessions) is grouped by month and traffic_source. DATE_TRUNC returns a timestamp representation of each month start; scorer v3.3 compares it literally against Gold date strings, so row-value equivalence is not established by this audit."
+      ]
+    },
+    {
+      "case_id": "B40-002",
+      "decision": "FAIL",
+      "evidence": [
+        "The observed expression EXTRACT(EPOCH FROM (delivery_date - ship_date)) is invalid for PostgreSQL DATE subtraction in this frozen schema; the execution trace confirms UndefinedFunctionError. The failed expression cannot produce the requested average duration."
+      ]
+    },
+    {
+      "case_id": "B40-003",
+      "decision": "PASS",
+      "evidence": [
+        "The approved schema contract declares commerce.returns as one row per return_id, so COUNT(*) is equivalent to COUNT(DISTINCT return_id) at this table grain. The SQL filters return_date to calendar 2025 and groups by month. Output alias and timestamp/date representation are assessed separately by output/result scoring."
+      ]
+    },
+    {
+      "case_id": "B40-004",
+      "decision": "PASS",
+      "evidence": [
+        "The query first sums net order-item value at order_id and month grain, filters order_status=delivered and calendar year 2025, then averages delivered order totals by month. This matches the requested average delivered order value."
+      ]
+    },
+    {
+      "case_id": "B40-006",
+      "decision": "PASS",
+      "evidence": [
+        "The query counts customers joined by ZIP to geography, filtered to Hai Phong, age_group 25-34, and signup_date in 2024. The approved schema contract declares one customer per customer_id and one geography row per ZIP, so COUNT(*) preserves distinct-customer count."
+      ]
+    },
+    {
+      "case_id": "B40-007",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums revenue and COGS from sales rows in 2024 where the row-level condition cogs > revenue holds. Aggregates and scope match the request."
+      ]
+    },
+    {
+      "case_id": "B40-008",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums refund_amount by non-NULL return_reason for calendar year 2024. The alternative output alias does not change the selected metric, population, grouping, or time scope."
+      ]
+    },
+    {
+      "case_id": "B40-010",
+      "decision": "PASS",
+      "evidence": [
+        "The query counts rows in commerce.orders, whose approved schema grain is one row per order_id, filtered to calendar year 2025, paid_search and mobile. The row count therefore matches the requested order count."
+      ]
+    },
+    {
+      "case_id": "B40-011",
+      "decision": "PASS",
+      "evidence": [
+        "The SQL selects product_id and catalog p.cogs, orders by p.cogs DESC then product_id ASC, and limits to 5. It is semantically aligned with the requested top five catalog COGS ranking; execution was blocked by a ranking-validator rejection, which is reported separately."
+      ]
+    },
+    {
+      "case_id": "B40-013",
+      "decision": "FAIL",
+      "evidence": [
+        "The request and frozen Gold use the snapshot-stored inventory.segment. The observed SQL groups by commerce.products.segment, a current catalog attribute with no historical validity, so it can assign historical snapshot quantities to the wrong segment."
+      ]
+    },
+    {
+      "case_id": "B40-014",
+      "decision": "FAIL",
+      "evidence": [
+        "The request and frozen Gold define delivered orders by orders.order_status and scope the year using orders.order_date. The observed SQL instead filters shipments.delivery_date and does not constrain orders.order_status or order_date; it changes both population and time semantics."
+      ]
+    },
+    {
+      "case_id": "B40-016",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums return_quantity by the destination city reached through returns.order_id -> orders.zip -> geography.zip and filters by return_date in 2025. Ordering is not semantic for this unordered case."
+      ]
+    },
+    {
+      "case_id": "B40-017",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums return_quantity by product_id over [2023-01-01, 2026-01-01), which includes calendar years 2023 through 2025 and excludes 2026."
+      ]
+    },
+    {
+      "case_id": "B40-018",
+      "decision": "PASS",
+      "evidence": [
+        "The query averages all review ratings grouped by the current products.category using the approved product_id join. This matches the explicit current-category and all-history request."
+      ]
+    },
+    {
+      "case_id": "B40-019",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums recorded payment_value by payment_method for payment rows whose linked order_date is in calendar 2025. This preserves the requested recorded-payment metric and date basis."
+      ]
+    },
+    {
+      "case_id": "B40-020",
+      "decision": "PASS",
+      "evidence": [
+        "The query calculates AVG(shipping_fee) and COUNT(shipping_fee) by destination city for shipments with ship_date in 2025. Joining orders to geography uses the approved destination ZIP path; COUNT excludes NULL fees as requested."
+      ]
+    },
+    {
+      "case_id": "B40-021",
+      "decision": "FAIL",
+      "evidence": [
+        "The request is snapshot-scoped and the approved historical dimension is inventory.category. The observed SQL groups by current products.category, which can disagree with the category recorded on the snapshot row."
+      ]
+    },
+    {
+      "case_id": "B40-022",
+      "decision": "PASS",
+      "evidence": [
+        "The approved inventory grain is one row per (snapshot_date, product_id). The query groups by snapshot_date, counts distinct products with non-NULL days_of_supply and separately counts products whose days_of_supply is NULL, preserving NULL rather than coercing it to zero across the inclusive snapshot range."
+      ]
+    },
+    {
+      "case_id": "B40-023",
+      "decision": "FAIL",
+      "evidence": [
+        "The request requires matching products across exactly two snapshots and computing before, after, and after-minus-before. The observed SQL returns individual snapshot_date/product_id/stock_on_hand rows and does not pivot, require presence in both dates, or calculate the delta."
+      ]
+    },
+    {
+      "case_id": "B40-024",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums stock_on_hand separately for each snapshot_date within [2025-09-30, 2025-12-01), so it does not sum balances across dates. The products join is many-to-one under the approved product_id key and does not alter inventory grain."
+      ]
+    },
+    {
+      "case_id": "B40-025",
+      "decision": "FAIL",
+      "evidence": [
+        "The request explicitly asks for category stored in each inventory row. The observed SQL groups by current products.category, which can disagree with historical inventory.category; it also returns unrequested total/non-null/null count outputs."
+      ]
+    },
+    {
+      "case_id": "B40-027",
+      "decision": "FAIL",
+      "evidence": [
+        "This follow-up inherits the prior 2025 order_source statistic. The observed SQL retains order_source and filters delivered status but drops the inherited 2025 order_date range, changing the population to all years."
+      ]
+    },
+    {
+      "case_id": "B40-030",
+      "decision": "FAIL",
+      "evidence": [
+        "This follow-up inherits snapshot 2025-10-31. The observed parameter is 2024-11-21, so it ranks a different snapshot; it cannot answer the requested contextual follow-up."
+      ]
+    }
+  ]
+}

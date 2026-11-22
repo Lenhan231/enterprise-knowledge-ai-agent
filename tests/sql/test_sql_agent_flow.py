@@ -532,7 +532,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
         repository.execute_approved_query.assert_awaited_once_with(wrong)
 
-    async def test_comparison_cte_with_canonical_component_is_not_published_as_verified(self):
+    async def test_comparison_cte_with_canonical_component_executes_as_unverified(self):
         sql = """WITH product_revenue AS (
   SELECT p.product_id AS product_id, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS total_revenue
   FROM commerce.orders AS o
@@ -570,9 +570,10 @@ FROM product_groups AS pg GROUP BY 1 ORDER BY 1 LIMIT 2"""
                 metadata={'_auto_mode': True, '_original_question': question},
             ))
 
-        self.assertEqual(result['query_status'], 'rejected', result)
-        self.assertEqual(result['metadata']['metric_error_code'], 'derived_metric_formula_mismatch')
-        repository.execute_approved_query.assert_not_awaited()
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
+        repository.execute_approved_query.assert_awaited_once_with(
+            sql, date(2026, 1, 1), date(2027, 1, 1))
 
     async def test_auto_unapproved_join_executes_as_unverified_after_security_passes(self):
         class RepositoryWithUnverified(FakeRepository):

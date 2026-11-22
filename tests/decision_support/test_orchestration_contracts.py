@@ -168,27 +168,21 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         plan_request.assert_awaited_once()
         self.assertEqual(plan_request.await_args.kwargs['selected_tools'], ['knowledge', 'sql'])
 
-    async def test_jev_single_tool_route_cannot_drop_business_sql_evidence(self):
+    async def test_router_honors_the_model_selected_single_tool_route(self):
         question = 'Doanh nghiệp nên ưu tiên nhập thêm, quảng bá hoặc ngừng bán những sản phẩm nào để cải thiện lợi nhuận?'
         router = AgentRouter(None, None, None, llm=FakeProvider([]))
-        resolved = AgentPlan.model_validate({
-            'objective': question,
-            'tasks': [
-                {'id': 'k', 'agent': 'knowledge', 'question': question},
-                {'id': 's', 'agent': 'sql', 'question': question},
-            ],
-        })
         with patch('core.agents.decision_support.router.classify_jev_route', return_value={
-                'route': 'knowledge', 'confidence': 0.99}), \
+                'route': 'knowledge', 'selected_tools': ['knowledge'], 'confidence': 0.99}), \
              patch('core.agents.decision_support.router.plan_request',
-                   new=AsyncMock(return_value=resolved)) as plan_request:
+                   new=AsyncMock()) as plan_request:
             state = await router._plan({
                 'request': AgentRequest(question=question, identity=IDENTITY),
                 'history': [], 'execution': Mock(), 'report_headings': None,
             })
 
-        self.assertEqual(state['plan'], resolved)
-        plan_request.assert_awaited_once()
+        self.assertEqual(state['plan'].tasks[0].agent, 'knowledge')
+        self.assertEqual(state['plan'].tasks[0].question, question)
+        plan_request.assert_not_awaited()
 
     async def test_short_followup_routes_directly_when_jev_selects_one_specialist(self):
         router = AgentRouter(None, None, None, llm=FakeProvider([]))

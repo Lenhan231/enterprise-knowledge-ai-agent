@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from core.agents.decision_support.intent_classifier import (
     JEV_ROUTE_THRESHOLD,
     classify_jev_route,
-    is_product_profit_recommendation,
 )
 from core.agents.runtime import run_sync
 
@@ -44,7 +43,6 @@ class AgentRouter:
         confidence = confidence if isinstance(confidence, (int, float)) else 0
         if not (
             direct_agent in {'knowledge', 'sql'}
-            and not is_product_profit_recommendation(question)
             and confidence >= JEV_ROUTE_THRESHOLD
             and not pending_clarification
             and allow_direct

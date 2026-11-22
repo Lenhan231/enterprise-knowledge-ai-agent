@@ -1,0 +1,438 @@
+/* Neutral layer (direction 3, 21 Nov 2026): loads after redesign.css and swaps its tokens. White and light grey, one
+   blue for citations and the primary action, green only for "verified". No glass, no colour fields, one sans
+   (Inter) for interface and answers. Remove this file's <link> in index.html to return to ink & jade. */
+
+:root{
+  --font:"Inter","Be Vietnam Pro",system-ui,sans-serif;
+  --serif:var(--font);
+  --bg:#ffffff;--surface:#ffffff;--surface-2:#f5f5f7;--surface-3:#ededf0;
+  --line:#e8e8ed;--line-strong:#d2d2d7;
+  --ink:#1d1d1f;--ink-2:#424245;--muted:#6e6e73;--faint:#6e6e73;
+  --accent:#0a66d8;--accent-ink:#0752ad;--accent-soft:#eaf2fd;--accent-line:#bcd6f6;--on-accent:#ffffff;
+  --ok:#1a7f37;--ok-ink:#116329;--ok-soft:#e9f6ec;--ok-line:#b7e1c1;
+  --warn:#a15c07;--warn-ink:#7a4505;--warn-soft:#fdf2e2;--warn-line:#f0d3a8;
+  --danger:#c4314b;--danger-ink:#9b2238;--danger-soft:#fdecef;--danger-line:#f3bfca;
+  --cited:#fff3b0;
+  --radius-panel:22px;--radius-card:16px;--radius-control:12px;
+  --shadow:none;
+  --shadow-float:0 1px 2px rgba(0,0,0,.04);
+  --ease-out-word:cubic-bezier(.23,1,.32,1);
+}
+:root[data-theme="dark"]{
+  --bg:#161618;--surface:#1c1c1e;--surface-2:#232325;--surface-3:#2c2c2e;
+  --line:#2c2c2e;--line-strong:#3a3a3c;
+  --ink:#f5f5f7;--ink-2:#d1d1d6;--muted:#a1a1a6;--faint:#98989d;
+  --accent:#4c9dff;--accent-ink:#8cc0ff;--accent-soft:#10294a;--accent-line:#1d4577;--on-accent:#00172f;
+  --ok:#3fcf6b;--ok-ink:#7ee29b;--ok-soft:#102b19;--ok-line:#1e4d2c;
+  --warn:#f0a845;--warn-ink:#f6c784;--warn-soft:#2e2312;--warn-line:#5a4220;
+  --danger:#ff6b81;--danger-ink:#ffa3b1;--danger-soft:#33161c;--danger-line:#5e2531;
+  --cited:#4a4116;
+  --shadow-float:none;
+}
+
+/* no colour fields and no glass: controls are plain surfaces */
+:root body::before{display:none}
+:root .workspace-sidebar,:root #ask-form,:root .general-chat-composer,:root .monitoring-tabs{-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+:root #ask-form::before,:root .general-chat-composer::before,:root .monitoring-tabs::before{display:none}
+/* the sidebar is a light grey rail in both themes (redesign.css re-scopes it to dark jade; undo that) */
+:root:not([data-theme="dark"]) body .workspace-sidebar,:root[data-theme="dark"] body .workspace-sidebar{background:var(--surface-2);border-right:0;color:var(--ink)}
+:root:not([data-theme="dark"]) body .workspace-sidebar{--ink:#1d1d1f;--ink-2:#424245;--muted:#6e6e73;--faint:#6e6e73;--line:#e8e8ed;--surface:#ffffff;--surface-2:#f5f5f7;--surface-3:#e8e8ed;--accent-soft:#eaf2fd;--accent-ink:#0752ad;--accent:#0a66d8;--on-accent:#ffffff}
+:root[data-theme="dark"] body .workspace-sidebar{--line:#2c2c2e;--surface-3:#2c2c2e}
+:root .workspace-sidebar .workspace-tab.active{background:var(--surface-3);color:var(--ink)}
+:root .workspace-sidebar .workspace-tab.active::before{display:none}
+:root .general-chat-composer,:root #ask-form{background:var(--surface-2);border:0;border-radius:18px}
+:root .primary-button,:root .submit-query-btn,:root #ask-button,:root #report-agent-submit{border-radius:999px;font-weight:500}
+
+/* the question is a grey bubble on the right; the answer reads as plain text below it */
+:root .general-chat .chat-turn-question{justify-content:flex-end;padding-left:0}
+:root .general-chat .chat-turn-question p{max-width:520px;padding:10px 16px;border-radius:18px;background:var(--surface-2);color:var(--ink);font:400 16px/1.5 var(--font);letter-spacing:0}
+:root .general-chat .chat-turn .answer-text{color:var(--ink);font:400 17px/1.7 var(--font)}
+:root .general-chat .chat-turn .citation>p{font:400 14px/1.6 var(--font)}
+:root .general-chat-welcome h3{font:700 36px/1.15 var(--font);letter-spacing:-.035em}
+:root .chat-library-q{font:400 15.5px/1.4 var(--font)}
+
+/* citations: small round pills after 21st.dev AI Response */
+:root .cite-ref,:root .general-chat .chat-turn .answer-text .cite-ref{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;margin:0 0 0 2px;padding:0 4px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);color:var(--muted);font:500 10px/1 var(--font);vertical-align:super;text-decoration:none}
+:root .cite-ref:hover,:root .cite-ref:focus-visible,:root .cite-ref.is-pointed,
+:root .general-chat .chat-turn .answer-text .cite-ref:hover,:root .general-chat .chat-turn .answer-text .cite-ref:focus-visible,
+:root .general-chat .chat-turn .answer-text .cite-ref.is-pointed{border-color:var(--accent);background:var(--accent);color:var(--on-accent)}
+:root .general-chat .chat-turn .citations{border-top-color:var(--line)}
+:root .cited-sentence{background:var(--cited);color:var(--ink);border-radius:3px;padding:0 2px}
+
+/* "verified" is the one green element: a small pill */
+:root .general-chat .chat-turn .answer-verified{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;padding:5px 12px;border-radius:999px;background:var(--ok-soft);color:var(--ok-ink);font:500 13px/1.2 var(--font)}
+
+/* word reveal (typeOutText): blur 4px, opacity 0, 2px down -> rest in 0.22 s, as in AI Response */
+:root .ai-word{display:inline-block}
+:root .ai-pending{opacity:0}
+:root .ai-in{animation:aiWordIn .22s var(--ease-out-word) both}
+:root .ai-pop{animation:aiPillIn .25s cubic-bezier(.34,1.3,.64,1) both}
+@keyframes aiWordIn{from{opacity:0;filter:blur(4px);transform:translateY(2px)}to{opacity:1;filter:none;transform:none}}
+@keyframes aiPillIn{0%{opacity:0;transform:scale(.6)}75%{opacity:1;transform:scale(1.04)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){:root .ai-in,:root .ai-pop{animation:none}:root .ai-pending{opacity:1}}
+
+/* sources as a right-hand column of retrieved chunks (21st.dev Retrieved Chunks): wide screens only */
+:root .general-chat .chat-turn .answer-seal{display:none}
+:root .general-chat .chat-turn .citation-meta{display:inline-flex;align-items:center;gap:12px;margin-left:auto;font-size:12px;color:var(--muted)}
+:root .general-chat .chat-turn .citation-used{color:var(--ink);font-weight:500}
+:root .general-chat .chat-turn .citation-score{display:inline-flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums;color:var(--ink)}
+:root .general-chat .chat-turn .citation-score-bar{position:relative;display:block;width:40px;height:4px;border-radius:999px;background:var(--line)}
+:root .general-chat .chat-turn .citation-score-bar>span{position:absolute;inset:0 auto 0 0;border-radius:999px;background:var(--ink)}
+@media(min-width:1200px){
+  :root .general-chat{width:min(100%,1160px)}
+  :root .general-chat .chat-turn{max-width:none}
+  :root .general-chat .chat-turn-response{display:grid;grid-template-columns:minmax(0,1fr) 380px;column-gap:40px;align-items:start;padding-left:0}
+  /* every other child stays in the answer column, also while the sources column is still hidden during the reveal */
+  :root .general-chat .chat-turn-response>*{grid-column:1}
+  /* the question bubble ends where the answer column ends, so the sources column has the right side to itself */
+  :root .general-chat .chat-turn-question{padding-right:420px}
+  :root .general-chat .chat-turn-response>.citations{grid-column:2;grid-row:1/span 40;position:sticky;top:12px;max-width:none;margin:0;padding:0 0 0 24px;border-top:0;border-left:1px solid var(--line)}
+  :root .general-chat .chat-turn-response>.citations .citation{padding:12px 0 12px 32px}
+  :root .general-chat .chat-turn-response>.answer-verified{justify-self:start}
+  :root .general-chat .chat-turn-response>.citations .citation-title{flex-wrap:wrap;row-gap:4px}
+}
+
+/* composer: grey field with a round dark send button */
+:root .general-chat-composer #general-chat-send{border-radius:50%;box-shadow:none}
+:root .general-chat-composer button::after{display:none}
+
+/* flat primary buttons: drop the glossy lens and glow of the glass layer */
+:root #ask-button,:root .primary-button,:root #report-agent-submit,:root .submit-query-btn{box-shadow:none;background-image:none}
+:root #ask-button::after,:root .primary-button::after,:root #report-agent-submit::after,:root .submit-query-btn::after{display:none}
+
+/* retrieved-chunks list under the cited sources */
+:root .retrieved-chunks{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+:root .retrieved-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+:root .retrieved-head h5{margin:0;color:var(--ink);font:500 13.5px/1.4 var(--font)}
+:root .retrieved-sort{display:flex;padding:2px;border-radius:7px;background:var(--surface-2)}
+:root .retrieved-sort button{min-height:26px;padding:0 10px;border:0;border-radius:5px;background:transparent;color:var(--muted);font:500 12.5px/1 var(--font);cursor:pointer}
+:root .retrieved-sort button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.04)}
+:root .retrieved-chunks ol{margin:0;padding:0;list-style:none}
+:root .retrieved-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+:root .retrieved-row:last-child{border-bottom:0}
+:root .retrieved-row.is-used{color:var(--ink)}
+:root .retrieved-rank{width:14px;flex:none;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
+:root .retrieved-doc{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:root .retrieved-doc strong{font-weight:500}
+:root .retrieved-doc span{color:var(--muted);font-size:12px}
+:root .retrieved-row .citation-used{flex:none;color:var(--ink);font-size:12px;font-weight:500}
+:root .retrieved-row .citation-score{flex:none;display:inline-flex;align-items:center;gap:8px;font-size:12px;font-variant-numeric:tabular-nums}
+:root .retrieved-row .citation-score-bar{position:relative;display:block;width:40px;height:4px;border-radius:999px;background:var(--line)}
+:root .retrieved-row .citation-score-bar>span{position:absolute;inset:0 auto 0 0;border-radius:999px;background:var(--ink)}
+:root .retrieved-row:not(.is-used) .citation-score-bar>span{background:var(--line-strong)}
+
+/* matched words in source passages: ink over a soft underline (Retrieved Chunks) */
+:root .chunk-match{background:transparent;color:var(--ink);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;text-decoration-skip-ink:none;text-decoration-color:var(--line-strong)}
+
+/* the running step shimmers, the only shimmer in the app (Retrieved Chunks "Retrieving" label) */
+:root .agent-progress-step.is-active .agent-progress-label{background:linear-gradient(90deg,var(--muted) 0%,var(--muted) 40%,var(--ink) 50%,var(--muted) 60%,var(--muted) 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:labelShimmer 1.6s linear infinite}
+@keyframes labelShimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){:root .agent-progress-step.is-active .agent-progress-label{animation:none;color:var(--ink);background:none}}
+
+/* Source Lens (ibrandify): citation pills as small tinted squares, sources open in a modal inspector */
+:root .general-chat .chat-turn .answer-text .cite-ref,:root .cite-ref{height:20px;min-width:20px;padding:0 4px;border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);border-radius:4px;background:color-mix(in srgb,var(--accent) 5%,transparent);color:var(--accent);font:600 10px/1 var(--font);vertical-align:2px}
+:root .general-chat .chat-turn .answer-text .cite-ref:hover,:root .cite-ref:hover{background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)}
+:root dialog.source-lens{position:fixed;margin:0;padding:0;max-height:calc(100dvh - 2rem);overflow:auto;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);box-shadow:0 20px 50px -12px rgba(0,0,0,.25);font:400 14px/1.6 var(--font)}
+:root dialog.source-lens::backdrop{background:color-mix(in srgb,var(--bg) 60%,transparent)}
+:root .source-lens-bar,:root .source-lens-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 10px 16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px}
+:root .source-lens-foot{border-top:1px solid var(--line);border-bottom:0;background:var(--surface-2)}
+:root .source-lens-x,:root .source-lens-prev,:root .source-lens-next{width:30px;height:30px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--ink-2);font-size:18px;line-height:1;cursor:pointer}
+:root .source-lens-x:hover,:root .source-lens-prev:hover:not(:disabled),:root .source-lens-next:hover:not(:disabled){background:var(--surface-3)}
+:root .source-lens-prev:disabled,:root .source-lens-next:disabled{opacity:.4;cursor:default}
+:root .source-lens-body{padding:16px}
+:root .source-lens-pub,:root .source-lens-host{margin:0;color:var(--muted);font-size:12px}
+:root .source-lens-body h3{margin:2px 0 6px;font:600 16px/1.35 var(--font);letter-spacing:-.01em}
+:root .source-lens-summary{margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+:root .source-lens-summary p:last-child{margin:0;font-size:13.5px;line-height:1.65}
+:root .source-lens-label{margin:0 0 6px;color:var(--muted);font:500 11px/1.3 var(--font)}
+:root .source-lens-from{margin-top:12px;padding-left:12px;border-left:2px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+:root .source-lens-from p{margin:0;font-size:13px}
+:root .source-lens-note{margin-top:4px!important;color:var(--muted);font-size:12px!important}
+:root .source-lens-actions{display:flex;align-items:center;gap:8px;margin-top:16px}
+:root .source-lens-copy{min-height:34px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink-2);font:500 13px/1 var(--font);cursor:pointer}
+:root .source-lens-copy:disabled{opacity:.4;cursor:default}
+:root .source-lens-open{margin-left:auto;display:inline-flex;align-items:center;min-height:34px;padding:0 14px;border-radius:8px;background:var(--accent);color:var(--on-accent);font:500 13px/1 var(--font);text-decoration:none}
+:root .source-lens-status{min-height:16px;margin:8px 0 0;color:var(--muted);font-size:12px}
+
+/* very wide screens: the sources column moves out to the right edge; question, answer and composer stay left */
+@media(min-width:1400px){
+  :root .general-chat{width:min(100%,1640px)}
+  :root .general-chat .chat-turn-response{grid-template-columns:minmax(0,1fr) 400px;column-gap:72px}
+  :root .general-chat .chat-turn-question{padding-right:472px}
+  :root .general-chat:has(.chat-turn) .general-chat-composer,:root .general-chat:has(.chat-turn) .general-chat-note{margin-right:472px}
+  :root .general-chat .chat-turn .answer-text{max-width:76ch}
+}
+
+/* Prompt composer: the question gets the full width, route and send sit on a row below */
+@media(min-width:781px){
+  :root .general-chat-composer{flex-wrap:wrap;align-items:center;padding:12px 12px 10px 18px}
+  :root .general-chat-composer textarea{flex:1 1 100%;min-height:44px;padding:6px 0;border:0;background:transparent;box-shadow:none}
+  :root .general-chat-composer textarea:focus{box-shadow:none}
+  :root .general-chat-composer .general-chat-mode{margin-left:auto}
+}
+:root .general-chat-composer:focus-within{box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* ---------- Text Reveal and Grid Pattern (shared with landing.html) ---------- */
+:root .reveal-word{display:inline-block;animation:revealWord .7s cubic-bezier(.16,1,.3,1) both}
+@keyframes revealWord{from{opacity:0;filter:blur(6px);transform:translateY(14px)}to{opacity:1;filter:none;transform:none}}
+:root .grid-pattern{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;fill:rgb(156 163 175 / .3);stroke:rgb(156 163 175 / .3);-webkit-mask-image:radial-gradient(ellipse 60% 60% at 50% 40%,#000 25%,transparent 80%);mask-image:radial-gradient(ellipse 60% 60% at 50% 40%,#000 25%,transparent 80%)}
+:root[data-theme="dark"] .grid-pattern{fill:rgb(156 163 175 / .14);stroke:rgb(156 163 175 / .14)}
+
+/* ---------- sign-in: grid backdrop, plain white card, link to the landing page ---------- */
+:root .login-view{position:relative;overflow:hidden;background:var(--bg)}
+:root .login-view .login-card{position:relative;z-index:1;border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:0 30px 60px -30px rgba(0,0,0,.18)}
+:root[data-theme="dark"] .login-view .login-card{box-shadow:none}
+:root .login-card h1{font:700 30px/1.15 var(--font);letter-spacing:-.03em}
+:root .login-landing-link{display:inline-block;margin-top:14px;font-size:14px;text-decoration:none}
+:root .login-landing-link:hover{text-decoration:underline}
+
+/* ---------- chat welcome: suggestion cards instead of a ruled list ---------- */
+:root .general-chat-welcome h3{font:700 40px/1.1 var(--font);letter-spacing:-.04em}
+:root .chat-library-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin:8px 0 0;padding:0;border:0;list-style:none}
+:root .chat-library-list li{position:relative;display:block;margin:0;padding:0;border:0}
+:root .chat-library-list li>.chat-library-area{position:absolute;top:16px;left:18px;z-index:1;pointer-events:none;color:var(--muted);font:500 12px/1 var(--font)}
+:root .chat-library-list li>button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;height:100%;min-height:118px;padding:40px 18px 16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);text-align:left;cursor:pointer}
+:root .chat-library-list li>button:hover{border-color:var(--line-strong);background:var(--surface-2)}
+:root .chat-library-q{color:var(--ink)}
+:root .chat-library-en{color:var(--muted);font-size:13px}
+
+/* ---------- tool pages: stat cards, tables and panels in the same language ---------- */
+:root .monitoring-section .monitoring-summary{gap:12px;overflow:visible;border:0;border-radius:0;background:transparent}
+:root .monitoring-section .monitoring-stat{padding:18px 20px;border-radius:16px;background:var(--surface-2)}
+:root .monitoring-section .monitoring-stat span{color:var(--muted);font:500 13px/1.3 var(--font)}
+:root .monitoring-section .monitoring-stat strong{font:700 30px/1.15 var(--font);letter-spacing:-.03em}
+:root .stat-card{border:0;background:var(--surface-2);border-radius:16px}
+:root .tab-panel table thead th,:root .access-table thead th,:root .monitoring-table thead th{position:sticky;top:0;z-index:1;background:var(--surface);color:var(--muted);font:500 12.5px/1.3 var(--font);border-bottom:1px solid var(--line)}
+:root .tab-panel table tbody td{padding-top:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+:root .tab-panel table tbody tr:hover td{background:var(--surface-2)}
+:root .tab-panel .candidate-review,:root .tab-panel .analysis-section,:root .tab-panel .upload-step,:root .tab-panel .report-agent-panel,:root .rw-sidebar{border-color:var(--line);border-radius:22px;box-shadow:none}
+:root .tab-panel h2{letter-spacing:-.03em}
+:root .monitoring-tabs{border:0;background:var(--surface-2);border-radius:999px;padding:3px}
+:root .monitoring-tabs [role="tab"]{border-radius:999px}
+:root .monitoring-tabs [role="tab"][aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.04)}
+:root input[type=file]::file-selector-button{border-radius:999px}
+:root .upload-dropzone,:root .drop-zone{border-radius:18px;border-color:var(--line-strong);background:var(--surface-2)}
+@media (prefers-reduced-motion:reduce){:root .reveal-word{animation:none}}
+
+/* ---------- AI Prompt Composer (hellocloud.webdev): card, pill route menu, send button with a ready state ---------- */
+:root{--aic-card-bg:#ffffff;--aic-card-border:rgba(24,24,28,.085);--aic-card-focus:rgba(24,24,28,.16);--aic-card-shadow:0 20px 44px -16px rgba(15,23,42,.09),0 2px 8px -2px rgba(15,23,42,.04);--aic-pill-bg:#f3f3f6;--aic-pill-hover:#eaeaf0;--aic-pill-border:rgba(24,24,28,.09);--aic-pill-hover-border:rgba(24,24,28,.16);--aic-pop-start:#ffffff;--aic-pop-end:#f7f7fa;--aic-pop-border:rgba(24,24,28,.11);--aic-pop-shadow:0 22px 48px -12px rgba(15,23,42,.16),0 4px 14px -4px rgba(15,23,42,.07);--aic-item-hover:rgba(24,24,28,.055);--aic-submit-bg:#f3f3f6;--aic-submit-color:#8e8d96;--aic-ready-bg:#18181c;--aic-ready-color:#ffffff}
+:root[data-theme="dark"]{--aic-card-bg:#18181c;--aic-card-border:rgba(255,255,255,.065);--aic-card-focus:rgba(255,255,255,.12);--aic-card-shadow:0 20px 45px -15px rgba(0,0,0,.45);--aic-pill-bg:#26262c;--aic-pill-hover:#2d2d34;--aic-pill-border:rgba(255,255,255,.095);--aic-pill-hover-border:rgba(255,255,255,.15);--aic-pop-start:#2b2b33;--aic-pop-end:#1f1f25;--aic-pop-border:rgba(255,255,255,.12);--aic-pop-shadow:0 22px 48px -10px rgba(0,0,0,.65);--aic-item-hover:rgba(255,255,255,.065);--aic-submit-bg:#222227;--aic-submit-color:#7c7b84;--aic-ready-bg:#f4f4f6;--aic-ready-color:#18181c}
+:root .general-chat-composer{padding:20px 18px 16px;border:1px solid var(--aic-card-border);border-radius:24px;background:var(--aic-card-bg);box-shadow:var(--aic-card-shadow)}
+:root .general-chat-composer:focus-within{background:var(--aic-card-bg);border-color:var(--aic-card-focus);box-shadow:var(--aic-card-shadow)}
+/* the old glass layer tints focused composers jade; keep them solid */
+:root #ask-form:focus-within{background:var(--surface-2);box-shadow:0 0 0 3px var(--accent-soft)}
+:root .general-chat-composer textarea{margin-bottom:18px;font-size:16px;line-height:1.5;letter-spacing:-.011em}
+:root .route-pill-wrap{position:relative;margin-left:auto}
+:root .route-pill{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px 0 15px;border:1px solid var(--aic-pill-border);border-radius:999px;background:var(--aic-pill-bg);color:var(--ink);font:500 15px/1 var(--font);letter-spacing:-.011em;cursor:pointer}
+:root .route-pill:hover{background:var(--aic-pill-hover);border-color:var(--aic-pill-hover-border)}
+:root .route-pill svg{margin-top:1px;color:var(--muted)}
+:root .route-pill.is-open .route-pill-text{color:var(--muted)}
+:root .route-menu{position:absolute;right:0;bottom:calc(100% + 8px);z-index:30;display:flex;flex-direction:column;gap:2px;width:190px;padding:6px;border:1px solid var(--aic-pop-border);border-radius:18px;background:linear-gradient(160deg,var(--aic-pop-start) 0%,var(--aic-pop-end) 100%);box-shadow:var(--aic-pop-shadow);transform-origin:bottom right;animation:routeMenuIn .2s cubic-bezier(.22,1,.36,1) both}
+:root .route-menu[hidden]{display:none}
+:root .route-menu button{display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 14px;border:0;border-radius:11px;background:transparent;color:var(--ink);font:500 15px/1 var(--font);letter-spacing:-.011em;text-align:left;cursor:pointer}
+:root .route-menu button:hover,:root .route-menu button:focus-visible{background:var(--aic-item-hover);outline:none}
+@keyframes routeMenuIn{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+:root .general-chat-composer #general-chat-send{width:38px;height:38px;border:1px solid var(--aic-pill-border);border-radius:999px;background:var(--aic-submit-bg);color:var(--aic-submit-color);transition:background-color .18s ease,color .18s ease,border-color .18s ease}
+:root .general-chat-composer #general-chat-send:hover:not(:disabled),:root .general-chat-composer #general-chat-send.is-ready{border-color:var(--aic-ready-bg);background:var(--aic-ready-bg);color:var(--aic-ready-color)}
+:root .general-chat-composer #general-chat-send:active{transform:scale(.95)}
+@media (prefers-reduced-motion:reduce){:root .route-menu{animation:none}}
+
+/* the composer's generic button rule (40 px icon button) must not reach the route pill or its menu items */
+:root .general-chat-composer .route-pill,:root .general-chat-composer .route-menu button{display:flex;place-items:normal;width:auto;box-shadow:none;overflow:visible}
+:root .general-chat-composer .route-pill{display:inline-flex;height:38px;padding:0 13px 0 15px;border:1px solid var(--aic-pill-border);border-radius:999px;background:var(--aic-pill-bg);color:var(--ink)}
+:root .general-chat-composer .route-pill:hover:not(:disabled){border-color:var(--aic-pill-hover-border);background:var(--aic-pill-hover);color:var(--ink)}
+:root .general-chat-composer .route-menu button{height:36px;padding:0 14px;border:0;border-radius:11px;background:transparent;color:var(--ink)}
+:root .general-chat-composer .route-menu button:hover:not(:disabled),:root .general-chat-composer .route-menu button:focus-visible{background:var(--aic-item-hover);color:var(--ink)}
+:root .general-chat-composer .route-pill,:root .general-chat-composer .route-menu button{align-items:center}
+:root .general-chat-composer .route-menu button{justify-content:space-between}
+:root .general-chat-composer .route-pill svg{flex:none;width:13px;height:13px;margin:1px 0 0}
+:root .general-chat-composer .route-menu button svg{flex:none;width:15px;height:15px;margin:0}
+
+/* the "every claim checked" pill is hidden on screen (it clashed with the neutral palette) but kept for screen
+   readers; unverified and partial answers keep their visible warnings */
+:root .general-chat .chat-turn .answer-verified{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Dashboard frames: follow the theme surface and leave room for the whole dashboard. */
+html #dw-preview, html #home-overview-preview { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
+html #dw-preview { height: 1350px; }
+
+/* Remaining pages: native controls, upload, knowledge list, monitoring cards. */
+:root input[type="checkbox"], :root input[type="radio"] { accent-color: var(--accent); }
+:root .upload-dropzone { border: 1.5px dashed var(--line-strong); background: var(--bg); text-align: center; transition: border-color .15s, background .15s; }
+:root .upload-dropzone:hover, :root .upload-dropzone:focus-within { border-color: var(--accent); background: var(--accent-soft, var(--surface-2)); }
+:root .upload-role-option { border: 1px solid var(--line); border-radius: 12px; background: var(--bg); transition: border-color .15s, background .15s; }
+:root .upload-role-option:hover { border-color: var(--line-strong); }
+:root .upload-role-option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft, var(--surface-2)); }
+:root .knowledge-documents-list { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+:root .knowledge-document-entry { background: transparent; border: 0; border-radius: 0; }
+:root .knowledge-documents-list .knowledge-document-row:hover { background: var(--surface-2); }
+:root .monitoring-stat { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; box-shadow: none; }
+:root .monitoring-stat strong, :root .monitoring-stat b { font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+
+.gen-stats { margin: 6px 0 0; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chat-turn-response > .gen-stats { grid-column: 1; }
+
+/* ---- Dashboard page: wide preview first, library as chips, quieter copy ---- */
+html .dw-layout { display: block; }
+html .dw-library { display: flex; align-items: center; gap: 12px; max-height: none; overflow: visible; padding: 0; border: 0; background: transparent; margin: 0 0 14px; }
+html .dw-library h2 { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+html #dw-library { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+html #dw-library button { width: auto; white-space: nowrap; border-radius: 999px; padding: 7px 14px; display: inline-flex; align-items: baseline; gap: 8px; }
+html #dw-library button small { color: var(--muted); font-size: 11px; }
+html #dw-status { font-size: 12px; color: var(--muted); min-height: 0; margin: 0 0 8px; }
+html #dw-status[data-error="true"] { color: var(--danger); }
+html .dw-main { max-width: none; }
+html #dw-preview { height: 1100px; margin-top: 12px; }
+html #tab-dashboard .dw-heading p:not(.eyebrow) { margin-top: 4px; }
+
+/* ---- Reports: one hero number, marked sections, a callout summary ---- */
+.sales-report-section > h3 { display: flex; align-items: center; gap: .6rem; font-size: 1.2rem; letter-spacing: -.01em; }
+.sales-report-section > h3::before { content: ""; width: 4px; height: 1.15em; border-radius: 2px; background: var(--accent); }
+.sales-report-kpis > div:first-child { grid-column: 1 / -1; background: var(--accent-soft); border-color: var(--accent-line); padding: 1.4rem 1.5rem; }
+.sales-report-kpis > div:first-child dt, .sales-report-kpis > div:first-child small { color: var(--accent-ink); }
+.sales-report-kpis > div:first-child dd { font-size: 2.6rem; font-weight: 650; letter-spacing: -.03em; color: var(--accent-ink); }
+.sales-report-section:first-of-type > p:first-of-type { background: var(--accent-soft); border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0; padding: .8rem 1rem; margin: .6rem 0; }
+
+/* ---- Motion shared by every page, not only General Chat ---- */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes nRise { from { opacity: 0; transform: translateY(14px); } }
+  @keyframes nFade { from { opacity: 0; transform: scale(.985); } }
+  @keyframes nScroll { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  :root .tab-panel.is-fresh:not(#tab-general-chat) > * { animation: nRise .55s cubic-bezier(.2,.7,.2,1) both; }
+  :root .tab-panel.is-fresh:not(#tab-general-chat) > *:nth-child(2) { animation-delay: .06s; }
+  :root .tab-panel.is-fresh:not(#tab-general-chat) > *:nth-child(3) { animation-delay: .12s; }
+  :root .tab-panel.is-fresh:not(#tab-general-chat) > *:nth-child(4) { animation-delay: .18s; }
+  :root .tab-panel.is-fresh:not(#tab-general-chat) > *:nth-child(n+5) { animation-delay: .24s; }
+  :root .is-fresh .monitoring-stat, :root .is-fresh .upload-step, :root .is-fresh .upload-role-option, :root .is-fresh .invoice-review-card { animation: nRise .5s cubic-bezier(.2,.7,.2,1) both; }
+  :root .is-fresh .monitoring-stat:nth-child(2), :root .is-fresh .upload-role-option:nth-child(2) { animation-delay: .06s; }
+  :root .is-fresh .monitoring-stat:nth-child(3), :root .is-fresh .upload-role-option:nth-child(3) { animation-delay: .12s; }
+  :root .is-fresh .monitoring-stat:nth-child(4), :root .is-fresh .upload-role-option:nth-child(4) { animation-delay: .18s; }
+  :root .is-fresh .monitoring-stat:nth-child(5), :root .is-fresh .upload-role-option:nth-child(n+5) { animation-delay: .24s; }
+  html #dw-preview, html #home-overview-preview { animation: nFade .6s .15s cubic-bezier(.2,.7,.2,1) both; }
+  .monitoring-stat, .upload-role-option, .knowledge-document-entry, .invoice-review-card { transition: transform .18s, box-shadow .18s, border-color .15s, background .15s; }
+  .monitoring-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+  button:not(:disabled):active { transform: scale(.98); }
+  @supports (animation-timeline: view()) {
+    .sales-report-section, .sales-report-kpis > div, .sales-report-widget { animation: nScroll linear both; animation-timeline: view(); animation-range: entry 0% cover 28%; }
+  }
+}
+
+/* ---- Prompt Input with Actions ---- */
+:root .composer-actions { display: flex; align-items: center; gap: 8px; margin-right: auto; position: relative; }
+:root .route-pill-wrap { margin-left: 0; }
+:root .composer-action { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 13px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--muted); font: 500 14px/1 var(--font); cursor: pointer; transition: background-color .15s, color .15s, border-color .15s; }
+:root .composer-action:hover, :root .composer-action[aria-expanded="true"] { background: var(--aic-pill-hover); color: var(--ink); }
+:root .composer-action[hidden], :root .composer-count[hidden], :root .examples-menu[hidden] { display: none; }
+:root .composer-count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+:root .examples-wrap { position: relative; }
+:root .examples-menu { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 30; display: flex; flex-direction: column; gap: 2px; width: min(340px, 80vw); padding: 6px; border: 1px solid var(--aic-pop-border); border-radius: 18px; background: linear-gradient(160deg, var(--aic-pop-start) 0%, var(--aic-pop-end) 100%); box-shadow: var(--aic-pop-shadow); transform-origin: bottom left; animation: routeMenuIn .2s cubic-bezier(.22,1,.36,1) both; }
+:root .examples-menu button { text-align: left; padding: 9px 12px; border: 0; border-radius: 11px; background: transparent; color: var(--ink); font: 500 14px/1.35 var(--font); cursor: pointer; }
+:root .examples-menu button:hover, :root .examples-menu button:focus-visible { background: var(--aic-item-hover); outline: none; }
+:root .examples-empty { margin: 0; padding: 9px 12px; color: var(--muted); font-size: 14px; }
+@property --shine { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes shineSpin { to { --shine: 360deg; } }
+:root .general-chat-composer { position: relative; }
+:root .general-chat-composer:has(#general-chat-send[aria-busy="true"])::before { content: ""; display: block; position: absolute; inset: -1px; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from var(--shine), transparent 0 62%, var(--accent) 82%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: shineSpin 2.4s linear infinite; }
+@media (prefers-reduced-motion: reduce) { :root .general-chat-composer:has(#general-chat-send[aria-busy="true"])::before { animation: none; background: var(--accent); opacity: .5; } }
+@media (max-width: 640px) { :root .composer-action span { display: none; } :root .composer-action { padding: 0 11px; } }
+:root .composer-actions { flex: 0 0 auto; }
+:root .general-chat-composer .composer-action { display: inline-flex; place-items: initial; width: auto; height: 38px; padding: 0 13px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--muted); box-shadow: none; white-space: nowrap; overflow: visible; }
+:root .general-chat-composer .composer-action:hover:not(:disabled), :root .general-chat-composer .composer-action[aria-expanded="true"] { background: var(--aic-pill-hover); color: var(--ink); }
+:root .general-chat-composer .composer-action svg { width: 15px; height: 15px; }
+:root .general-chat-composer .examples-menu button { display: block; place-items: initial; width: 100%; height: auto; padding: 9px 12px; border: 0; border-radius: 11px; background: transparent; color: var(--ink); box-shadow: none; text-align: left; white-space: normal; }
+:root .general-chat-composer .examples-menu button:hover:not(:disabled), :root .general-chat-composer .examples-menu button:focus-visible { background: var(--aic-item-hover); }
+:root .general-chat-composer .general-chat-mode { margin-left: 0; }
+
+/* ---- Dashboards sit directly on the page (no frame), and the repeated headings go ---- */
+html #dw-preview, html #home-overview-preview { border: 0; border-radius: 0; background: transparent; }
+html #workspace-home .dw-heading .eyebrow, html #tab-dashboard .dw-heading .eyebrow { display: none; }
+html #workspace-home .dw-heading p:not(.eyebrow), html #tab-dashboard .dw-heading p:not(.eyebrow) { display: none; }
+html #home-overview-status { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+html #home-overview-preview { height: 1000px; }
+
+/* ---- Theme change: the whole screen frosts over, the theme swaps behind it, the frost clears ---- */
+.theme-glass { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; opacity: 0;
+  -webkit-backdrop-filter: blur(24px) saturate(1.5); backdrop-filter: blur(24px) saturate(1.5);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--bg) 52%, transparent), color-mix(in srgb, var(--surface-2) 38%, transparent)); }
+.theme-glass.in { animation: glassIn .3s ease-out forwards; }
+.theme-glass.out { opacity: 1; animation: glassOut .55s ease-in-out forwards; }
+@keyframes glassIn { to { opacity: 1; } }
+@keyframes glassOut { to { opacity: 0; } }
+/* composer actions: icons line up with the text above, both buttons share one centre line */
+:root .composer-actions { margin-left: -11px; gap: 2px; align-items: center; }
+:root .examples-wrap { display: flex; align-items: center; }
+:root .general-chat-composer .composer-action { padding: 0 11px; line-height: 1; gap: 6px; }
+:root .general-chat-composer .general-chat-mode.visually-hidden { display: none; }
+/* the pill edge (not the icon) lines up with the text edge, like the controls on the right line up with its end */
+:root .composer-actions { margin-left: 0; gap: 4px; }
+/* text and icon sit on the vertical centre of the pill (the earlier reset had put them at the top) */
+:root .general-chat-composer .composer-action, :root .general-chat-composer .examples-menu button { align-items: center; }
+:root .general-chat-composer .composer-action { justify-content: center; }
+
+/* ---- Skeleton loading ---- */
+.skeleton-board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 8px; }
+.skeleton-board[hidden], .skeleton-report[hidden] { display: none; }
+.sk { border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 14px; align-content: start; min-height: 260px; }
+.sk.wide { grid-column: 1 / -1; min-height: 240px; }
+.skeleton-report { display: grid; gap: 14px; padding: 8px 0; }
+.skeleton-report .hero { border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 12px; }
+.skeleton-board i, .skeleton-report i { display: block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--surface-2) 25%, var(--line) 37%, var(--surface-2) 63%); background-size: 400% 100%; animation: skShimmer 1.5s ease infinite; }
+.skeleton-board i.w30, .skeleton-report i.w30 { width: 30%; } .skeleton-board i.w40 { width: 40%; } .skeleton-report i.w50 { width: 50%; }
+.skeleton-board i.w60, .skeleton-report i.w60 { width: 60%; } .skeleton-report i.w70 { width: 70%; } .skeleton-board i.w80, .skeleton-report i.w80 { width: 80%; }
+.skeleton-board i.ring { width: 130px; height: 130px; border-radius: 50%; margin: 6px auto; }
+.skeleton-board i.bars { height: 120px; border-radius: 8px; }
+.skeleton-board i.chart, .skeleton-report i.chart { height: 150px; border-radius: 8px; }
+.skeleton-report i.title { height: 22px; } .skeleton-report i.num { height: 34px; width: 45%; }
+@keyframes skShimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .skeleton-board i, .skeleton-report i { animation: none; } }
+@media (max-width: 700px) { .skeleton-board { grid-template-columns: 1fr; } }
+
+/* ---- Toasts ---- */
+#toast-stack { position: fixed; z-index: 2147482000; right: 20px; bottom: 20px; display: grid; gap: 8px; justify-items: end; pointer-events: none; }
+.toast { max-width: min(380px, calc(100vw - 40px)); padding: 10px 16px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; box-shadow: 0 10px 30px rgba(0,0,0,.14); animation: toastIn .28s cubic-bezier(.2, .8, .2, 1) both; }
+.toast-error { border-color: var(--danger); color: var(--danger-ink, var(--danger)); }
+.toast.is-leaving { opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px) scale(.98); } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+
+/* ---- Auto-hide sidebar (desktop only): out of the layout, slides over the page on touch ---- */
+.sidebar-edge { display: none; }
+@media (min-width: 781px) {
+  :root #workspace.app-shell.sidebar-autohide { grid-template-columns: minmax(0, 1fr); }
+  #workspace.sidebar-autohide .sidebar-edge { display: block; position: fixed; left: 0; top: 0; bottom: 0; width: 14px; z-index: 58; }
+  #workspace.sidebar-autohide .sidebar-edge::before { content: ""; position: absolute; left: 3px; top: 50%; width: 4px; height: 56px; margin-top: -28px; border-radius: 4px; background: var(--line-strong); transition: opacity .2s, transform .25s; }
+  #workspace.sidebar-autohide.is-peek .sidebar-edge::before { opacity: 0; transform: translateX(-6px); }
+  :root #workspace.sidebar-autohide .workspace-sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w); height: auto; z-index: 60; transform: translateX(-102%); box-shadow: none; transition: transform .3s cubic-bezier(.2, .8, .2, 1), box-shadow .3s; will-change: transform; }
+  :root #workspace.sidebar-autohide.is-peek .workspace-sidebar { transform: none; box-shadow: 0 0 0 1px var(--line), 18px 0 48px rgba(0, 0, 0, .16); }
+  :root #workspace.sidebar-autohide .sidebar-toggle, :root #workspace.sidebar-autohide .sidebar-resizer { display: none; }
+  :root #workspace.sidebar-autohide .nav-label, :root #workspace.sidebar-autohide .sidebar-brand > span:last-child { opacity: 1; pointer-events: auto; }
+}
+@media (max-width: 780px) { #sidebar-autohide { display: none; } }
+@media (prefers-reduced-motion: reduce) { :root #workspace.sidebar-autohide .workspace-sidebar { transition-duration: .01s; } }
+
+/* ---- Retrieved-but-unused list: keep the scores off the edge ---- */
+:root .retrieved-row { padding-right: 14px; }
+
+/* ---- Sonar Grid (21st.dev): a dot grid on the sign-in page; pings spread through it (see sonar-grid.js) ---- */
+.sonar-grid { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+:root .login-landing-link { color: var(--accent); text-decoration: none; }
+:root .login-landing-link:hover { text-decoration: underline; }
+:root .login-landing-link:visited { color: var(--accent); }
+:root:not([data-theme="dark"]) .login-view .login-card { background: #fff; }
+
+/* Sources column: room on the right edge; long file names wrap instead of touching it */
+:root .general-chat .chat-turn-response > .citations { padding-right: 16px; }
+:root .general-chat .chat-turn .citation-title strong, :root .general-chat .chat-turn .citation-title { overflow-wrap: anywhere; min-width: 0; }
+
+/* Score bars: a generic "span + span" margin had pushed the fill 10 px to the right; the bar and its fill start at the edge */
+:root .citation-score-bar, :root .citation-score-bar > span { margin: 0; }
+:root .citation-score { gap: 8px; }
+/* Source Lens: long file names wrap inside the box */
+:root .source-lens-body h3, :root .source-lens-pub, :root .source-lens-host { overflow-wrap: anywhere; }
+:root .general-chat .chat-turn .citation-title span.citation-score-bar, :root .general-chat .chat-turn .citation-title span.citation-score-bar > span { margin-left: 0; }
+
+/* Access matrix header: one band (the Role cell had its own grey), labels centred on one line height and wrapped evenly */
+:root .tab-panel .access-table thead th, :root .tab-panel .access-table thead th:first-child { background: var(--surface-2); vertical-align: middle; text-wrap: balance; height: 72px; padding-top: 10px; padding-bottom: 10px; }
+:root .tab-panel .access-table tbody tr:last-child > * { border-bottom: 0; }

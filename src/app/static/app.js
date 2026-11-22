@@ -1136,7 +1136,8 @@ function countUp(element) {
   const decimals = (match[1].split(".")[1] || "").length;
   const started = performance.now();
   const step = (now) => {
-    const t = Math.min(1, (now - started) / 700);
+    // a frame timestamp can precede `started`; clamp so the count never shows a negative value
+    const t = Math.min(1, Math.max(0, (now - started) / 700));
     const value = target * (1 - (1 - t) ** 3);
     element.textContent = value.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + match[2];
     if (t < 1 && element.isConnected) requestAnimationFrame(step);
@@ -1513,6 +1514,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     ).join("")}</div>`
     : "";
   const routeDetails = renderRunDetails(data);
+  const terms = matchTerms(data.search);
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading${outcome.gap || data.status === "partial" || data.limitations?.length ? " is-partial" : ""}">
@@ -1568,7 +1570,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
           const sourceExcerpt = source.source_type === "commerce_sql"
             && Array.isArray(source.commerce_observations) && source.commerce_observations.length
             ? ""
-            : `<p>${escapeHtml(source.excerpt)}</p>`;
+            : `<p>${underlineMatches(escapeHtml(source.excerpt), terms)}</p>`;
           const publisher = source.source_publisher || source.company || "";
           return `
             <article class="citation" data-cite-id="${escapeHtml(source.id)}">
@@ -1576,6 +1578,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
                 <span class="citation-id">${escapeHtml(source.id)}</span>
                 <strong>${escapeHtml(source.title)}</strong>
                 <span>${escapeHtml(location)}</span>
+                ${Number.isFinite(Number(source.score)) && source.score !== null && source.score !== "" ? `<span class="citation-meta"><span class="citation-used">✓ Đã dùng</span><span class="citation-score" title="Điểm liên quan"><span class="citation-score-bar" aria-hidden="true"><span style="width:${Math.round(Math.max(0, Math.min(1, Number(source.score))) * 100)}%"></span></span>${Number(source.score).toFixed(2)}</span></span>` : ""}
               </div>
               ${referenceScope}
               ${ocrNote}
@@ -1589,6 +1592,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
               </div>
             </article>`;
         }).join("")}
+        ${renderRetrievedChunks(data.retrieved)}
       </div>` : ""}
     ${routeDetails}
     ${tokenUsage}
@@ -1596,6 +1600,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       ${outcome.next ? "" : `<button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">${ICONS.copy}<span class="action-label">Copy</span></button>`}
     </div>`;
 
+  bindRetrievedChunks(panel);
   // Inline [S1] chips scroll to and highlight their source card.
   panel.querySelectorAll(".cite-ref").forEach((ref) => ref.addEventListener("click", (event) => {
     event.preventDefault();
@@ -1607,6 +1612,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     void card.offsetWidth;
     card.classList.add("is-highlighted");
     setTimeout(() => card.classList.remove("is-highlighted"), 1600);
+    toggleSourceLens(ref, card);
   }));
   requestAnimationFrame(() => pruneCitationToggles(panel));
   panel.querySelectorAll(".citation-toggle").forEach((toggle) => toggle.addEventListener("click", () => {
@@ -1619,6 +1625,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       try {
         await navigator.clipboard.writeText(data.answer);
         copyBtn.innerHTML = `${ICONS.check}<span class="action-label">Copied</span>`;
+        window.toast?.("Copied to clipboard");
         copyBtn.classList.add("copied");
         setTimeout(() => {
           copyBtn.innerHTML = `${ICONS.copy}<span class="action-label">Copy</span>`;
@@ -1666,6 +1673,137 @@ function renderAgentRows(data) {
   }).join("");
 }
 
+// Source Lens (21st.dev, ibrandify): a citation pill opens a modal source inspector placed under the pill (at most
+// 400 px wide, kept inside the viewport). It shows "Source n / N", the document and its location, the passage as the
+// guidance summary, the sentence it was opened from, Copy / Open source, and previous / next to browse the answer's
+// sources. Escape or a click outside closes it and focus returns to the pill.
+function sourceLensData(card) {
+  const passage = card.querySelector(":scope > p");
+  return {
+    id: card.dataset.citeId,
+    title: card.querySelector(".citation-title strong")?.textContent || "",
+    where: card.querySelector(".citation-title > span:not(.citation-id):not(.citation-meta)")?.textContent || "",
+    text: (passage?.dataset.plain ?? passage?.textContent ?? "").trim(),
+    url: card.querySelector(".citation-foot a[href]")?.href || "",
+  };
+}
+function toggleSourceLens(ref, card) {
+  const panel = ref.closest(".answer-panel");
+  const cards = [...(panel?.querySelectorAll(".citations .citation") || [])].filter((item) => !item.hidden);
+  if (!cards.length) return;
+  let index = Math.max(0, cards.indexOf(card));
+  const claim = citedClaim(ref).trim();
+  const dialog = document.createElement("dialog");
+  dialog.className = "source-lens";
+  dialog.setAttribute("aria-labelledby", "source-lens-title");
+  const render = () => {
+    const source = sourceLensData(cards[index]);
+    let host = "";
+    try { host = source.url ? new URL(source.url).hostname : ""; } catch { host = ""; }
+    dialog.innerHTML = `
+      <div class="source-lens-bar"><span>Source ${index + 1} / ${cards.length}</span><button type="button" class="source-lens-x" aria-label="Close source inspector">×</button></div>
+      <div class="source-lens-body">
+        <p class="source-lens-pub">${escapeHtml(source.where)}</p>
+        <h3 id="source-lens-title">${escapeHtml(source.title || "Source unavailable")}</h3>
+        <p class="source-lens-host">${escapeHtml(host || "Internal document")}</p>
+        <div class="source-lens-summary"><p class="source-lens-label">Passage · ${escapeHtml(source.id)}</p><p>${escapeHtml(source.text)}</p></div>
+        ${claim ? `<div class="source-lens-from"><p class="source-lens-label">Opened from</p><p>${escapeHtml(claim.length > 160 ? `${claim.slice(0, 157)}…` : claim)}</p>${index !== cards.indexOf(card) ? `<p class="source-lens-note">This source supports another part of the answer.</p>` : ""}</div>` : ""}
+        <div class="source-lens-actions">
+          <button type="button" class="source-lens-copy" ${source.url ? "" : "disabled"}>Copy link</button>
+          ${source.url ? `<a class="source-lens-open" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>` : ""}
+        </div>
+        <p class="source-lens-status" role="status"></p>
+      </div>
+      <div class="source-lens-foot"><span>Browse sources</span><span><button type="button" class="source-lens-prev" aria-label="Previous source" ${cards.length < 2 ? "disabled" : ""}>‹</button><button type="button" class="source-lens-next" aria-label="Next source" ${cards.length < 2 ? "disabled" : ""}>›</button></span></div>`;
+    dialog.querySelector(".source-lens-x").addEventListener("click", () => dialog.close());
+    dialog.querySelector(".source-lens-prev").addEventListener("click", () => { index = (index - 1 + cards.length) % cards.length; render(); });
+    dialog.querySelector(".source-lens-next").addEventListener("click", () => { index = (index + 1) % cards.length; render(); });
+    dialog.querySelector(".source-lens-copy").addEventListener("click", async () => {
+      const status = dialog.querySelector(".source-lens-status");
+      try { await navigator.clipboard.writeText(source.url); status.textContent = "Link copied"; }
+      catch { status.textContent = "Copy unavailable. Open the source to copy its link."; }
+    });
+  };
+  const place = () => {
+    const rect = ref.getBoundingClientRect();
+    const width = Math.min(400, document.documentElement.clientWidth - 32);
+    const height = Math.min(dialog.getBoundingClientRect().height || 420, window.innerHeight - 32);
+    dialog.style.width = `${width}px`;
+    dialog.style.left = `${Math.max(16, Math.min(rect.left, document.documentElement.clientWidth - width - 16))}px`;
+    dialog.style.top = `${Math.max(16, Math.min(rect.bottom + 12, window.innerHeight - height - 16))}px`;
+  };
+  render();
+  document.body.append(dialog);
+  dialog.addEventListener("click", (event) => {
+    if (event.target !== dialog) return;
+    const box = dialog.getBoundingClientRect();
+    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
+  });
+  dialog.addEventListener("close", () => { window.removeEventListener("resize", place); dialog.remove(); ref.focus(); });
+  window.addEventListener("resize", place);
+  place();
+  dialog.showModal();
+  place();
+}
+
+// Retrieved Chunks marks the words a passage matched: they step up to ink over a soft underline. Terms come from the
+// search queries the API reports (metadata.search.lexical_queries); a term matches at a word start, to the word's end.
+const MATCH_STOPWORDS = new Set("của và các những được cho với không thì là có khi trong này một người the and for with what how are does from that this".split(" "));
+function matchTerms(search) {
+  const text = Object.values(search?.lexical_queries || {}).filter((value) => typeof value === "string").join(" ");
+  return [...new Set(text.toLocaleLowerCase().split(/[^\p{L}\p{N}]+/u).filter((word) => word.length >= 3 && !MATCH_STOPWORDS.has(word)))];
+}
+function underlineMatches(escaped, terms) {
+  if (!terms.length) return escaped;
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}&])(${terms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})[\\p{L}\\p{N}]*`, "giu");
+  return escaped.replace(pattern, (word) => `<mark class="chunk-match">${word}</mark>`);
+}
+
+// With a reranker, retrieval scores are its raw logits (any real number, often negative); the logistic function turns
+// them into the 0-1 relevance the bars show. Without one they are cosine similarities, already 0-1.
+function relevanceScore(raw, reranked) {
+  const value = Number(raw);
+  if (raw === null || raw === undefined || raw === "" || !Number.isFinite(value)) return null;
+  return reranked ? 1 / (1 + Math.exp(-value)) : Math.max(0, Math.min(1, value));
+}
+
+// Every passage the answer model saw (metadata.retrieved), after the 21st.dev Retrieved Chunks list: rank, document,
+// page, used mark and relevance bar; a Rank / Score switch reorders the rows in place.
+function renderRetrievedChunks(rows) {
+  // The cited passages are already the source cards above; list only the other passages the model saw,
+  // keeping their overall rank so the order of retrieval stays visible.
+  if (!Array.isArray(rows) || !rows.some((row) => !row.used)) return "";
+  const items = rows.map((row, index) => row.used ? "" : (() => {
+    const score = Number(row.score);
+    const hasScore = row.score !== null && row.score !== undefined && Number.isFinite(score);
+    const page = row.page_number ? `trang ${escapeHtml(row.page_number)}` : Number.isInteger(row.chunk_index) ? `đoạn ${row.chunk_index}` : "";
+    return `<li class="retrieved-row${row.used ? " is-used" : ""}" data-rank="${index + 1}" data-score="${hasScore ? score : -1}">
+      <span class="retrieved-rank">${index + 1}</span>
+      <span class="retrieved-doc"><strong>${escapeHtml(row.document || "")}</strong>${page ? ` <span>${page}</span>` : ""}</span>
+      ${row.used ? `<span class="citation-used">✓ Đã dùng</span>` : ""}
+      ${hasScore ? `<span class="citation-score"><span class="citation-score-bar" aria-hidden="true"><span style="width:${Math.round(Math.max(0, Math.min(1, score)) * 100)}%"></span></span>${score.toFixed(2)}</span>` : ""}
+    </li>`;
+  })()).join("");
+  const unused = rows.filter((row) => !row.used).length;
+  return `<div class="retrieved-chunks">
+    <div class="retrieved-head"><h5>Đoạn khác đã tìm, không dùng (${unused})</h5>
+      ${unused > 1 ? `<div class="retrieved-sort" role="group" aria-label="Thứ tự"><button type="button" data-sort="rank" aria-pressed="true">Thứ hạng</button><button type="button" data-sort="score" aria-pressed="false">Điểm</button></div>` : ""}
+    </div>
+    <ol>${items}</ol>
+  </div>`;
+}
+
+function bindRetrievedChunks(root) {
+  root.querySelectorAll(".retrieved-sort button").forEach((button) => button.addEventListener("click", () => {
+    const box = button.closest(".retrieved-chunks");
+    const key = button.dataset.sort;
+    box.querySelectorAll(".retrieved-sort button").forEach((other) => other.setAttribute("aria-pressed", String(other === button)));
+    const list = box.querySelector("ol");
+    [...list.children].sort((a, b) => key === "score" ? b.dataset.score - a.dataset.score : a.dataset.rank - b.dataset.rank)
+      .forEach((row) => list.append(row));
+  }));
+}
+
 function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = true) {
   if (result.agent === 'report' && ['sales_performance','inventory_operations'].includes(result.data?.report?.report_type)) {
     const report = document.createElement('article');
@@ -1676,12 +1814,15 @@ function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = tr
     if (shouldScroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return;
   }
+  const reranked = Boolean(result.metadata?.search?.reranker_model);
   const citations = (result.evidence || []).map((item) => {
     const metadata = item.metadata || {};
     return { ...metadata, id: item.citation_id, title: item.source, source_type: item.source_type,
-      excerpt: item.content || "", content: item.content, score: metadata.similarity_score };
+      excerpt: item.content || "", content: item.content, score: relevanceScore(metadata.similarity_score, reranked) };
   });
-  renderAnswer({ ...result, ...result.metadata, metadata: result.metadata, citations }, panel, shouldScroll);
+  const retrieved = Array.isArray(result.metadata?.retrieved)
+    ? result.metadata.retrieved.map((row) => ({ ...row, score: relevanceScore(row.score, reranked) })) : result.metadata?.retrieved;
+  renderAnswer({ ...result, ...result.metadata, retrieved, metadata: result.metadata, citations }, panel, shouldScroll);
 }
 
 // "9.4 s" reads the same in every locale; "9.420 ms" looks like 9 ms where "." groups thousands.
@@ -2076,32 +2217,46 @@ function renderRunDetails(data) {
 // `revealAfter` (the source panel, then each card) appears one by one after the text is complete.
 // Skipped for reduced motion.
 function typeOutText(element, revealAfter = []) {
+  // Word reveal after 21st.dev AI Response (SmoothUI): each word blurs in as it "arrives"; a citation
+  // chip is one token and pops in. 2–6 s in total, punctuation and whitespace stay plain text.
   if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
   const nodes = [];
-  while (walker.nextNode()) nodes.push([walker.currentNode, walker.currentNode.nodeValue]);
-  const total = nodes.reduce((sum, [, text]) => sum + text.length, 0);
-  if (!total) return;
-  for (const [node] of nodes) node.nodeValue = "";
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  const tokens = [];
+  const chips = new Set();
+  for (const node of nodes) {
+    const chip = node.parentElement?.closest(".cite-ref");
+    if (chip) {
+      if (!chips.has(chip)) { chips.add(chip); chip.classList.add("ai-pending"); tokens.push([chip, "ai-pop"]); }
+      continue;
+    }
+    const fragment = document.createDocumentFragment();
+    for (const part of node.nodeValue.split(/(\s+)/)) {
+      if (!part) continue;
+      if (/^\s+$/.test(part) || !/[\p{L}\p{N}]/u.test(part)) { fragment.append(part); continue; }
+      const word = document.createElement("span");
+      word.className = "ai-word ai-pending";
+      word.textContent = part;
+      fragment.append(word);
+      tokens.push([word, "ai-in"]);
+    }
+    node.replaceWith(fragment);
+  }
+  if (!tokens.length) return;
   for (const item of revealAfter) item.hidden = true;
   element.setAttribute("aria-busy", "true");
-  const seconds = Math.min(10, Math.max(3, total / 60));
-  const perFrame = Math.max(1, Math.ceil(total / (seconds * 60)));
+  const perFrame = Math.max(1, Math.ceil(tokens.length / (Math.min(6, Math.max(2, tokens.length / 25)) * 60)));
   let index = 0;
-  let shown = 0;
   const step = () => {
-    let budget = perFrame;
-    while (budget > 0 && index < nodes.length) {
-      const [node, text] = nodes[index];
-      const take = Math.min(budget, text.length - shown);
-      node.nodeValue = text.slice(0, shown + take);
-      shown += take;
-      budget -= take;
-      if (shown >= text.length) { index += 1; shown = 0; }
+    for (const end = Math.min(tokens.length, index + perFrame); index < end; index += 1) {
+      const [token, name] = tokens[index];
+      token.classList.remove("ai-pending");
+      token.classList.add(name);
     }
-    if (index < nodes.length && element.isConnected) requestAnimationFrame(step);
+    if (index < tokens.length && element.isConnected) requestAnimationFrame(step);
     else {
-      for (const [node, text] of nodes) node.nodeValue = text;
+      for (const [token] of tokens) token.classList.remove("ai-pending");
       element.removeAttribute("aria-busy");
       revealAfter.forEach((item, position) => setTimeout(() => { item.hidden = false; requestAnimationFrame(() => pruneCitationToggles(item.closest(".answer-panel") || item)); }, 500 + position * 400));
     }
@@ -2750,7 +2905,7 @@ function clearCitedSentence(turn) {
   turn.querySelectorAll(".citation.is-cited").forEach((card) => {
     card.classList.remove("is-cited");
     const passage = card.querySelector(":scope > p");
-    if (passage?.dataset.plain !== undefined) { passage.textContent = passage.dataset.plain; delete passage.dataset.plain; }
+    if (passage?.dataset.plain !== undefined) { passage.innerHTML = passage.dataset.html ?? escapeHtml(passage.dataset.plain); delete passage.dataset.plain; delete passage.dataset.html; }
   });
   turn.querySelectorAll(".cite-ref.is-pointed").forEach((ref) => ref.classList.remove("is-pointed"));
 }
@@ -2772,6 +2927,7 @@ function markCitedSentence(ref) {
   });
   if (!bestScore) return;
   passage.dataset.plain = plain;
+  passage.dataset.html = passage.innerHTML;
   passage.innerHTML = sentences.map((sentence, index) => index === best ? `<mark class="cited-sentence">${escapeHtml(sentence)}</mark>` : escapeHtml(sentence)).join("");
   card.classList.add("is-cited");
   ref.classList.add("is-pointed");
@@ -2808,6 +2964,14 @@ function renderChatTranscript(root, turns, shouldScroll) {
         response.querySelectorAll(".clarification-option").forEach((button) => { button.disabled = true; });
       }
       attachFeedback(response, turn);
+      // Generation stats: only what this browser measured and what the answer itself carries.
+      if (turn.elapsedMs) {
+        const sources = (turn.result.citations?.length) || (turn.result.evidence?.length) || 0;
+        const stats = document.createElement("p");
+        stats.className = "gen-stats";
+        stats.textContent = [`Answered in ${(turn.elapsedMs / 1000).toFixed(1)} s`, sources ? `${sources} source${sources === 1 ? "" : "s"} cited` : ""].filter(Boolean).join(" · ");
+        response.append(stats);
+      }
       if (turn.typeOut) {
         turn.typeOut = false;
         typeOutText(response.querySelector(".answer-text"),
@@ -2900,6 +3064,7 @@ async function sendChatMessage({ question, displayQuestion, requestMetadata, mod
     $(".status-dot").classList.add("connected");
     turn.result = data;
     turn.state = "complete";
+    turn.elapsedMs = Date.now() - turn.startedAt;
     turn.typeOut = true;
   } catch (error) {
     if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
@@ -3245,6 +3410,27 @@ $("#upload-form").addEventListener("submit", async (event) => {
   }
 });
 
+// Saved dashboards are sandboxed documents that cannot see the page theme, so the theme is stamped into their markup.
+window.themedDoc = html => html.replace("<html ", `<html data-embed="1"${document.documentElement.getAttribute("data-theme") === "dark" ? ' data-theme="dark"' : ""} `);
+function restyleDashboardFrames() {
+  for (const id of ["home-overview-preview", "dw-preview"]) {
+    const frame = document.getElementById(id);
+    if (frame && frame._raw && frame.getAttribute("srcdoc") !== null) frame.srcdoc = window.themedDoc(frame._raw);
+  }
+}
+
+function themeGlass(apply) {
+  const glass = document.createElement("div");
+  glass.className = "theme-glass";
+  glass.setAttribute("aria-hidden", "true");
+  document.body.append(glass);
+  glass.getBoundingClientRect(); // commit the clear state so the frost fades in
+  glass.classList.add("in");
+  // Timers, not animation events, drive the steps so the theme always changes and the pane is always removed.
+  setTimeout(() => { apply(); glass.classList.replace("in", "out"); }, 300);
+  setTimeout(() => glass.remove(), 900);
+}
+
 function setupThemeToggle() {
   const button = $("#theme-toggle");
   if (!button) return;
@@ -3257,11 +3443,11 @@ function setupThemeToggle() {
       } else {
         document.documentElement.removeAttribute("data-theme");
       }
+      restyleDashboardFrames();
     };
-    // Paint/eraser transition (redesign.css); plain swap without View Transitions or with reduced motion.
-    if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      document.startViewTransition(apply);
-    } else apply();
+    // A pane of frosted glass fades in, the theme swaps behind it, and the glass clears (liquid-glass style).
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && document.body.animate) themeGlass(apply);
+    else apply();
     try {
       localStorage.setItem("app_theme", nextTheme);
     } catch {}
@@ -3345,3 +3531,207 @@ $("#sidebar-toggle").addEventListener("click", () => {
   setSidebarCollapsed(collapsed);
   try { localStorage.setItem("sidebar_collapsed", String(collapsed)); } catch {}
 });
+
+// Text Reveal (21st.dev): the sign-in and welcome headings rise word by word once. Plain text stays readable for
+// screen readers through aria-label; skipped for reduced motion.
+(() => {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.querySelectorAll(".login-card h1, #general-chat-welcome h3").forEach((heading) => {
+    const text = heading.textContent.trim();
+    if (!text || heading.children.length) return;
+    heading.setAttribute("aria-label", text);
+    heading.textContent = "";
+    text.split(/\s+/).forEach((word, index, words) => {
+      const span = document.createElement("span");
+      span.className = "reveal-word";
+      span.setAttribute("aria-hidden", "true");
+      span.style.animationDelay = `${index * 60}ms`;
+      span.textContent = word;
+      heading.append(span, index < words.length - 1 ? " " : "");
+    });
+  });
+})();
+
+// AI Prompt Composer (21st.dev, hellocloud.webdev): the "Route to" select becomes a 38 px pill whose menu lists the
+// other routes first and the current one last with a check, like the composer's mode menu; the native select stays
+// as the form value. The send button turns dark once there is text to send.
+(() => {
+  const select = document.getElementById("general-chat-mode");
+  const input = document.getElementById("general-chat-question");
+  const send = document.getElementById("general-chat-send");
+  if (!select || !input || !send) return;
+  const label = select.closest("label");
+  const wrap = document.createElement("div");
+  wrap.className = "route-pill-wrap";
+  wrap.innerHTML = `<button type="button" class="route-pill" aria-haspopup="menu" aria-expanded="false"><span class="route-pill-text"></span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="route-menu" role="menu" hidden></div>`;
+  label.after(wrap);
+  label.classList.add("visually-hidden");
+  const pill = wrap.querySelector(".route-pill");
+  const menu = wrap.querySelector(".route-menu");
+  const text = () => select.options[select.selectedIndex]?.textContent || "";
+  const sync = () => { wrap.querySelector(".route-pill-text").textContent = text(); pill.setAttribute("aria-label", `Route to: ${text()}`); };
+  const close = () => { menu.hidden = true; pill.setAttribute("aria-expanded", "false"); pill.classList.remove("is-open"); };
+  const open = () => {
+    const options = [...select.options];
+    const ordered = [...options.filter((option) => !option.selected), ...options.filter((option) => option.selected)];
+    menu.innerHTML = ordered.map((option) => `<button type="button" role="menuitemradio" aria-checked="${option.selected}" data-value="${escapeHtml(option.value)}"><span>${escapeHtml(option.textContent)}</span>${option.selected ? '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.2 8.5L6.5 11.8L13 4.5" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ""}</button>`).join("");
+    menu.hidden = false;
+    pill.setAttribute("aria-expanded", "true");
+    pill.classList.add("is-open");
+    menu.querySelector('[aria-checked="true"]')?.focus();
+  };
+  pill.addEventListener("click", (event) => { event.stopPropagation(); menu.hidden ? open() : close(); });
+  menu.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-value]");
+    if (!item) return;
+    event.stopPropagation();
+    select.value = item.dataset.value;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    sync();
+    close();
+    pill.focus();
+  });
+  menu.addEventListener("keydown", (event) => {
+    const items = [...menu.querySelectorAll("[data-value]")];
+    const at = items.indexOf(document.activeElement);
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); items[(at + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus(); }
+    if (event.key === "Escape") { event.preventDefault(); close(); pill.focus(); }
+  });
+  document.addEventListener("click", (event) => { if (!wrap.contains(event.target)) close(); });
+  select.addEventListener("change", sync);
+  const ready = () => send.classList.toggle("is-ready", input.value.trim().length > 0);
+  input.addEventListener("input", ready);
+  new MutationObserver(ready).observe(send, { attributes: true, attributeFilter: ["disabled"] });
+  document.getElementById("general-chat-form")?.addEventListener("submit", () => setTimeout(ready));
+  sync();
+  ready();
+})();
+
+// Prompt Input with Actions: Examples menu (the starter questions), Clear, a length counter that shows near the limit,
+// "/" to focus the box, and Esc to leave it. Nothing here sends anything by itself.
+(() => {
+  const form = document.getElementById("general-chat-form");
+  const input = document.getElementById("general-chat-question");
+  const pillWrap = form?.querySelector(".route-pill-wrap");
+  if (!form || !input || !pillWrap) return;
+  const icon = (d) => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const bar = document.createElement("div");
+  bar.className = "composer-actions";
+  bar.innerHTML = `<div class="examples-wrap"><button type="button" class="composer-action" aria-haspopup="menu" aria-expanded="false">${icon('<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>')}<span>Examples</span></button><div class="examples-menu" role="menu" hidden></div></div>
+    <button type="button" class="composer-action composer-clear" aria-label="Clear message" hidden>${icon('<path d="M18 6 6 18M6 6l12 12"/>')}<span>Clear</span></button>
+    <span class="composer-count" aria-live="off" hidden></span>`;
+  pillWrap.before(bar);
+  const trigger = bar.querySelector(".examples-wrap > button");
+  const menu = bar.querySelector(".examples-menu");
+  const clear = bar.querySelector(".composer-clear");
+  const count = bar.querySelector(".composer-count");
+  const closeMenu = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); };
+  const update = () => {
+    const length = input.value.length, limit = Number(input.maxLength) || 2000;
+    clear.hidden = length === 0;
+    count.hidden = length < limit * 0.8;
+    count.textContent = `${length}/${limit}`;
+  };
+  trigger.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (!menu.hidden) return closeMenu();
+    const seen = new Set();
+    const items = [...document.querySelectorAll(".quick-chip[data-prompt]")].filter((chip) => !seen.has(chip.dataset.prompt) && seen.add(chip.dataset.prompt));
+    menu.innerHTML = items.length ? items.map((chip) => `<button type="button" role="menuitem" data-prompt="${escapeHtml(chip.dataset.prompt)}">${escapeHtml(chip.textContent.trim())}</button>`).join("") : '<p class="examples-empty">No examples available</p>';
+    menu.hidden = false;
+    trigger.setAttribute("aria-expanded", "true");
+    menu.querySelector("button")?.focus();
+  });
+  menu.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-prompt]");
+    if (!item) return;
+    input.value = item.dataset.prompt;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    closeMenu();
+    input.focus();
+  });
+  menu.addEventListener("keydown", (event) => {
+    const items = [...menu.querySelectorAll("button")];
+    const at = items.indexOf(document.activeElement);
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); items[(at + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus(); }
+    if (event.key === "Escape") { event.preventDefault(); closeMenu(); trigger.focus(); }
+  });
+  document.addEventListener("click", (event) => { if (!bar.contains(event.target)) closeMenu(); });
+  clear.addEventListener("click", () => { input.value = ""; input.dispatchEvent(new Event("input", { bubbles: true })); input.focus(); });
+  input.addEventListener("input", update);
+  form.addEventListener("submit", () => setTimeout(update));
+  document.addEventListener("keydown", (event) => {
+    const editing = event.target.closest?.("input, textarea, select, [contenteditable]");
+    if (event.key === "/" && !editing && !event.metaKey && !event.ctrlKey && form.offsetParent !== null) { event.preventDefault(); input.focus(); }
+    else if (event.key === "Escape" && event.target === input) input.blur();
+  });
+  update();
+})();
+
+// Toasts: short confirmations that fade away. They mirror the pages' own status lines (which stay as the live region),
+// so success messages and errors from Dashboard and Reports are seen even when the line has scrolled out of view.
+window.toast = (message, kind = "ok") => {
+  if (!message) return;
+  let stack = document.getElementById("toast-stack");
+  if (!stack) {
+    stack = document.createElement("div");
+    stack.id = "toast-stack";
+    stack.setAttribute("aria-hidden", "true");
+    document.body.append(stack);
+  }
+  const item = document.createElement("div");
+  item.className = `toast toast-${kind}`;
+  item.textContent = message;
+  stack.append(item);
+  while (stack.children.length > 3) stack.firstChild.remove();
+  setTimeout(() => item.classList.add("is-leaving"), 3200);
+  setTimeout(() => item.remove(), 3700);
+};
+(() => {
+  const done = /\b(saved|generated|downloaded|refreshed|deleted|created|copied|opened)\b|đã (lưu|tạo|tải|xóa|xoá|mở)/i;
+  const working = /^(saving|generating|preparing|opening|deleting|loading|refreshing|đang)/i;
+  for (const id of ["dw-status", "report-workspace-status"]) {
+    const line = document.getElementById(id);
+    if (!line) continue;
+    let last = "";
+    new MutationObserver(() => {
+      const message = line.textContent.trim();
+      if (!message || message === last) return;
+      last = message;
+      if (line.dataset.error === "true") window.toast(message, "error");
+      else if (done.test(message) && !working.test(message)) window.toast(message);
+    }).observe(line, { childList: true, characterData: true, subtree: true });
+  }
+})();
+
+// Auto-hide sidebar: the sidebar leaves the layout (the page uses the full width) and slides over the page while the
+// pointer is on the left edge or inside it, or while focus is inside it. The choice is kept in this browser only.
+(() => {
+  const root = document.getElementById("workspace"), side = document.getElementById("workspace-sidebar");
+  const edge = document.getElementById("sidebar-edge"), button = document.getElementById("sidebar-autohide");
+  if (!root || !side || !edge || !button) return;
+  const label = button.querySelector(".autohide-label");
+  const hidden = () => root.classList.contains("sidebar-autohide");
+  let timer = 0;
+  const peek = (on) => {
+    clearTimeout(timer);
+    if (on) root.classList.add("is-peek");
+    else timer = setTimeout(() => root.classList.remove("is-peek"), 260);
+  };
+  const set = (on, save) => {
+    root.classList.toggle("sidebar-autohide", on);
+    root.classList.toggle("is-peek", on && save); // switched on from inside the sidebar: stay open until the pointer leaves
+    button.setAttribute("aria-pressed", String(on));
+    label.textContent = on ? "Keep sidebar open" : "Auto-hide sidebar";
+    button.title = on ? "Show the sidebar all the time" : "Hide the sidebar until the pointer touches the left edge";
+    if (save) try { localStorage.setItem("sidebar_autohide", String(on)); } catch {}
+  };
+  edge.addEventListener("pointerenter", () => peek(true));
+  edge.addEventListener("pointerleave", () => peek(false));
+  side.addEventListener("pointerenter", () => { if (hidden()) peek(true); });
+  side.addEventListener("pointerleave", () => { if (hidden()) peek(false); });
+  side.addEventListener("focusin", () => { if (hidden()) peek(true); });
+  side.addEventListener("focusout", (event) => { if (hidden() && !side.contains(event.relatedTarget)) peek(false); });
+  button.addEventListener("click", () => set(!hidden(), true));
+  try { set(localStorage.getItem("sidebar_autohide") === "true", false); } catch {}
+})();

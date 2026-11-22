@@ -29,11 +29,15 @@
     const valid = () => token === epoch && generation === sessionGeneration && !!currentUser;
     setBusy(true);
     status(message);
+    const skeleton = document.getElementById('dw-skeleton');
+    const covering = !!skeleton && !el('editor').hidden;
+    if (covering) { skeleton.hidden = false; el('preview').hidden = true; } // the skeleton replaces the old preview while it reloads
     try {
       await work(valid);
     } catch (error) {
       if (valid()) status(error.message || 'Dashboard request failed.', true);
     } finally {
+      if (covering) { skeleton.hidden = true; el('preview').hidden = false; }
       if (valid()) {
         setBusy(false);
         if (!root.hidden && !el('create').hidden && !restartRequired) el('prompt').focus();
@@ -125,7 +129,7 @@
     el('prompt').value = '';
     el('create-scope').value = '';
     el('meta').textContent = `Revision ${DashboardFormatting.number(selected.revision,{unit:'count'})} · ${selected.status} · Data refreshed ${DashboardFormatting.datetime(selected.data_updated_at)}`;
-    el('preview').srcdoc = data.html;
+    el('preview')._raw = data.html; el('preview').srcdoc = window.themedDoc ? window.themedDoc(data.html) : data.html;
     el('open').href = data.html_url;
     el('download').href = `${data.html_url}?download=true`;
     tileEditors();

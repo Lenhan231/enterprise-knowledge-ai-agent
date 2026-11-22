@@ -15,6 +15,9 @@ from core.prompts.examples import GROQ_SMOKE_PROMPT
 load_dotenv()
 
 
+# Per-call timeout; eval raises it for slower self-hosted serving (quality runs, not latency runs).
+CALL_TIMEOUT = float(os.getenv('LLM_CALL_TIMEOUT', '60'))
+
 class GroqProvider(LLMInterface):
     """OpenAI-compatible Groq provider with benchmark-safe model overrides."""
 
@@ -33,7 +36,10 @@ class GroqProvider(LLMInterface):
         self.temperature = temperature
         self.reasoning_effort = "none" if self.model_name.startswith("qwen/") else "low"
         self.last_usage: dict[str, int | None] | None = None
-        self._clients = [OpenAI(api_key=key, base_url='https://api.groq.com/openai/v1') for key in keys]
+        # Evaluation only: GROQ_BASE_URL points the same calls at a self-hosted copy of the model (vLLM).
+        self._self_hosted = bool(os.getenv('GROQ_BASE_URL'))
+        self._clients = [OpenAI(api_key=key, base_url=os.getenv('GROQ_BASE_URL') or 'https://api.groq.com/openai/v1')
+                         for key in keys]
         self.client = self._clients[0]
         self._active = 0
         self._cooldowns = [0.0] * len(keys)
@@ -51,7 +57,7 @@ class GroqProvider(LLMInterface):
         last_rate_index = None
         rate_limited_this_call = False
         for index in order:
-            remaining(60)
+            remaining(CALL_TIMEOUT)
             with self._lock:
                 cooling = self._cooldowns[index] > time.monotonic()
             if cooling:
@@ -81,7 +87,7 @@ class GroqProvider(LLMInterface):
                 except (TypeError, ValueError):
                     match = re.search(r'try again in ([\d.]+)s', message)
                     delay = float(match.group(1)) if match else None
-                if delay is not None and 0 <= delay <= 10 and remaining(60) > delay + 1:
+                if delay is not None and 0 <= delay <= 10 and remaining(CALL_TIMEOUT) > delay + 1:
                     time.sleep(delay + 1)
                     response = self._create(last_rate_index, prompt, max_output_tokens, **({'response_schema': response_schema} if response_schema else {}))
                     with self._lock:
@@ -106,7 +112,7 @@ class GroqProvider(LLMInterface):
 
     def _create(self, index, prompt, max_output_tokens, *, response_schema=None):
         for attempt in range(2):
-            client = self._clients[index].with_options(timeout=remaining(60), max_retries=0)
+            client = self._clients[index].with_options(timeout=remaining(CALL_TIMEOUT), max_retries=0)
             try:
                 if response_schema:
                     schema = response_schema.copy()
@@ -114,11 +120,21 @@ class GroqProvider(LLMInterface):
                     result = client.chat.completions.create(
                         model=self.model_name, messages=[{'role': 'system', 'content': instruction},
                             {'role': 'user', 'content': prompt}],
-                        temperature=self.temperature, reasoning_effort=self.reasoning_effort,
+                        temperature=self.temperature, **(self._self_hosted_reasoning() if self._self_hosted else {'reasoning_effort': self.reasoning_effort}),
                         max_completion_tokens=max_output_tokens,
                         response_format={'type': 'json_schema', 'json_schema': {
                             'name': 'dashboard_response', 'strict': True, 'schema': schema}},
                     )
+                    usage = result.usage
+                    return SimpleNamespace(output_text=result.choices[0].message.content or '',
+                        usage=None if usage is None else SimpleNamespace(
+                            input_tokens=usage.prompt_tokens, output_tokens=usage.completion_tokens,
+                            total_tokens=usage.total_tokens))
+                if self._self_hosted:  # vLLM: chat completions; Qwen's thinking off matches Groq's reasoning effort "none"
+                    result = client.chat.completions.create(
+                        model=self.model_name, messages=[{'role': 'user', 'content': prompt}],
+                        temperature=self.temperature, max_tokens=max_output_tokens,
+                        **self._self_hosted_reasoning())
                     usage = result.usage
                     return SimpleNamespace(output_text=result.choices[0].message.content or '',
                         usage=None if usage is None else SimpleNamespace(
@@ -132,7 +148,13 @@ class GroqProvider(LLMInterface):
                 # 503 "over capacity" is model-wide, so another key does not help; one short retry often does.
                 if attempt or error.status_code != 503:
                     raise
-                time.sleep(min(1.0, remaining(60)))
+                time.sleep(min(1.0, remaining(CALL_TIMEOUT)))
+
+    def _self_hosted_reasoning(self):
+        # vLLM: Qwen's thinking is a chat-template switch (off = Groq's "none"); gpt-oss takes reasoning_effort as Groq does.
+        if self.model_name.startswith('qwen/'):
+            return {'extra_body': {'chat_template_kwargs': {'enable_thinking': False}}}
+        return {'reasoning_effort': self.reasoning_effort}
 
     @staticmethod
     def _token_count(usage, field: str) -> int | None:

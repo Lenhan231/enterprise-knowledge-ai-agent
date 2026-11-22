@@ -81,6 +81,28 @@ def synthetic_additional_output_audit(case, cases_doc, observation, column_name,
 
 
 class V31ContractTests(unittest.TestCase):
+    def test_review_page_can_restore_committed_approvals_after_browser_reset(self):
+        page = (HERE / "SEMANTIC_REVIEW_V3_1.html").read_text(encoding="utf-8")
+        self.assertIn('id="restoreRecordedReviews"', page)
+        self.assertIn('"review_v3_1_reviewer_1_Lenhan231_complete.json"', page)
+        self.assertIn('"review_v3_1_reviewer_2_user_reported_complete.json"', page)
+        self.assertIn("async function restoreRecordedReviews({ announce = true, onlyMissing = false } = {})", page)
+        self.assertIn("await importReview({ name: filename, text: async () => text }, role, { notify: announce })", page)
+        self.assertIn("40/40 APPROVE mỗi reviewer", page)
+        self.assertIn("Adjudication và freeze vẫn đang chờ", page)
+
+    def test_review_page_auto_restores_missing_committed_reviews_on_load(self):
+        page = (HERE / "SEMANTIC_REVIEW_V3_1.html").read_text(encoding="utf-8")
+        self.assertIn(
+            'await restoreRecordedReviews({ announce: false, onlyMissing: true });',
+            page,
+        )
+        self.assertIn(
+            'records.filter(([role]) => role === "reviewer_1" ? !state.review1 : !state.review2)',
+            page,
+        )
+        self.assertIn('importReview({ name: filename, text: async () => text }, role, { notify: announce })', page)
+
     def test_recovered_reviewer_approval_is_linked_and_does_not_freeze_cohort(self):
         manifest = read("FREEZE_MANIFEST_V3_1_DRAFT.json")
         review_path = HERE / "review_v3_1_reviewer_1_Lenhan231_complete.json"

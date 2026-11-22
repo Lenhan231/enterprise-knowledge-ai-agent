@@ -244,7 +244,8 @@
         <label class="file-button">Nhập file Reviewer 1<input id="importReviewer1" type="file" accept="application/json,.json"></label>
         <label class="file-button">Nhập file Reviewer 2<input id="importReviewer2" type="file" accept="application/json,.json"></label>
       </div>
-      <div class="toolbar-note" id="privacyNote">Review chỉ autosave trong localStorage của browser này, không ghi file vào repo/server. Hãy bấm Export review JSON và kiểm tra file tải xuống trước khi đóng trang. Reviewer 1/2 không hiển thị quyết định của nhau.</div>
+      <button class="secondary-button" id="restoreRecordedReviews" type="button" disabled>Khôi phục 2 review đã ghi nhận</button>
+      <div class="toolbar-note" id="privacyNote">Hai review đã ghi nhận được tự khôi phục khi mở trang. Review mới chỉ lưu trong browser cho đến khi Export JSON.</div>
     </div>
   </section>
 
@@ -358,6 +359,8 @@
         state.selectedId = caseData[0]?.id || null;
         loadImports();
         renderAll();
+        $("#restoreRecordedReviews").disabled = false;
+        await restoreRecordedReviews({ announce: false, onlyMissing: true });
       }
       function caseDecision(id) { return state.cases[id]?.decision || ""; }
       function peerEntry(review, id) { return review?.case_reviews?.[id] || null; }
@@ -400,11 +403,14 @@
       }
       function renderProgress() {
         const done = completeness();
-        $("#progressText").textContent = `${done} / ${caseData.length} đã quyết định`;
+        const peersComplete = caseData.filter(c => peerDecision(state.review1, c.id) && peerDecision(state.review2, c.id)).length;
+        $("#progressText").textContent = state.role === "adjudication"
+          ? `${peersComplete} / ${caseData.length} có hai review · ${done} adjudicated`
+          : `${done} / ${caseData.length} đã quyết định`;
         $("#progressFill").style.width = `${caseData.length ? done / caseData.length * 100 : 0}%`;
         const role = ROLE_LABELS[state.role];
         $("#privacyNote").textContent = state.role === "adjudication"
-          ? "Adjudication chỉ hiện hai bản review đã nhập tại đây. Dữ liệu chỉ ở localStorage browser này, không lưu file trên server; hãy export JSON để lưu/chia sẻ."
+          ? "Hai review đã ghi nhận được tự khôi phục khi mở trang; quyết định mới chỉ ở localStorage cho đến khi Export JSON."
           : `${role} autosave trong localStorage browser này, không ghi file trên server. Hãy export JSON và kiểm tra file tải xuống; quyết định reviewer còn lại không hiển thị.`;
       }
       function allDataText(c) { return fold(JSON.stringify(c) + " " + (sqlById[c.id]?.sql || "")); }
@@ -648,7 +654,7 @@
           downloadJson(payload, "complete");
         } else downloadJson(payload, "draft");
       }
-      async function importReview(file, role) {
+      async function importReview(file, role, { notify = true } = {}) {
         const text = await file.text();
         let review;
         try { review = JSON.parse(text); } catch (_) { throw new Error("File không phải JSON hợp lệ."); }
@@ -663,9 +669,50 @@
         review.__file_sha256 = await sha256(text);
         if (role === "reviewer_1") state.review1 = review; else state.review2 = review;
         saveReview(); renderAll();
-        const notice = $("#dataNotice");
-        notice.hidden = false; notice.className = "notice success";
-        notice.textContent = `${ROLE_LABELS[role]} đã nhập: ${review.reviewer?.id || "ID chưa ghi"} · ${file.name}.`;
+        if (notify) {
+          const notice = $("#dataNotice");
+          notice.hidden = false; notice.className = "notice success";
+          notice.textContent = `${ROLE_LABELS[role]} đã nhập: ${review.reviewer?.id || "ID chưa ghi"} · ${file.name}.`;
+        }
+      }
+
+      async function restoreRecordedReviews({ announce = true, onlyMissing = false } = {}) {
+        const button = $("#restoreRecordedReviews");
+        button.disabled = true;
+        try {
+          if (state.role !== "adjudication") {
+            $("#reviewRole").value = "adjudication";
+            syncMetaFromInputs();
+            loadSavedReview();
+            loadImports();
+          }
+          const records = [
+            ["reviewer_1", "review_v3_1_reviewer_1_Lenhan231_complete.json"],
+            ["reviewer_2", "review_v3_1_reviewer_2_user_reported_complete.json"]
+          ];
+          const missingRecords = onlyMissing
+            ? records.filter(([role]) => role === "reviewer_1" ? !state.review1 : !state.review2)
+            : records;
+          for (const [role, filename] of missingRecords) {
+            const response = await fetch(filename, { cache: "no-store" });
+            if (!response.ok) throw new Error(`${filename}: HTTP ${response.status}`);
+            const text = await response.text();
+            await importReview({ name: filename, text: async () => text }, role, { notify: announce });
+          }
+          if (announce) {
+            const notice = $("#dataNotice");
+            notice.hidden = false;
+            notice.className = "notice success";
+            notice.textContent = "Đã khôi phục hai bản review đã ghi nhận: 40/40 APPROVE mỗi reviewer. Adjudication và freeze vẫn đang chờ.";
+          }
+        } catch (error) {
+          const notice = $("#dataNotice");
+          notice.hidden = false;
+          notice.className = "notice error";
+          notice.textContent = `Không khôi phục được review đã ghi nhận: ${error.message}`;
+        } finally {
+          button.disabled = false;
+        }
       }
 
       $("#reviewRole").addEventListener("change", () => {
@@ -685,6 +732,7 @@
       $("#clearFilters").addEventListener("click", () => { $("#caseSearch").value = ""; $("#behaviorFilter").value = "all"; $("#reviewFilter").value = "all"; renderList(); });
       $("#importReviewer1").addEventListener("change", async event => { const file = event.target.files?.[0]; if (!file) return; try { await importReview(file, "reviewer_1"); } catch (error) { const notice = $("#dataNotice"); notice.hidden = false; notice.className = "notice error"; notice.textContent = error.message; } finally { event.target.value = ""; } });
       $("#importReviewer2").addEventListener("change", async event => { const file = event.target.files?.[0]; if (!file) return; try { await importReview(file, "reviewer_2"); } catch (error) { const notice = $("#dataNotice"); notice.hidden = false; notice.className = "notice error"; notice.textContent = error.message; } finally { event.target.value = ""; } });
+      $("#restoreRecordedReviews").addEventListener("click", () => restoreRecordedReviews());
 
       loadFiles().catch(error => {
         const loading = $("#loading");

@@ -35,7 +35,6 @@ class AgentRouter:
             return RouteSelection(agent=None, selected_tools=None)
 
         latest_turn = history[-1] if history else {}
-        short_followup = bool(history and len(question.split()) <= 8)
         pending_clarification = bool(
             isinstance(latest_turn.get('clarification'), str)
             and latest_turn['clarification'].strip()
@@ -47,8 +46,6 @@ class AgentRouter:
             direct_agent in {'knowledge', 'sql'}
             and not is_product_profit_recommendation(question)
             and confidence >= JEV_ROUTE_THRESHOLD
-            and not decision.get('history_required')
-            and not short_followup
             and not pending_clarification
             and allow_direct
         ):

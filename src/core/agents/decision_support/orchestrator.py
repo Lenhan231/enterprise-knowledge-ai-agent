@@ -111,6 +111,7 @@ class AgentOrchestrator:
                                 pending_resumed = True
                                 execution.request = request
                         execution.sql_context = context_from_history(history)
+                        execution.conversation_context = [] if report_headings is not None else list(history)
                         if pending_resumed:
                             execution.auto_mode = True
                         # Reports build their own section questions, so only chat turns get the user's wording.

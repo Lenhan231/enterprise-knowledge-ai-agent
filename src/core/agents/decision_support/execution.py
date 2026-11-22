@@ -49,6 +49,7 @@ class Execution:
     def __init__(self, request, agents, *, sql_context=None, auto_mode=False):
         self.request, self.agents = request, agents
         self.sql_context = sql_context
+        self.conversation_context = []
         self.auto_mode = auto_mode
         # Set by the router: True when no earlier turn can be referenced (nothing for a follow-up to resolve).
         self.standalone = False
@@ -114,6 +115,13 @@ class Execution:
                 # (unaccented 'nghi phep 3 ngay...' became a question about submitting a report).
                 question = self.request.question
             metadata = dict(self.request.metadata)
+            if self.conversation_context:
+                metadata['_conversation_context'] = [
+                    {key: turn[key] for key in (
+                        'question', 'scope', 'clarification', 'clarification_options', 'metrics'
+                    ) if key in turn}
+                    for turn in self.conversation_context[-5:]
+                ]
             if task.agent == 'sql':
                 metadata['_original_question'] = self.request.question
                 if inputs:

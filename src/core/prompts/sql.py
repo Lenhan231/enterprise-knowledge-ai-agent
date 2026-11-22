@@ -19,7 +19,7 @@ Approved schema:
 Approved joins:
 {joins}
 Question:
-{question}"""
+{question}{conversation_context}"""
 
 
 SQL_REPAIR_PROMPT = """

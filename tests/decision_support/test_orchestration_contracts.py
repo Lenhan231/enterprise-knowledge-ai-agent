@@ -33,8 +33,6 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
                                    'probabilities': {'yes': 0.72, 'no': 0.28}},
             'sql_required': {'type': 'choice', 'choice': 'no',
                              'probabilities': {'yes': 0.50, 'no': 0.50}},
-            'history_required': {'type': 'choice', 'choice': 'no',
-                                 'probabilities': {'yes': 0.01, 'no': 0.99}},
         }}
         response = Mock()
         response.__enter__ = Mock(return_value=response)
@@ -47,11 +45,11 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         request = urlopen.call_args.args[0]
         sent = json.loads(request.data)
         self.assertEqual(sent['model'], 'perplexity/pplx-decider-v1.2')
-        self.assertEqual(set(sent['questions']), {'knowledge_required', 'sql_required', 'history_required'})
+        self.assertEqual(set(sent['questions']), {'knowledge_required', 'sql_required'})
         self.assertIn('which promotion candidate', sent['questions']['knowledge_required']['instructions'])
         self.assertEqual(decision['selected_tools'], ['knowledge'])
         self.assertEqual(decision['route'], 'knowledge')
-        self.assertFalse(decision['history_required'])
+        self.assertNotIn('history_required', decision)
 
     def test_synthesis_preserves_exact_numbers_and_does_not_invent_ranks_or_units(self):
         self.assertIn('copy numeric values exactly as supplied, without rounding', SYNTHESIS_PROMPT)
@@ -133,8 +131,6 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
                                    'probabilities': {'yes': 0.76, 'no': 0.24}},
             'sql_required': {'type': 'choice', 'choice': 'yes',
                              'probabilities': {'yes': 0.94, 'no': 0.06}},
-            'history_required': {'type': 'choice', 'choice': 'no',
-                                 'probabilities': {'yes': 0.01, 'no': 0.99}},
         }}
         response = Mock()
         response.__enter__ = Mock(return_value=response)
@@ -159,7 +155,7 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         })
         with patch('core.agents.decision_support.router.classify_jev_route', return_value={
                 'route': 'plan_required', 'selected_tools': ['knowledge', 'sql'],
-                'confidence': 0.0, 'history_required': False}), \
+                'confidence': 0.0}), \
              patch('core.agents.decision_support.router.plan_request',
                    new=AsyncMock(return_value=resolved)) as plan_request:
             state = await router._plan({
@@ -183,7 +179,7 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
             ],
         })
         with patch('core.agents.decision_support.router.classify_jev_route', return_value={
-                'route': 'knowledge', 'confidence': 0.99, 'history_required': False}), \
+                'route': 'knowledge', 'confidence': 0.99}), \
              patch('core.agents.decision_support.router.plan_request',
                    new=AsyncMock(return_value=resolved)) as plan_request:
             state = await router._plan({
@@ -194,18 +190,13 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(state['plan'], resolved)
         plan_request.assert_awaited_once()
 
-    async def test_short_followup_uses_planner_when_jev_misses_history_dependency(self):
+    async def test_short_followup_routes_directly_when_jev_selects_one_specialist(self):
         router = AgentRouter(None, None, None, llm=FakeProvider([]))
         request = AgentRequest(question='giờ nên đẩy mạnh vào segment nào nhỉ', identity=IDENTITY)
-        resolved = AgentPlan.model_validate({
-            'objective': 'Recommend a product segment using the prior quarterly revenue analysis',
-            'tasks': [{'id': 's', 'agent': 'sql',
-                       'question': 'Compare quarterly product revenue by segment'}],
-        })
         with patch('core.agents.decision_support.router.classify_jev_route', return_value={
-                'route': 'sql', 'confidence': 0.99, 'history_required': False}), \
+                'route': 'sql', 'confidence': 0.99}), \
              patch('core.agents.decision_support.router.plan_request',
-                   new=AsyncMock(return_value=resolved)) as plan_request:
+                   new=AsyncMock()) as plan_request:
             state = await router._plan({
                 'request': request,
                 'history': [{'question': 'quarterly revenue by product segment',
@@ -214,8 +205,9 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
                 'report_headings': None,
             })
 
-        self.assertEqual(state['plan'], resolved)
-        plan_request.assert_awaited_once()
+        self.assertEqual(state['plan'].tasks[0].agent, 'sql')
+        self.assertEqual(state['plan'].tasks[0].question, request.question)
+        plan_request.assert_not_awaited()
 
     async def test_structured_clarification_selection_restores_scope_and_selected_option(self):
         from core.agents.decision_support.router import _resolve_clarification_choice

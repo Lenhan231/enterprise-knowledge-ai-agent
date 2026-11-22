@@ -1,0 +1,288 @@
+{
+  "format_version": "sql-benchmark-review-adjudication.v1",
+  "benchmark_version": "v3.1",
+  "recorded_at_utc": "2026-11-22T01:13:13Z",
+  "adjudication": "CONSENSUS_APPROVE_ALL_40_WITH_PROVENANCE_LIMITATION",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "gold_sql_definition_sha256": "cf8072cbce69eff02f1305e0ece9a41c1dcfaa73b8ac0b8e96c8f225bb96e0a5",
+  "reviewed_case_count": 40,
+  "disagreement_count": 0,
+  "disagreement_case_ids": [],
+  "reviewer_1": {
+    "record_file": "review_v3_1_reviewer_1_Lenhan231_complete.json",
+    "record_sha256": "4de70c567e45e96ce32a8666885461fcad06be7d1154a759615981e4f8d8e48d",
+    "recorded_reviewer_id": "Lenhan231",
+    "reported_decisions": 40,
+    "decision": "APPROVE_ALL_40",
+    "provenance": "User explicitly confirmed their 40-case browser review; the HTML had not exported the original browser actions.",
+    "identity_or_signature_authenticated": false,
+    "original_per_case_review_timestamps_available": false,
+    "original_rationales_available": false
+  },
+  "reviewer_2": {
+    "record_file": "review_v3_1_reviewer_2_user_reported_complete.json",
+    "record_sha256": "0975c50545aabef7187c924b9b2b5aa94712d61c0879ac9eecd85abbcfffdbeb",
+    "recorded_reviewer_label": "friend-of-Lenhan231 (placeholder in record)",
+    "reported_decisions": 40,
+    "decision": "APPROVE_ALL_40_USER_REPORTED",
+    "provenance": "User reports a separate friend reviewed and approved all 40 after the browser state reset; no direct export or identity was supplied.",
+    "identity_authenticated": false,
+    "independence_authenticated": false,
+    "original_per_case_review_timestamps_available": false,
+    "original_rationales_available": false
+  },
+  "comparison_method": "Compare the two recorded decision maps by exact case ID after confirming both review files pin the same case, Gold SQL, and provisional Gold result file hashes.",
+  "case_decisions": [
+    {
+      "case_id": "B40-001",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-002",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-003",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-004",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-005",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-006",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-007",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-008",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-009",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-010",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-011",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-012",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-013",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-014",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-015",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-016",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-017",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-018",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-019",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-020",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-021",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-022",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-023",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-024",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-025",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-026",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-027",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-028",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-029",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-030",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-031",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-032",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-033",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-034",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-035",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-036",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-037",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-038",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-039",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    },
+    {
+      "case_id": "B40-040",
+      "reviewer_1": "APPROVE",
+      "reviewer_2": "APPROVE",
+      "consensus": "APPROVE"
+    }
+  ],
+  "limitations": [
+    "The review page stored browser decisions locally and did not retain the original per-case actions; approvals were logged from user confirmations.",
+    "Reviewer 2 is user-reported and not independently authenticated; reviewer independence cannot be proven from the JSON files.",
+    "Per-case timestamps and rationales in the recovered files are not original review evidence.",
+    "This record does not contain signatures and does not claim cryptographic identity verification."
+  ],
+  "freeze_decision": {
+    "decision": "FREEZE_FOR_THE_AUTHORIZED_40_CASE_SQL_AGENT_BENCHMARK",
+    "basis": "Both recorded 40/40 decision sets agree on APPROVE for every case; user explicitly requested the approvals be reconciled and the benchmark prepared.",
+    "provenance_limitation_accepted_and_disclosed": true
+  }
+}

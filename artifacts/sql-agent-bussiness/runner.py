@@ -25,6 +25,7 @@ from preflight import ROOT, PreflightBlocked, benchmark_repository, collect_pref
 
 
 DEFAULT_CASES = ROOT / "artifacts/sql-agent-bussiness/cases.json"
+V3_1_DIR = ROOT / "artifacts/sql-agent-bussiness/40-case-v3-1"
 TERMINAL_STATUSES = {
     "executed", "executed_empty", "clarification_required", "unsupported", "failed", "provider_error",
 }
@@ -104,10 +105,18 @@ def source_manifest():
 
 def build_manifest(application_revision, *, provider, model, case_delay_seconds=0):
     head = current_revision()
-    dirty_paths = [path for path in _git_changed_paths()
-                   if not path.startswith("artifacts/sql-agent-bussiness/runs/")]
+    dirty_paths = [path for path in _git_changed_paths() if "/runs/" not in f"/{path}"]
     if application_revision != head:
-        raise ValueError(f"Pinned application revision {application_revision} does not match current HEAD {head}.")
+        subprocess.check_call(["git", "merge-base", "--is-ancestor", application_revision, head], cwd=ROOT)
+        changed_application_paths = subprocess.check_output(
+            ["git", "diff", "--name-only", application_revision, head, "--", "src", "data"],
+            cwd=ROOT, text=True,
+        ).splitlines()
+        if changed_application_paths:
+            raise ValueError(
+                "Pinned application revision does not match the current SQL application sources: "
+                + ", ".join(changed_application_paths)
+            )
     if dirty_paths and os.getenv("SQL_BENCHMARK_ALLOW_DIRTY", "").casefold() != "true":
         raise ValueError("The worktree is dirty; set SQL_BENCHMARK_ALLOW_DIRTY=true to record source hashes explicitly.")
     source_hashes = source_manifest()
@@ -129,15 +138,27 @@ def build_manifest(application_revision, *, provider, model, case_delay_seconds=
         "artifacts/sql-agent-bussiness/THESIS_ALIGNMENT.md",
         "artifacts/sql-agent-bussiness/tests/test_runner.py",
         "artifacts/sql-agent-bussiness/tests/test_scorer.py",
+        "artifacts/sql-agent-bussiness/40-case-v3-1/cases_v3_1_draft.json",
+        "artifacts/sql-agent-bussiness/40-case-v3-1/gold_sql_v3_1_draft.json",
+        "artifacts/sql-agent-bussiness/40-case-v3-1/gold_results_v3_1_provisional.json",
+        "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py",
+        "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md",
+        "artifacts/sql-agent-bussiness/40-case-v3-1/semantic_audit_v3_1.py",
+        "artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py",
+        "artifacts/sql-agent-bussiness/40-case-v3-1/FREEZE_MANIFEST_V3_1_FROZEN_V1.json",
     )
     config = {
         "experiment_id": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
-        "application_revision": head,
+        "application_revision": application_revision,
+        "application_source_revision": application_revision,
+        "harness_revision": head,
         "dirty_worktree": bool(dirty_paths),
         "dirty_paths": dirty_paths,
         "source_hashes": source_hashes,
         "source_fingerprint_sha256": sha256_bytes(canonical_json(source_hashes).encode()),
-        "benchmark_code_hashes": {path: sha256_file(ROOT / path) for path in benchmark_files},
+        "benchmark_code_hashes": {
+            path: sha256_file(ROOT / path) for path in benchmark_files if (ROOT / path).is_file()
+        },
         "prompt_hashes": {
             "src/core/prompts/sql.py": sha256_file(prompt_path),
             "src/core/agents/sql/metric_mapping.py": sha256_file(ROOT / "src/core/agents/sql/metric_mapping.py"),
@@ -150,9 +171,21 @@ def build_manifest(application_revision, *, provider, model, case_delay_seconds=
         "provider_settings": {
             key: os.getenv(key) for key in (
                 "SQL_LLM_PROVIDER", "SQL_GROQ_MODEL", "SQL_CLOUDFLARE_MODEL",
-                "CODEX_CLI_SQL_FALLBACK", "SQL_INVENTORY_ONLY", "ANALYTICS_SCHEMAS",
-                "SQL_SCHEMA_SELECTION_MODEL",
+                "GROQ_MODEL", "CODEX_CLI_SQL_FALLBACK",
+                "SQL_INVENTORY_ONLY", "ANALYTICS_SCHEMAS", "SQL_SCHEMA_SELECTION_MODEL",
             ) if os.getenv(key) is not None
+        },
+        "sql_provider_chain": {
+            "primary": {"provider": provider, "model": model},
+            "secondary": ({
+                "provider": "groq",
+                "model": os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b"),
+                "self_hosted_base_url_configured": bool(os.getenv("GROQ_BASE_URL")),
+            } if provider.casefold() == "cloudflare" else None),
+            "local_fallback_enabled": os.getenv("CODEX_CLI_SQL_FALLBACK", "false").casefold() == "true",
+            "local_fallback_model": "configured Codex CLI model" if os.getenv(
+                "CODEX_CLI_SQL_FALLBACK", "false"
+            ).casefold() == "true" else None,
         },
         "package_versions": _package_versions(),
         "repair_budget": 1,
@@ -690,19 +723,192 @@ async def run_cases(agent, case_set, store, *, delay_between_cases=0):
     return store.data
 
 
-def _load_scorer():
-    path = ROOT / "artifacts/sql-agent-bussiness/scorer.py"
+def _load_scorer(path=None):
+    path = Path(path) if path else ROOT / "artifacts/sql-agent-bussiness/scorer.py"
     spec = importlib.util.spec_from_file_location("sql_agent_business_scorer", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load benchmark scorer: {path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
+def _canonical_hash(value):
+    return sha256_bytes(canonical_json(value).encode("utf-8"))
+
+
+def validate_v31_contract(case_set, reference, freeze_manifest, *, cases_path,
+                          gold_sql_path, reference_path, scorer_path):
+    """Validate frozen v3.1 inputs without executing Gold SQL or the Agent."""
+    if freeze_manifest.get("freeze_status") != "FROZEN":
+        raise ValueError("The v3.1 freeze manifest is not frozen.")
+    paths = {
+        "cases_v3_1_draft.json": Path(cases_path),
+        "gold_sql_v3_1_draft.json": Path(gold_sql_path),
+        "gold_results_v3_1_provisional.json": Path(reference_path),
+        "scorer_v3_1.py": Path(scorer_path),
+    }
+    for name, path in paths.items():
+        expected = freeze_manifest.get("artifacts_sha256", {}).get(name)
+        if not expected or sha256_file(path) != expected:
+            raise ValueError(f"Frozen artifact hash mismatch: {name}.")
+
+    cases = case_set.get("cases")
+    if not isinstance(cases, list) or len(cases) != 40:
+        raise ValueError("Frozen v3.1 cohort must contain exactly 40 cases.")
+    ids = [item.get("id") for item in cases if isinstance(item, dict)]
+    if len(ids) != 40 or len(set(ids)) != 40:
+        raise ValueError("Frozen v3.1 cases must have 40 unique IDs.")
+    distribution = {
+        behavior: sum(item.get("expected_behavior") == behavior for item in cases)
+        for behavior in ("execute", "clarify", "abstain_without_query")
+    }
+    if distribution != {"execute": 30, "clarify": 5, "abstain_without_query": 5}:
+        raise ValueError(f"Frozen v3.1 cohort distribution changed: {distribution}.")
+    expected_case_hash = freeze_manifest.get("case_set_sha256")
+    if _canonical_hash(case_set) != expected_case_hash:
+        raise ValueError("Frozen v3.1 case-set canonical hash mismatch.")
+    if reference.get("case_set_sha256") != expected_case_hash:
+        raise ValueError("Gold results do not match the frozen case-set hash.")
+    if reference.get("database_fingerprint_sha256") != freeze_manifest.get("database_fingerprint_sha256"):
+        raise ValueError("Gold results do not match the frozen database fingerprint.")
+    if reference.get("database_role_read_only") is not True:
+        raise ValueError("Gold result provenance does not confirm a read-only database role.")
+    if reference.get("status") != "PROVISIONAL_COMPLETE_NOT_APPROVED":
+        raise ValueError("Gold results are incomplete or have an unsupported status.")
+    gold_doc = json.loads(Path(gold_sql_path).read_text(encoding="utf-8"))
+    sql_hash = _canonical_hash([
+        {"id": item["id"], "sql": item["sql"], "parameters": item["parameters"]}
+        for item in gold_doc.get("cases", [])
+    ])
+    if sql_hash != freeze_manifest.get("gold_sql_definition_sha256"):
+        raise ValueError("Frozen Gold SQL definition hash mismatch.")
+    execute_ids = {item["id"] for item in cases if item["expected_behavior"] == "execute"}
+    refs = {item.get("id"): item for item in reference.get("cases", [])}
+    gold = {item.get("id"): item for item in gold_doc.get("cases", [])}
+    if set(refs) != execute_ids or set(gold) != execute_ids:
+        raise ValueError("Frozen Gold SQL/results must cover exactly the 30 execute cases.")
+    for case_id in execute_ids:
+        if refs[case_id].get("sql") != gold[case_id].get("sql"):
+            raise ValueError(f"Gold SQL differs from frozen reference for {case_id}.")
+    return {"case_set_sha256": expected_case_hash, "distribution": distribution}
+
+
+def _audit_records(path, key):
+    if not path:
+        return []
+    value = json.loads(Path(path).read_text(encoding="utf-8"))
+    if isinstance(value, list):
+        return value
+    if isinstance(value, dict):
+        if isinstance(value.get(key), list):
+            return value[key]
+        if isinstance(value.get("records"), list):
+            return value["records"]
+    raise ValueError(f"Audit input {path} must contain a {key} or records list.")
+
+
+def render_v33_report(case_set, scores, experiment):
+    metrics = scores.get("metrics", {})
+    cases = {item["id"]: item for item in case_set.get("cases", [])}
+    observations = {item["id"]: item for item in experiment.get("cases", [])}
+    comparisons = scores.get("case_comparisons", {})
+    semantic_decisions = scores.get("semantic_audits", {})
+    outcome_counts = {
+        status: sum(item.get("status") == status for item in observations.values())
+        for status in ("executed", "executed_empty", "clarification_required", "unsupported", "failed", "provider_error", "INTERRUPTED")
+    }
+    outcome_counts["NOT RUN"] = len(cases) - len(observations)
+    e2e_counts = {
+        decision: sum(item.get("business_end_to_end", {}).get("decision") == decision
+                      for item in comparisons.values())
+        for decision in ("PASS", "FAIL", "REVIEW_REQUIRED")
+    }
+    semantic_counts = {
+        decision: sum(item.get("decision") == decision for item in semantic_decisions.values())
+        for decision in ("PASS", "FAIL", "REVIEW_REQUIRED", "INDETERMINATE")
+    }
+    lines = [
+        "# SQL Agent 40-case benchmark report",
+        "",
+        f"- Scorer/protocol: {scores.get('scorer_version')} / {scores.get('protocol_version')}",
+        f"- Application revision: {experiment.get('manifest', {}).get('application_source_revision')}",
+        f"- Harness revision: {experiment.get('manifest', {}).get('harness_revision')}",
+        f"- Database fingerprint: {experiment.get('manifest', {}).get('dataset_fingerprint_sha256')}",
+        f"- Observed cases: {len(experiment.get('cases', []))}/40",
+        "",
+        "## Outcome counts",
+        "",
+        f"- Case statuses: {json.dumps(outcome_counts, ensure_ascii=False, sort_keys=True)}",
+        f"- Business E2E decisions: {json.dumps(e2e_counts, ensure_ascii=False, sort_keys=True)}",
+        f"- SQL semantic audit decisions: {json.dumps(semantic_counts, ensure_ascii=False, sort_keys=True)}",
+        "",
+        "| Metric | Numerator | Denominator | Value / status |",
+        "|---|---:|---:|---|",
+    ]
+    for name, metric in metrics.items():
+        if isinstance(metric, dict) and "numerator" in metric and "denominator" in metric:
+            value = metric.get("value")
+            display = f"{value:.4f}" if isinstance(value, (float, int)) else metric.get("status", "")
+            lines.append(f"| {name} | {metric['numerator']} | {metric['denominator']} | {display} |")
+    lines.extend(["", "## Per-case decisions", "", "| Case | Expected | Status | Semantic audit | Business result | E2E |", "|---|---|---|---|---|---|"])
+    for case_id in sorted(cases):
+        case, observation = cases[case_id], observations.get(case_id, {})
+        comparison = comparisons.get(case_id, {})
+        lines.append(
+            f"| {case_id} | {case.get('expected_behavior')} | {observation.get('status', 'NOT RUN')} | "
+            f"{comparison.get('semantic_audit_decision', 'NOT APPLICABLE')} | "
+            f"{comparison.get('business_result_decision', 'NOT APPLICABLE')} | "
+            f"{comparison.get('business_end_to_end', {}).get('decision', 'NOT APPLICABLE')} |"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def score_saved_run(*, cases_path, reference_path, run_dir, scorer_path,
+                    semantic_audit_path=None, output_safety_audit_path=None):
+    """Score existing observations only; this function never constructs an Agent or DB client."""
+    run_dir = Path(run_dir)
+    score_path, report_path = run_dir / "scores.json", run_dir / "report.md"
+    if score_path.exists() or report_path.exists():
+        raise FileExistsError("Refusing to replace existing scores/report for an immutable run.")
+    data_path = run_dir / "data.json"
+    data = json.loads(data_path.read_text(encoding="utf-8"))
+    case_set = json.loads(Path(cases_path).read_text(encoding="utf-8"))
+    reference = json.loads(Path(reference_path).read_text(encoding="utf-8"))
+    scorer = _load_scorer(scorer_path)
+    if hasattr(scorer, "SCORER_VERSION"):
+        data["independent_semantic_audits"] = _audit_records(
+            semantic_audit_path, "independent_semantic_audits"
+        )
+        data["additional_output_safety_audits"] = _audit_records(
+            output_safety_audit_path, "additional_output_safety_audits"
+        )
+        scores = scorer.score(case_set, reference, data)
+        report = render_v33_report(case_set, scores, data)
+    else:
+        scores = scorer.score_experiment(case_set, data)
+        report = scorer.render_report(case_set, scores, data.get("manifest", {}))
+    _atomic_json(score_path, scores)
+    report_path.write_text(report, encoding="utf-8")
+    return scores, report_path
+
+
 async def run_live(args):
     from dotenv import load_dotenv
 
-    load_dotenv(ROOT / ".env", override=False)
+    load_dotenv(args.env_file or ROOT / ".env", override=False)
     os.environ["SQL_BENCHMARK_ALLOW_DIRTY"] = "true" if args.allow_dirty else os.environ.get("SQL_BENCHMARK_ALLOW_DIRTY", "")
+    if args.score_only:
+        scores, report_path = score_saved_run(
+            cases_path=args.cases,
+            reference_path=args.reference,
+            run_dir=args.output,
+            scorer_path=args.scorer or V3_1_DIR / "scorer_v3_1.py",
+            semantic_audit_path=args.semantic_audits,
+            output_safety_audit_path=args.output_safety_audits,
+        )
+        print(report_path)
+        return scores
     if args.provider:
         os.environ["SQL_LLM_PROVIDER"] = args.provider
     if args.model:
@@ -712,27 +918,64 @@ async def run_live(args):
             os.environ["SQL_GROQ_MODEL"] = args.model
     provider = os.getenv("SQL_LLM_PROVIDER", "groq")
     model = args.model or os.getenv("SQL_CLOUDFLARE_MODEL" if provider.casefold() == "cloudflare" else "SQL_GROQ_MODEL")
+    case_set = json.loads(Path(args.cases).read_text(encoding="utf-8"))
+    reference = json.loads(Path(args.reference).read_text(encoding="utf-8"))
+    v3_1 = str(case_set.get("format_version", "")).endswith("cases.v3.1-draft")
+    scorer_path = Path(args.scorer) if args.scorer else (
+        V3_1_DIR / "scorer_v3_1.py" if v3_1 else ROOT / "artifacts/sql-agent-bussiness/scorer.py"
+    )
+    freeze_path = Path(args.freeze_manifest) if args.freeze_manifest else (
+        V3_1_DIR / "FREEZE_MANIFEST_V3_1_FROZEN_V1.json"
+    )
+    if v3_1:
+        freeze_manifest = json.loads(freeze_path.read_text(encoding="utf-8"))
+        validation = validate_v31_contract(
+            case_set, reference, freeze_manifest,
+            cases_path=args.cases,
+            gold_sql_path=args.gold_sql or V3_1_DIR / "gold_sql_v3_1_draft.json",
+            reference_path=args.reference,
+            scorer_path=scorer_path,
+        )
+    else:
+        validation = None
     manifest = build_manifest(args.application_revision, provider=provider, model=model,
                               case_delay_seconds=args.case_delay_seconds)
+    if v3_1:
+        manifest["benchmark_protocol"] = "3.3.0"
+        manifest["scorer_version"] = "3.3.0"
+        manifest["case_set_sha256"] = validation["case_set_sha256"]
+        manifest["cohort_distribution"] = validation["distribution"]
+        manifest["freeze_manifest_sha256"] = sha256_file(freeze_path)
+        manifest["scorer_sha256"] = sha256_file(scorer_path)
+        manifest["gold_reference_sha256"] = sha256_file(args.reference)
+        manifest["gold_sql_sha256"] = sha256_file(args.gold_sql or V3_1_DIR / "gold_sql_v3_1_draft.json")
     existing_data = Path(args.output) / "data.json"
     if args.resume and existing_data.exists():
         previous_manifest = json.loads(existing_data.read_text(encoding="utf-8")).get("manifest", {})
         manifest["experiment_id"] = previous_manifest.get("experiment_id", manifest["experiment_id"])
         manifest.pop("configuration_fingerprint", None)
         manifest["configuration_fingerprint"] = sha256_bytes(canonical_json(manifest).encode())
-    case_set = json.loads(Path(args.cases).read_text(encoding="utf-8"))
-    reference = json.loads(Path(args.reference).read_text(encoding="utf-8"))
-    expected_case_hash = sha256_bytes(canonical_json(case_set).encode())
+    expected_case_hash = _canonical_hash(case_set)
     if reference.get("case_set_sha256") != expected_case_hash:
         raise ValueError("Reference results were generated from a different case set.")
     async with benchmark_repository() as repository:
         preflight = await collect_preflight(repository)
-        if preflight["fingerprint_sha256"] != reference.get("environment", {}).get("fingerprint_sha256"):
-            raise ValueError("Database fingerprint differs from the reference; regenerate and review gold results first.")
-        from reference_runner import generate_reference
+        expected_fingerprint = (
+            freeze_manifest["database_fingerprint_sha256"] if v3_1
+            else reference.get("environment", {}).get("fingerprint_sha256")
+        )
+        if preflight["fingerprint_sha256"] != expected_fingerprint:
+            raise ValueError("Database fingerprint differs from the frozen reference; stop before model calls.")
+        if v3_1:
+            if preflight.get("database_role_read_only") is not True:
+                raise ValueError("Live database preflight did not confirm a read-only role.")
+            if preflight.get("database_classification") != "frozen-analytics-snapshot":
+                raise ValueError("Live database is not classified as the frozen analytics snapshot.")
+        else:
+            from reference_runner import generate_reference
 
-        current_reference = await generate_reference(case_set, repository)
-        validate_reference_snapshot(reference, current_reference, case_set)
+            current_reference = await generate_reference(case_set, repository)
+            validate_reference_snapshot(reference, current_reference, case_set)
         manifest["database_classification"] = preflight["database_classification"]
         manifest["database_role_read_only"] = preflight["database_role_read_only"]
         manifest["dataset_fingerprint_sha256"] = preflight["fingerprint_sha256"]
@@ -755,12 +998,15 @@ async def run_live(args):
                     outcome = close()
                     if inspect.isawaitable(outcome):
                         await outcome
-    scorer = _load_scorer()
-    scored = scorer.score_experiment(case_set, data)
-    _atomic_json(Path(args.output) / "scores.json", scored)
-    report = scorer.render_report(case_set, scored, data["manifest"])
-    (Path(args.output) / "report.md").write_text(report, encoding="utf-8")
-    print(Path(args.output) / "report.md")
+    if v3_1:
+        print(Path(args.output) / "data.json")
+    else:
+        scorer = _load_scorer(scorer_path)
+        scored = scorer.score_experiment(case_set, data)
+        _atomic_json(Path(args.output) / "scores.json", scored)
+        report = scorer.render_report(case_set, scored, data["manifest"])
+        (Path(args.output) / "report.md").write_text(report, encoding="utf-8")
+        print(Path(args.output) / "report.md")
 
 
 if __name__ == "__main__":
@@ -773,14 +1019,23 @@ if __name__ == "__main__":
     parser.add_argument("--model")
     parser.add_argument("--cases", default=str(DEFAULT_CASES))
     parser.add_argument("--reference", required=True)
+    parser.add_argument("--gold-sql", help="Frozen Gold SQL definitions (required for v3.1 validation).")
+    parser.add_argument("--freeze-manifest", help="Committed v3.1 frozen manifest.")
+    parser.add_argument("--scorer", help="Versioned scorer path; defaults by case-set format.")
+    parser.add_argument("--env-file", help="Optional local environment file; secrets are never copied into artifacts.")
+    parser.add_argument("--semantic-audits", help="Linked v3.3 semantic audit records for --score-only.")
+    parser.add_argument("--output-safety-audits", help="Linked v3.3 additional-output safety records for --score-only.")
     parser.add_argument("--output", required=True)
     parser.add_argument("--case-delay-seconds", type=float, default=0,
                          help="Optional delay between cases for provider rate-limit pacing (max 120).")
     parser.add_argument("--allow-dirty", action="store_true")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--score-only", action="store_true",
+                        help="Score existing data.json without DB or Agent execution.")
     arguments = parser.parse_args()
     try:
-        validate_database_environment()
+        if not arguments.score_only:
+            validate_database_environment()
         asyncio.run(run_live(arguments))
     except PreflightBlocked as error:
         raise SystemExit(f"NOT RUN: {error}") from error

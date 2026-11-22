@@ -116,7 +116,6 @@ class SQLAssistantRequest(BaseModel):
     mode: Literal["draft", "execute"] = "draft"
     sql: str | None = Field(default=None, max_length=20_000)
     parameters: list[Any] = Field(default_factory=list, max_length=32)
-    ranking_contract: dict[str, Any] | None = None
 
     @field_validator("question")
     @classmethod
@@ -228,8 +227,7 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
             raise HTTPException(status_code=403, detail="Verified analytics:read permission is required")
         try:
             return await run_sql_assistant(agent, payload.question, mode=payload.mode,
-                sql=payload.sql, parameters=payload.parameters,
-                ranking_contract=payload.ranking_contract)
+                sql=payload.sql, parameters=payload.parameters)
         except PermissionError:
             raise HTTPException(status_code=403, detail="Verified analytics:read permission is required") from None
         except Exception as error:

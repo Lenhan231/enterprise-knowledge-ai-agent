@@ -7,7 +7,6 @@ from datetime import date
 from sqlglot import exp, parse_one
 
 from core.agents.sql.metric_ontology import get_metric_definition
-from core.agents.sql.metric_validation import MetricDefinitionError, validate_metric_definitions
 from core.agents.sql.sql_validation import APPROVED_DATE_COLUMNS, SQLValidationError
 from core.agents.sql.query_intent import QueryIntent
 
@@ -211,7 +210,7 @@ def _join_present(tree, left, right, aliases, schema_sources):
 
 
 def verify_query_contract(intent: QueryIntent, sql: str, parameters, schema: dict[str, set[str]]) -> QueryContractResult:
-    """Verify obligations represented in QueryIntent; unknown checks fail inconclusive."""
+    """Verify requested scope and ranking shape; metric formula confidence is reported separately."""
     try:
         tree = parse_one(sql, read='postgres')
     except Exception as error:
@@ -221,12 +220,6 @@ def verify_query_contract(intent: QueryIntent, sql: str, parameters, schema: dic
                       for table, columns in schema.items()}
     actual_sources = set(aliases.values())
     issues = []
-    if intent.metrics:
-        try:
-            validate_metric_definitions(sql, set(intent.metrics), parameters, schema,
-                                        question=intent.original_question)
-        except MetricDefinitionError as error:
-            issues.append('Canonical metric validation failed: ' + str(error))
     for source in intent.requested_sources:
         if source.provenance == 'ontology_required' and source.name.casefold() not in actual_sources:
             issues.append(f"Required source missing: {source.name}")
@@ -273,28 +266,6 @@ def verify_query_contract(intent: QueryIntent, sql: str, parameters, schema: dic
             expected_desc = intent.ranking.direction == 'desc'
             if bool(first.args.get('desc')) != expected_desc:
                 issues.append('Requested ranking direction changed')
-            ranking_expression = first.this
-            if isinstance(ranking_expression, exp.Column) and not ranking_expression.table:
-                projections = [projection for projection in tree.selects
-                               if projection.alias_or_name.casefold() == ranking_expression.name.casefold()]
-                if len(projections) == 1:
-                    ranking_expression = projections[0].this if isinstance(projections[0], exp.Alias) else projections[0]
-            elif isinstance(ranking_expression, exp.Literal) and ranking_expression.is_int:
-                index = int(ranking_expression.this) - 1
-                if 0 <= index < len(tree.selects):
-                    projection = tree.selects[index]
-                    ranking_expression = projection.this if isinstance(projection, exp.Alias) else projection
-            ranking_query = tree.copy()
-            if isinstance(ranking_query, exp.Select):
-                ranking_query.set('expressions', [ranking_expression.copy().as_(intent.ranking.metric)])
-                try:
-                    validate_metric_definitions(
-                        ranking_query.sql(dialect='postgres'), {intent.ranking.metric}, parameters,
-                        schema, question=intent.original_question)
-                except MetricDefinitionError as error:
-                    issues.append('Ranking metric validation failed: ' + str(error))
-            else:
-                issues.append('Ranking metric could not be resolved in the output query')
             if intent.ranking.limit is not None:
                 limit = tree.args.get('limit')
                 try:

@@ -1,0 +1,348 @@
+{
+  "deterministically_verified_corrections": {
+    "affected_business_result_cases": [
+      "B40-001",
+      "B40-004",
+      "B40-003",
+      "B40-022"
+    ],
+    "affected_e2e_cases": [
+      "B40-001",
+      "B40-004"
+    ],
+    "affected_sql_semantic_case": [
+      "B40-011"
+    ],
+    "assumptions": [
+      "Normalize only exact zero-offset UTC midnight timestamps on day one for month keys whose source column is verified DATE.",
+      "Map only the explicitly reviewed B40-003/B40-022 output expressions to their canonical metrics, with the frozen row-grain constraints.",
+      "Keep Output Contract Compliance strict; B40-003 and B40-022 remain failures because their aliases are not in the frozen contract and safety review is unresolved.",
+      "Correct B40-011's SQL semantic diagnostic from direct AST verification, but do not count it as executed or as E2E PASS."
+    ],
+    "label": "deterministically_verified_comparison_corrections",
+    "metrics": {
+      "business_end_to_end_accuracy": {
+        "denominator": 30,
+        "numerator": 12
+      },
+      "business_result_accuracy": {
+        "denominator": 20,
+        "numerator": 15
+      },
+      "output_contract_compliance": {
+        "denominator": 20,
+        "numerator": 13,
+        "status": "MEASURABLE",
+        "value": 0.65
+      },
+      "overall_task_success_rate": {
+        "denominator": 40,
+        "numerator": 20
+      },
+      "sql_semantic_accuracy": {
+        "denominator": 30,
+        "numerator": 15
+      },
+      "unsafe_execution_count": {
+        "count": 0,
+        "passed": true,
+        "target": 0
+      },
+      "valid_clarification_abstention": {
+        "denominator": 10,
+        "numerator": 8,
+        "value": 0.8
+      }
+    },
+    "note": "Sensitivity only; these values do not replace scores.json/report.md and do not claim an authenticated human audit."
+  },
+  "format_version": "sql-post-benchmark-sensitivity.v1",
+  "official_v3_3_immutable": {
+    "additional_output_safety_review": {
+      "denominator": 6,
+      "fail": 0,
+      "pass": 0,
+      "review_required": 6
+    },
+    "business_end_to_end_accuracy": {
+      "denominator": 30,
+      "numerator": 10,
+      "status": "MEASURABLE",
+      "value": 0.3333333333333333
+    },
+    "business_end_to_end_failed": {
+      "count": 20,
+      "denominator": 30
+    },
+    "business_end_to_end_review_required": {
+      "count": 0,
+      "denominator": 30
+    },
+    "business_result_accuracy": {
+      "denominator": 20,
+      "numerator": 11,
+      "status": "MEASURABLE",
+      "value": 0.55
+    },
+    "business_result_review_required": {
+      "count": 1,
+      "denominator": 20
+    },
+    "false_clarification_abstention": {
+      "denominator": 30,
+      "numerator": 6,
+      "value": 0.2
+    },
+    "independent_semantic_audit_accuracy": {
+      "denominator": 23,
+      "numerator": 14,
+      "status": "MEASURABLE",
+      "value": 0.6086956521739131
+    },
+    "independent_semantic_audit_coverage": {
+      "denominator": 30,
+      "numerator": 23,
+      "status": "MEASURABLE",
+      "value": 0.7666666666666667
+    },
+    "latency_ms": {
+      "denominator": 40,
+      "p50_nearest_rank": 9330.087,
+      "p95_nearest_rank": 36959.618,
+      "sample_count": 40
+    },
+    "output_contract_compliance": {
+      "denominator": 20,
+      "numerator": 13,
+      "status": "MEASURABLE",
+      "value": 0.65
+    },
+    "output_contract_review_required": {
+      "count": 1,
+      "denominator": 20
+    },
+    "overall_task_success_rate": {
+      "denominator": 40,
+      "numerator": 18,
+      "status": "MEASURABLE",
+      "value": 0.45
+    },
+    "pipeline_calls": {
+      "approved_repository_execution": 21,
+      "approved_repository_execution_attempts": 22,
+      "fixed_compilation_calls": 40,
+      "fixed_compiler_matches": 0,
+      "fixed_compiler_plans": 0,
+      "fixed_match_calls": 40,
+      "general_sql_generation": 38,
+      "intent_interpretation": 0,
+      "inventory_compilation_calls": 5,
+      "inventory_compiler_plans": 5,
+      "local_codex_fallback_calls": 0,
+      "metric_interpretation": 10,
+      "provider_fallback_calls": 0,
+      "repository_execution": 21,
+      "repository_execution_attempts": 22,
+      "schema_discovery": 40,
+      "schema_selection": 40,
+      "schema_selector_attempts": 40,
+      "schema_selector_successes": 38,
+      "sql_generation_entries": 38,
+      "sql_repair": 10,
+      "unverified_repository_execution": 0,
+      "unverified_repository_execution_attempts": 0
+    },
+    "provider_calls": {
+      "local_codex_fallback_calls": 0,
+      "metric_interpretation_provider_submissions": 10,
+      "schema_selection_provider_requests": 40,
+      "secondary_sql_provider_fallback_submissions": 0,
+      "sql_generation_provider_submissions": 38,
+      "total_model_calls": 88
+    },
+    "provider_network_failure_count": {
+      "count": 0,
+      "interpret_as_semantic_refusal": false
+    },
+    "repair_recovery": {
+      "denominator": 0,
+      "numerator": 0,
+      "value": null
+    },
+    "schema_selector_raw_recall_at_5": {
+      "applicable_cases": 29,
+      "denominator": 40,
+      "numerator": 40,
+      "status": "MEASURABLE",
+      "value": 1.0
+    },
+    "semantic_audit_unresolved": {
+      "count": 7,
+      "decisions": {
+        "INDETERMINATE": 7,
+        "REVIEW_REQUIRED": 0
+      },
+      "denominator": 30
+    },
+    "sql_semantic_accuracy": {
+      "denominator": 30,
+      "numerator": 14,
+      "status": "MEASURABLE",
+      "value": 0.4666666666666667
+    },
+    "strict_result_exact_match_optional": {
+      "denominator": 30,
+      "numerator": 2,
+      "value": 0.06666666666666667
+    },
+    "supported_business_end_to_end_accuracy": {
+      "denominator": 30,
+      "numerator": 10,
+      "status": "MEASURABLE",
+      "value": 0.3333333333333333
+    },
+    "supported_execution_success": {
+      "denominator": 30,
+      "numerator": 20,
+      "value": 0.6666666666666666
+    },
+    "supported_noncompletion": {
+      "denominator": 30,
+      "numerator": 16,
+      "value": 0.5333333333333333
+    },
+    "unsafe_execution_count": {
+      "count": 0,
+      "passed": true,
+      "target": 0
+    },
+    "valid_clarification_abstention": {
+      "denominator": 10,
+      "numerator": 8,
+      "value": 0.8
+    },
+    "validation_blocked_supported": {
+      "denominator": 30,
+      "numerator": 7,
+      "value": 0.23333333333333334
+    }
+  },
+  "repair_recovery_diagnostic": {
+    "all_repair_attempts_including_unsupported": {
+      "denominator": 10,
+      "numerator": 2,
+      "status": "DIAGNOSTIC_MIXED_DENOMINATOR_NOT_PROTOCOL_METRIC",
+      "value": 0.2
+    },
+    "e2e_recovered_case_ids": [
+      "B40-016",
+      "B40-018"
+    ],
+    "e2e_recovered_numerator": 2,
+    "instrumentation_conclusion": "Runner emits calls.sql_repair and increments it on each later _generate_sql entry. Scorer v3.3 reads top-level repair_count/repairs instead, so the scorer sees 0 repaired supported cases. The runner counter is a proxy for later bounded generation entries; raw records do not preserve a typed per-call repair event.",
+    "repaired_unsupported_cases_excluded": [
+      "B40-040"
+    ],
+    "runner_reported_repair_case_ids": [
+      "B40-002",
+      "B40-004",
+      "B40-011",
+      "B40-014",
+      "B40-016",
+      "B40-018",
+      "B40-022",
+      "B40-025",
+      "B40-026",
+      "B40-040"
+    ],
+    "runner_reported_repair_count": 10,
+    "scorer_v3_3_official": {
+      "denominator": 0,
+      "numerator": 0,
+      "value": null
+    },
+    "supported_repair_case_ids": [
+      "B40-002",
+      "B40-004",
+      "B40-011",
+      "B40-014",
+      "B40-016",
+      "B40-018",
+      "B40-022",
+      "B40-025",
+      "B40-026"
+    ],
+    "supported_repair_denominator": 9,
+    "telemetry_derived_supported_repair_recovery": {
+      "denominator": 9,
+      "numerator": 2,
+      "status": "DIAGNOSTIC_NOT_OFFICIAL",
+      "value": 0.2222222222222222
+    }
+  },
+  "scorer_version": "3.3.0",
+  "upper_bound_scenarios": [
+    {
+      "assumptions": [
+        "The deterministically verified corrections above are accepted.",
+        "An authenticated reviewer later approves both extra aliases in B40-003 and both count aliases in B40-022 as safe and semantically unchanged under the cited schema grain.",
+        "No additional execution is assumed; B40-011 remains not executed and B40-013/021/023/025 retain semantic failures."
+      ],
+      "conditional_additional_e2e_cases": [
+        "B40-003",
+        "B40-022"
+      ],
+      "eligible_safety_review_cases_in_run": [
+        "B40-003",
+        "B40-013",
+        "B40-021",
+        "B40-022",
+        "B40-023",
+        "B40-025"
+      ],
+      "label": "human_policy_upper_bound_scenario",
+      "metrics": {
+        "business_end_to_end_accuracy": {
+          "denominator": 30,
+          "numerator": 14
+        },
+        "business_result_accuracy": {
+          "denominator": 20,
+          "numerator": 15
+        },
+        "output_contract_compliance": {
+          "denominator": 20,
+          "numerator": 13,
+          "status": "MEASURABLE",
+          "value": 0.65
+        },
+        "overall_task_success_rate": {
+          "denominator": 40,
+          "numerator": 22
+        }
+      },
+      "not_included": {
+        "B40-011": "No execution/result; never promoted to E2E PASS.",
+        "B40-012": "Case ambiguity requires changing the adjudicated cohort policy; not silently reclassified.",
+        "B40-033": "Exact statement behind the approved repository event is not retained; no abstention correction assumed."
+      },
+      "note": "Hypothetical upper bound only. Current safety decisions are REVIEW_REQUIRED and official results remain immutable."
+    },
+    {
+      "assumption": "Only if the missing executed statement is recovered and proves to be a non-business latest-snapshot availability lookup, and policy accepts that lookup within unsupported abstention.",
+      "current_status": "NOT VERIFIED; excluded from all verified scenarios",
+      "label": "conditional_B40_033_abstention_policy_review",
+      "official_metric_change_if_accepted": {
+        "overall_task_success_rate": {
+          "denominator": 40,
+          "numerator": 19
+        },
+        "valid_clarification_abstention": {
+          "denominator": 10,
+          "numerator": 9
+        }
+      },
+      "scenario_basis": "Independent of other sensitivity scenarios; starts from the official v3.3 baseline."
+    }
+  ]
+}

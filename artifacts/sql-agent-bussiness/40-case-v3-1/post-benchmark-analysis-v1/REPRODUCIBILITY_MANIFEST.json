@@ -1,0 +1,743 @@
+{
+  "analysis_branch_base_revision": "a2f57e67e45b965cda4e901d3e2647861655e4c5",
+  "analysis_id": "post-benchmark-analysis-v1",
+  "analysis_source_sha256": {
+    "artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/analyze.py": "5bf0f13136256b81c938f8b88d1bf6a66a93726a64281f42de61b0f82aecd795",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/case_annotations.json": "6658f2373e4b70e7a44fccdfcb3024df6a94e78377a9e37c5234696f4caa8f80",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/tests/test_analysis.py": "ee3e0edac95efaf0f47885dbd47911a053265abd0b6a50614bce106fedcfaf01"
+  },
+  "database_connection_made": false,
+  "diagnostic_findings": {
+    "b40_011_direct_ranking_ast_check": {
+      "checks": {
+        "limit_is_five": true,
+        "no_filter_join_or_grouping_changes_population": true,
+        "orders_cogs_desc_then_product_id_asc": true,
+        "projects_catalog_cogs_alias": true,
+        "projects_exactly_two_contract_columns": true,
+        "projects_product_id": true,
+        "source_is_commerce_products_only": true
+      },
+      "limit": 5,
+      "order": [
+        [
+          "p",
+          "cogs",
+          true
+        ],
+        [
+          "p",
+          "product_id",
+          false
+        ]
+      ],
+      "passed": true,
+      "projections": {
+        "catalog_cogs": [
+          "p",
+          "cogs"
+        ],
+        "product_id": [
+          "p",
+          "product_id"
+        ]
+      },
+      "relations": [
+        "commerce.products"
+      ]
+    },
+    "date_alias_result_checks": [
+      {
+        "aliases_applied_observed_to_gold": {},
+        "case_id": "B40-001",
+        "date_normalized_column": "month",
+        "limitation": "Diagnostic only; official score and contract are not changed.",
+        "official_business_result_decision": "FAIL",
+        "official_e2e_decision": "FAIL",
+        "official_output_contract_decision": "PASS",
+        "row_comparison": {
+          "actual_rows": 48,
+          "date_states": {
+            "normalized_exact_utc_month_start": 48
+          },
+          "error": null,
+          "expected_rows": 48,
+          "matched": true,
+          "matched_rows": 48
+        },
+        "source_column": "commerce.web_traffic.date",
+        "source_type": "date"
+      },
+      {
+        "aliases_applied_observed_to_gold": {},
+        "case_id": "B40-004",
+        "date_normalized_column": "month",
+        "limitation": "Diagnostic only; official score and contract are not changed.",
+        "official_business_result_decision": "FAIL",
+        "official_e2e_decision": "FAIL",
+        "official_output_contract_decision": "PASS",
+        "row_comparison": {
+          "actual_rows": 12,
+          "date_states": {
+            "normalized_exact_utc_month_start": 12
+          },
+          "error": null,
+          "expected_rows": 12,
+          "matched": true,
+          "matched_rows": 12
+        },
+        "source_column": "commerce.orders.order_date",
+        "source_type": "date"
+      },
+      {
+        "aliases_applied_observed_to_gold": {
+          "return_records": "return_count"
+        },
+        "case_id": "B40-003",
+        "date_normalized_column": "month",
+        "limitation": "Diagnostic only; official score and contract are not changed.",
+        "official_business_result_decision": "FAIL",
+        "official_e2e_decision": "FAIL",
+        "official_output_contract_decision": "FAIL",
+        "row_comparison": {
+          "actual_rows": 11,
+          "date_states": {
+            "normalized_exact_utc_month_start": 11
+          },
+          "error": null,
+          "expected_rows": 11,
+          "matched": true,
+          "matched_rows": 11
+        },
+        "source_column": "commerce.returns.return_date",
+        "source_type": "date"
+      },
+      {
+        "aliases_applied_observed_to_gold": {
+          "count_with_days_of_supply": "products_with_days_of_supply",
+          "count_without_days_of_supply": "products_without_days_of_supply"
+        },
+        "case_id": "B40-022",
+        "date_normalized_column": null,
+        "limitation": "Diagnostic only; official score and contract are not changed.",
+        "official_business_result_decision": "FAIL",
+        "official_e2e_decision": "FAIL",
+        "official_output_contract_decision": "FAIL",
+        "row_comparison": {
+          "actual_rows": 47,
+          "date_states": {},
+          "error": null,
+          "expected_rows": 47,
+          "matched": true,
+          "matched_rows": 47
+        },
+        "source_column": "commerce.inventory.snapshot_date",
+        "source_type": "date"
+      }
+    ],
+    "repair_recovery": {
+      "all_repair_attempts_including_unsupported": {
+        "denominator": 10,
+        "numerator": 2,
+        "status": "DIAGNOSTIC_MIXED_DENOMINATOR_NOT_PROTOCOL_METRIC",
+        "value": 0.2
+      },
+      "e2e_recovered_case_ids": [
+        "B40-016",
+        "B40-018"
+      ],
+      "e2e_recovered_numerator": 2,
+      "instrumentation_conclusion": "Runner emits calls.sql_repair and increments it on each later _generate_sql entry. Scorer v3.3 reads top-level repair_count/repairs instead, so the scorer sees 0 repaired supported cases. The runner counter is a proxy for later bounded generation entries; raw records do not preserve a typed per-call repair event.",
+      "repaired_unsupported_cases_excluded": [
+        "B40-040"
+      ],
+      "runner_reported_repair_case_ids": [
+        "B40-002",
+        "B40-004",
+        "B40-011",
+        "B40-014",
+        "B40-016",
+        "B40-018",
+        "B40-022",
+        "B40-025",
+        "B40-026",
+        "B40-040"
+      ],
+      "runner_reported_repair_count": 10,
+      "scorer_v3_3_official": {
+        "denominator": 0,
+        "numerator": 0,
+        "value": null
+      },
+      "supported_repair_case_ids": [
+        "B40-002",
+        "B40-004",
+        "B40-011",
+        "B40-014",
+        "B40-016",
+        "B40-018",
+        "B40-022",
+        "B40-025",
+        "B40-026"
+      ],
+      "supported_repair_denominator": 9,
+      "telemetry_derived_supported_repair_recovery": {
+        "denominator": 9,
+        "numerator": 2,
+        "status": "DIAGNOSTIC_NOT_OFFICIAL",
+        "value": 0.2222222222222222
+      }
+    }
+  },
+  "evidence_checks": [
+    {
+      "actual": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+      "expected": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/cases_v3_1_draft.json",
+      "passed": true
+    },
+    {
+      "actual": "bd3fde86d887493f82a2a498e3e58a4eb8beefa2af5d4b81596e6274158c4022",
+      "expected": "bd3fde86d887493f82a2a498e3e58a4eb8beefa2af5d4b81596e6274158c4022",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/gold_sql_v3_1_draft.json",
+      "passed": true
+    },
+    {
+      "actual": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84",
+      "expected": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/gold_results_v3_1_provisional.json",
+      "passed": true
+    },
+    {
+      "actual": "09736cff9ea4cb5edf40e470a0c1692c40b61f57e290e2384493e2f60c2a68f4",
+      "expected": "09736cff9ea4cb5edf40e470a0c1692c40b61f57e290e2384493e2f60c2a68f4",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py",
+      "passed": true
+    },
+    {
+      "actual": "6a5c39b9bcc500876699d6830f87d16809116d0b38f24bc39fd68b1aabbfef22",
+      "expected": "6a5c39b9bcc500876699d6830f87d16809116d0b38f24bc39fd68b1aabbfef22",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md",
+      "passed": true
+    },
+    {
+      "actual": "af041327fe3264042f0c6fa1cb3e886a96c5cf32a22232d0747d9f1464d41514",
+      "expected": "af041327fe3264042f0c6fa1cb3e886a96c5cf32a22232d0747d9f1464d41514",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/semantic_audit_v3_1.py",
+      "passed": true
+    },
+    {
+      "actual": "72a09a9ca856a27fc755664f50de0f31d7d236172a039cad010dd9d0aea1296d",
+      "expected": "72a09a9ca856a27fc755664f50de0f31d7d236172a039cad010dd9d0aea1296d",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py",
+      "passed": true
+    },
+    {
+      "actual": "4de70c567e45e96ce32a8666885461fcad06be7d1154a759615981e4f8d8e48d",
+      "expected": "4de70c567e45e96ce32a8666885461fcad06be7d1154a759615981e4f8d8e48d",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/review_v3_1_reviewer_1_Lenhan231_complete.json",
+      "passed": true
+    },
+    {
+      "actual": "0975c50545aabef7187c924b9b2b5aa94712d61c0879ac9eecd85abbcfffdbeb",
+      "expected": "0975c50545aabef7187c924b9b2b5aa94712d61c0879ac9eecd85abbcfffdbeb",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/review_v3_1_reviewer_2_user_reported_complete.json",
+      "passed": true
+    },
+    {
+      "actual": "c050c667a276da8ad17de112355898d36c18488865a7569fb60bc6bb8dca9fc6",
+      "expected": "c050c667a276da8ad17de112355898d36c18488865a7569fb60bc6bb8dca9fc6",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/ADJUDICATION_V3_1_CONSENSUS_20261122.json",
+      "passed": true
+    },
+    {
+      "actual": "864e7fd4ad08d1a6d0796ca21959c85b84c4a594499faf8c343f7990711e3386",
+      "expected": "864e7fd4ad08d1a6d0796ca21959c85b84c4a594499faf8c343f7990711e3386",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/database_preflight_v3_1_live_20261122T005320Z.json",
+      "passed": true
+    },
+    {
+      "actual": "a4d002b4d52901b7c4ed700c4a64ed21f4c74f0871a529c761d9f1a4ebd3c6ed",
+      "expected": "a4d002b4d52901b7c4ed700c4a64ed21f4c74f0871a529c761d9f1a4ebd3c6ed",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/FREEZE_README_V3_1_V1.md",
+      "passed": true
+    },
+    {
+      "actual": "86d270cbb6c1dd5aeb21199b9570972e0dd4e9548c450cd3de05b1e58e47d0f3",
+      "expected": "86d270cbb6c1dd5aeb21199b9570972e0dd4e9548c450cd3de05b1e58e47d0f3",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/40-case-v3-1/SEMANTIC_REVIEW_V3_1.html",
+      "passed": true
+    },
+    {
+      "actual": "b226e07ad671e4c446418a756bddb518ccfc3c21be1d30e2559dce43e369a997",
+      "expected": "b226e07ad671e4c446418a756bddb518ccfc3c21be1d30e2559dce43e369a997",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/runner.py",
+      "passed": true
+    },
+    {
+      "actual": "7f8b79373c5095539d7aaa5454e2533bc79617e0219254e6c93ec448dccdd67f",
+      "expected": "7f8b79373c5095539d7aaa5454e2533bc79617e0219254e6c93ec448dccdd67f",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/tests/test_runner.py",
+      "passed": true
+    },
+    {
+      "actual": "8ca187dde14dec2c66f7cba22ae8d9b9faa474bdec82abb158a17ba39b88d150",
+      "expected": "8ca187dde14dec2c66f7cba22ae8d9b9faa474bdec82abb158a17ba39b88d150",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/tests/test_runner_v3_3.py",
+      "passed": true
+    },
+    {
+      "actual": "a70f5f96ee29a1da75a9eb5a768ce5420da6bc8a0d17798a378052f4d1cda193",
+      "expected": "a70f5f96ee29a1da75a9eb5a768ce5420da6bc8a0d17798a378052f4d1cda193",
+      "name": "freeze_hash:artifacts/sql-agent-bussiness/tests/test_v31_freeze.py",
+      "passed": true
+    },
+    {
+      "actual": "d2bb34e4a655905074334ea8c9b976cd93f61859115382628dad60bc96de3c20",
+      "expected": "d2bb34e4a655905074334ea8c9b976cd93f61859115382628dad60bc96de3c20",
+      "name": "freeze_hash:tests/sql/test_benchmark_v3_1_contract.py",
+      "passed": true
+    },
+    {
+      "actual": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "expected": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "name": "case_set_canonical_sha256",
+      "passed": true
+    },
+    {
+      "actual": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+      "expected": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+      "name": "freeze_database_fingerprint_matches_gold",
+      "passed": true
+    },
+    {
+      "actual": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+      "expected": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+      "name": "scoring_hash:cases_sha256",
+      "passed": true
+    },
+    {
+      "actual": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84",
+      "expected": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84",
+      "name": "scoring_hash:gold_reference_sha256",
+      "passed": true
+    },
+    {
+      "actual": "123c26586f0438b35b6152a88a2116da129092645188a0766c2fad191f8d9876",
+      "expected": "123c26586f0438b35b6152a88a2116da129092645188a0766c2fad191f8d9876",
+      "name": "scoring_hash:raw_observations_sha256",
+      "passed": true
+    },
+    {
+      "actual": "09736cff9ea4cb5edf40e470a0c1692c40b61f57e290e2384493e2f60c2a68f4",
+      "expected": "09736cff9ea4cb5edf40e470a0c1692c40b61f57e290e2384493e2f60c2a68f4",
+      "name": "scoring_hash:scorer_sha256",
+      "passed": true
+    },
+    {
+      "actual": "91fc40f533480d4775e20ecbd10c74b0cc67b874da647a78fc2c2077c8ce3905",
+      "expected": "91fc40f533480d4775e20ecbd10c74b0cc67b874da647a78fc2c2077c8ce3905",
+      "name": "scoring_hash:semantic_audit_sha256",
+      "passed": true
+    },
+    {
+      "actual": "79387f42001e13db8f6f6c239691857bdcf1f40581661917f8e41cbbfc926221",
+      "expected": "79387f42001e13db8f6f6c239691857bdcf1f40581661917f8e41cbbfc926221",
+      "name": "scoring_hash:output_safety_audit_sha256",
+      "passed": true
+    },
+    {
+      "actual": "123c26586f0438b35b6152a88a2116da129092645188a0766c2fad191f8d9876",
+      "expected": "123c26586f0438b35b6152a88a2116da129092645188a0766c2fad191f8d9876",
+      "name": "semantic_audit_source_run_hash",
+      "passed": true
+    },
+    {
+      "actual": "123c26586f0438b35b6152a88a2116da129092645188a0766c2fad191f8d9876",
+      "expected": "123c26586f0438b35b6152a88a2116da129092645188a0766c2fad191f8d9876",
+      "name": "output_audit_source_run_hash",
+      "passed": true
+    },
+    {
+      "actual": [
+        "B40-001",
+        "B40-002",
+        "B40-003",
+        "B40-004",
+        "B40-005",
+        "B40-006",
+        "B40-007",
+        "B40-008",
+        "B40-009",
+        "B40-010",
+        "B40-011",
+        "B40-012",
+        "B40-013",
+        "B40-014",
+        "B40-015",
+        "B40-016",
+        "B40-017",
+        "B40-018",
+        "B40-019",
+        "B40-020",
+        "B40-021",
+        "B40-022",
+        "B40-023",
+        "B40-024",
+        "B40-025",
+        "B40-026",
+        "B40-027",
+        "B40-028",
+        "B40-029",
+        "B40-030",
+        "B40-031",
+        "B40-032",
+        "B40-033",
+        "B40-034",
+        "B40-035",
+        "B40-036",
+        "B40-037",
+        "B40-038",
+        "B40-039",
+        "B40-040"
+      ],
+      "expected": [
+        "B40-001",
+        "B40-002",
+        "B40-003",
+        "B40-004",
+        "B40-005",
+        "B40-006",
+        "B40-007",
+        "B40-008",
+        "B40-009",
+        "B40-010",
+        "B40-011",
+        "B40-012",
+        "B40-013",
+        "B40-014",
+        "B40-015",
+        "B40-016",
+        "B40-017",
+        "B40-018",
+        "B40-019",
+        "B40-020",
+        "B40-021",
+        "B40-022",
+        "B40-023",
+        "B40-024",
+        "B40-025",
+        "B40-026",
+        "B40-027",
+        "B40-028",
+        "B40-029",
+        "B40-030",
+        "B40-031",
+        "B40-032",
+        "B40-033",
+        "B40-034",
+        "B40-035",
+        "B40-036",
+        "B40-037",
+        "B40-038",
+        "B40-039",
+        "B40-040"
+      ],
+      "name": "observation_ids_exactly_match_case_set",
+      "passed": true
+    },
+    {
+      "actual": {
+        "abstain_without_query": 5,
+        "clarify": 5,
+        "execute": 30
+      },
+      "expected": {
+        "abstain_without_query": 5,
+        "clarify": 5,
+        "execute": 30
+      },
+      "name": "cohort_distribution_30_5_5",
+      "passed": true
+    },
+    {
+      "actual": [
+        "B40-001",
+        "B40-002",
+        "B40-003",
+        "B40-004",
+        "B40-005",
+        "B40-006",
+        "B40-007",
+        "B40-008",
+        "B40-009",
+        "B40-010",
+        "B40-011",
+        "B40-012",
+        "B40-013",
+        "B40-014",
+        "B40-015",
+        "B40-016",
+        "B40-017",
+        "B40-018",
+        "B40-019",
+        "B40-020",
+        "B40-021",
+        "B40-022",
+        "B40-023",
+        "B40-024",
+        "B40-025",
+        "B40-026",
+        "B40-027",
+        "B40-028",
+        "B40-029",
+        "B40-030",
+        "B40-031",
+        "B40-032",
+        "B40-033",
+        "B40-034",
+        "B40-035",
+        "B40-036",
+        "B40-037",
+        "B40-038",
+        "B40-039",
+        "B40-040"
+      ],
+      "expected": [
+        "B40-001",
+        "B40-002",
+        "B40-003",
+        "B40-004",
+        "B40-005",
+        "B40-006",
+        "B40-007",
+        "B40-008",
+        "B40-009",
+        "B40-010",
+        "B40-011",
+        "B40-012",
+        "B40-013",
+        "B40-014",
+        "B40-015",
+        "B40-016",
+        "B40-017",
+        "B40-018",
+        "B40-019",
+        "B40-020",
+        "B40-021",
+        "B40-022",
+        "B40-023",
+        "B40-024",
+        "B40-025",
+        "B40-026",
+        "B40-027",
+        "B40-028",
+        "B40-029",
+        "B40-030",
+        "B40-031",
+        "B40-032",
+        "B40-033",
+        "B40-034",
+        "B40-035",
+        "B40-036",
+        "B40-037",
+        "B40-038",
+        "B40-039",
+        "B40-040"
+      ],
+      "name": "all_40_attempted_and_no_not_run",
+      "passed": true
+    },
+    {
+      "actual": "completed_with_failures",
+      "expected": "completed_with_failures",
+      "name": "official_run_status_completed_with_failures",
+      "passed": true
+    },
+    {
+      "actual": {
+        "business_result_accuracy": [
+          11,
+          20
+        ],
+        "output_contract_compliance": [
+          13,
+          20
+        ],
+        "overall_task_success_rate": [
+          18,
+          40
+        ],
+        "sql_semantic_accuracy": [
+          14,
+          30
+        ],
+        "supported_business_end_to_end_accuracy": [
+          10,
+          30
+        ],
+        "unsafe_execution_count": 0,
+        "valid_clarification_abstention": [
+          8,
+          10
+        ]
+      },
+      "expected": {
+        "business_result_accuracy": [
+          11,
+          20
+        ],
+        "output_contract_compliance": [
+          13,
+          20
+        ],
+        "overall_task_success_rate": [
+          18,
+          40
+        ],
+        "sql_semantic_accuracy": [
+          14,
+          30
+        ],
+        "supported_business_end_to_end_accuracy": [
+          10,
+          30
+        ],
+        "unsafe_execution_count": 0,
+        "valid_clarification_abstention": [
+          8,
+          10
+        ]
+      },
+      "name": "official_v3_3_headline_scores_match_saved_report",
+      "passed": true
+    },
+    {
+      "actual": [
+        "B40-001",
+        "B40-002",
+        "B40-003",
+        "B40-004",
+        "B40-005",
+        "B40-006",
+        "B40-007",
+        "B40-008",
+        "B40-009",
+        "B40-010",
+        "B40-011",
+        "B40-012",
+        "B40-013",
+        "B40-014",
+        "B40-015",
+        "B40-016",
+        "B40-017",
+        "B40-018",
+        "B40-019",
+        "B40-020",
+        "B40-021",
+        "B40-022",
+        "B40-023",
+        "B40-024",
+        "B40-025",
+        "B40-026",
+        "B40-027",
+        "B40-028",
+        "B40-029",
+        "B40-030",
+        "B40-031",
+        "B40-032",
+        "B40-033",
+        "B40-034",
+        "B40-035",
+        "B40-036",
+        "B40-037",
+        "B40-038",
+        "B40-039",
+        "B40-040"
+      ],
+      "expected": [
+        "B40-001",
+        "B40-002",
+        "B40-003",
+        "B40-004",
+        "B40-005",
+        "B40-006",
+        "B40-007",
+        "B40-008",
+        "B40-009",
+        "B40-010",
+        "B40-011",
+        "B40-012",
+        "B40-013",
+        "B40-014",
+        "B40-015",
+        "B40-016",
+        "B40-017",
+        "B40-018",
+        "B40-019",
+        "B40-020",
+        "B40-021",
+        "B40-022",
+        "B40-023",
+        "B40-024",
+        "B40-025",
+        "B40-026",
+        "B40-027",
+        "B40-028",
+        "B40-029",
+        "B40-030",
+        "B40-031",
+        "B40-032",
+        "B40-033",
+        "B40-034",
+        "B40-035",
+        "B40-036",
+        "B40-037",
+        "B40-038",
+        "B40-039",
+        "B40-040"
+      ],
+      "name": "annotations_cover_all_40_cases",
+      "passed": true
+    }
+  ],
+  "format_version": "sql-post-benchmark-reproducibility-manifest.v1",
+  "generated_analysis_sha256": {
+    "CASE_ERROR_MATRIX.csv": "c2fb217f702a153c559643171771fcc448253affe3fc83397d6529e4c7df5c0e",
+    "ERROR_ANALYSIS_REPORT.md": "01da5b1fd3fb6ac235c174ade96ba99476cc86df574e8015633a1c532c6b8b29",
+    "HUMAN_REVIEW_QUEUE.md": "5440c78b55ebc68ea82d11befcead73425000be4d034b0305f22586e8b630283",
+    "SCORER_FAIRNESS_AUDIT.md": "c00e85a5dcb0f2730dea639eadf5c52d42732f2e99e8d7408be12f100b19b6e6",
+    "SENSITIVITY_ANALYSIS.json": "0daf8d51e5bd41791a7deedc84de3f574f6a65a57236b2c6277bfbfdd6922073"
+  },
+  "hash_scope_note": "The manifest does not hash itself. Generated-analysis hashes cover the five deliverables; source hashes pin all inputs and scripts/tests.",
+  "network_calls": 0,
+  "official_files_modified": false,
+  "official_run_id": "20261122T012821Z",
+  "official_scorer_version": "3.3.0",
+  "python_version": "3.11.16",
+  "repository_base_revision": "37b5fed55a45fc30a5e46376e9e41d0abb6bb17f",
+  "reproduction_commands": [
+    "uv run --locked --project . python artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/analyze.py",
+    "uv run --locked --project . python -m unittest discover -s artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/tests -v",
+    "uv run --locked --project . python artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/analyze.py --check"
+  ],
+  "source_sha256": {
+    "artifacts/sql-agent-bussiness/40-case-v3-1/ADJUDICATION_V3_1_CONSENSUS_20261122.json": "c050c667a276da8ad17de112355898d36c18488865a7569fb60bc6bb8dca9fc6",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/FREEZE_MANIFEST_V3_1_FROZEN_V1.json": "2df88b7aa53a9d192ca08055700cc23be321f02f433f1ced3a40af65bdc52d0e",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md": "6a5c39b9bcc500876699d6830f87d16809116d0b38f24bc39fd68b1aabbfef22",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/cases_v3_1_draft.json": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/gold_results_v3_1_provisional.json": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/gold_sql_v3_1_draft.json": "bd3fde86d887493f82a2a498e3e58a4eb8beefa2af5d4b81596e6274158c4022",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/runs/official-v3-3-40-20261122T012821Z/AUDIT_NOTES.md": "310c845637cd2c796e6f820a4fce4c596580a9a1136769418f790e35fc12a84d",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/runs/official-v3-3-40-20261122T012821Z/data.json": "123c26586f0438b35b6152a88a2116da129092645188a0766c2fad191f8d9876",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/runs/official-v3-3-40-20261122T012821Z/output_safety_audits.json": "79387f42001e13db8f6f6c239691857bdcf1f40581661917f8e41cbbfc926221",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/runs/official-v3-3-40-20261122T012821Z/output_safety_decisions.json": "8da7319b70b9858f192213509bab0384aa2e129d59f5ac0528851b087cb411e9",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/runs/official-v3-3-40-20261122T012821Z/report.md": "5ec98e7a725a29ebbdd210d95384737902898ee887eadd3f46a9d9edd281e2c1",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/runs/official-v3-3-40-20261122T012821Z/scores.json": "e8d4b9a1a1628710621d7c84b6cf34e310672fbfc6a30654586d2e815730d6df",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/runs/official-v3-3-40-20261122T012821Z/semantic_audit_decisions.json": "0fa818b19395f43fae9866650bc172171800a647bae02904e4d6ab614b8f8b52",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/runs/official-v3-3-40-20261122T012821Z/semantic_audits.json": "91fc40f533480d4775e20ecbd10c74b0cc67b874da647a78fc2c2077c8ce3905",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py": "09736cff9ea4cb5edf40e470a0c1692c40b61f57e290e2384493e2f60c2a68f4"
+  },
+  "sql_agent_or_llm_invocations": 0,
+  "sql_queries_executed_by_analysis": 0
+}

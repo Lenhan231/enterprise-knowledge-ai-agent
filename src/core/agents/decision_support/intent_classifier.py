@@ -14,7 +14,7 @@ from core.prompts.intent import INTENT_CLASSIFIER_PROMPT
 JEV_ROUTE_THRESHOLD = 0.5
 JEV_ROUTES = {'knowledge', 'sql', 'plan_required'}
 JEV_TABLE_LIMIT = 5
-DECISION_ROUTER_MODEL = 'perplexity/pplx-decider-v1.2'
+DECISION_ROUTER_MODEL = 'perplexity/pplx-decider-v1.3:free'
 SQL_SCHEMA_SELECTION_MODEL = 'perplexity/pplx-decider-flash-v1.3:free'
 
 

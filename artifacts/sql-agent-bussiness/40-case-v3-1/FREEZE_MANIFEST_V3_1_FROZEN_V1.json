@@ -1,0 +1,201 @@
+{
+  "format_version": "sql-agent-business-benchmark-freeze-manifest.v3.1-v3.3.0",
+  "status": "FROZEN_WITH_DISCLOSED_REVIEW_PROVENANCE_LIMITATION",
+  "freeze_status": "FROZEN",
+  "frozen_at_utc": "2026-11-22T01:26:15Z",
+  "freeze_scope": "Official SQL Agent evaluation of the existing held-out v3.1 cohort using unchanged v3.3.0 scorer/protocol.",
+  "application_git_sha": "37b5fed55a45fc30a5e46376e9e41d0abb6bb17f",
+  "application_source_hashes": {
+    "src/core/agents/sql/agent.py": "758cf333858d91c11c4d6af03801f17c79c3df6b89dd5701d60ab5a243c845df",
+    "src/core/agents/sql/assistant_endpoint.py": "08aafe5456aa74cdaea645e23dc894ef05c4dd491e437a69de91fcada7cee0a2",
+    "src/core/agents/sql/text_to_sql.py": "256c1ecf3f0818ba24c5fd4c74235e67a5f1e0aadcb45a9aa187578080c16b47",
+    "src/core/agents/sql/metric_ontology.py": "f1aca33a5f880a71852eef99b62472e55250931ec6f546e1b7dd1d7e5cafe308",
+    "src/core/agents/sql/metric_validation.py": "3ccc9a06d95d7950f6cdb2a05593222073c73c091c8ad684ca51d14e84410cb3",
+    "src/core/agents/sql/query_intent.py": "cf6f4a41cd8d01c9e4a909346c8e6ddcdcaea5354cbd98e8a38b6366c2d7e78e",
+    "src/core/agents/sql/intent_resolution.py": "86defb2ef65e1c03dbfa62d1877dd1df5f0c9051727625af50d82a0a6ba1cfa0",
+    "src/core/agents/sql/query_contract.py": "8b3080be9cedbf5d3896974c5255caa5d81ec9c9d16fe7f9bcb1d4aba9a5df1c",
+    "src/core/agents/sql/sql_validation.py": "8b80b68c945785f7df3eff4a8836ce12a5902d19230bdd31086c84a76f6a175c",
+    "src/core/agents/sql/sql_ranking.py": "7dbec694e2a38c8eb83d76a007069f733ee622c1633a969ffe37e8c4319774db",
+    "src/core/agents/sql/metric_mapping.py": "9c00a288155289714992053e06e624ce772ded0a7e9835132b09f20bde7566c6",
+    "src/core/database/commerce_repository.py": "c50409b9dda2c25768f4f669fe8765253b85df35199acca438b03d64030d41ec",
+    "src/core/prompts/sql.py": "cf1829c735a357a9bff55bd04d649ad807cb2bbdff134da36542d73371144e60",
+    "src/core/agents/runtime.py": "0b9231fb293467e0544e722aadaa28cb67a0f15634b5f1bf9f6f209d7b224688",
+    "src/core/agents/decision_support/intent_classifier.py": "45ebaa072e8819890afcc2c22fc7d3cc1f0851b9faf466fdaef1f076c848b061",
+    "src/core/llm/Cloudflare_provider.py": "32beb4601c0a911acecd7d42acefe9b25c61048325a8a927c125f3443338e56a",
+    "src/core/llm/groq_provider.py": "2e6bbf7f49354d0edbe0943f117cea1ad284d5439e3628cdb78d284ef55a6da2",
+    "data/semantic/vietstyle_metrics_v1.yaml": "5c05965d8e11d8230fbe1cae181370b12851f446f414dd59c9bbc9bb126fb1c3"
+  },
+  "benchmark_runner_code_git_sha": "a57d19dce9dc0477a3ff9f745a6c75a4db0a49cf",
+  "benchmark_runner_source_hashes": {
+    "artifacts/sql-agent-bussiness/runner.py": "b226e07ad671e4c446418a756bddb518ccfc3c21be1d30e2559dce43e369a997",
+    "artifacts/sql-agent-bussiness/tests/test_runner.py": "7f8b79373c5095539d7aaa5454e2533bc79617e0219254e6c93ec448dccdd67f",
+    "artifacts/sql-agent-bussiness/tests/test_runner_v3_3.py": "8ca187dde14dec2c66f7cba22ae8d9b9faa474bdec82abb158a17ba39b88d150"
+  },
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "gold_sql_definition_sha256": "cf8072cbce69eff02f1305e0ece9a41c1dcfaa73b8ac0b8e96c8f225bb96e0a5",
+  "database_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+  "cohort": {
+    "total": 40,
+    "execute": 30,
+    "clarify": 5,
+    "abstain_without_query": 5,
+    "gold_sql_definitions": 30,
+    "gold_result_rows": 404
+  },
+  "scorer": {
+    "version": "3.3.0",
+    "protocol_version": "3.3.0",
+    "path": "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py",
+    "sha256": "09736cff9ea4cb5edf40e470a0c1692c40b61f57e290e2384493e2f60c2a68f4",
+    "protocol_path": "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md",
+    "protocol_sha256": "6a5c39b9bcc500876699d6830f87d16809116d0b38f24bc39fd68b1aabbfef22"
+  },
+  "artifacts_sha256": {
+    "cases_v3_1_draft.json": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+    "gold_sql_v3_1_draft.json": "bd3fde86d887493f82a2a498e3e58a4eb8beefa2af5d4b81596e6274158c4022",
+    "gold_results_v3_1_provisional.json": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84",
+    "scorer_v3_1.py": "09736cff9ea4cb5edf40e470a0c1692c40b61f57e290e2384493e2f60c2a68f4",
+    "PROTOCOL_V3_1.md": "6a5c39b9bcc500876699d6830f87d16809116d0b38f24bc39fd68b1aabbfef22",
+    "semantic_audit_v3_1.py": "af041327fe3264042f0c6fa1cb3e886a96c5cf32a22232d0747d9f1464d41514",
+    "output_safety_audit_v3_3.py": "72a09a9ca856a27fc755664f50de0f31d7d236172a039cad010dd9d0aea1296d",
+    "review_v3_1_reviewer_1_Lenhan231_complete.json": "4de70c567e45e96ce32a8666885461fcad06be7d1154a759615981e4f8d8e48d",
+    "review_v3_1_reviewer_2_user_reported_complete.json": "0975c50545aabef7187c924b9b2b5aa94712d61c0879ac9eecd85abbcfffdbeb",
+    "ADJUDICATION_V3_1_CONSENSUS_20261122.json": "c050c667a276da8ad17de112355898d36c18488865a7569fb60bc6bb8dca9fc6",
+    "database_preflight_v3_1_live_20261122T005320Z.json": "864e7fd4ad08d1a6d0796ca21959c85b84c4a594499faf8c343f7990711e3386",
+    "FREEZE_README_V3_1_V1.md": "a4d002b4d52901b7c4ed700c4a64ed21f4c74f0871a529c761d9f1a4ebd3c6ed",
+    "SEMANTIC_REVIEW_V3_1.html": "86d270cbb6c1dd5aeb21199b9570972e0dd4e9548c450cd3de05b1e58e47d0f3",
+    "runner.py": "b226e07ad671e4c446418a756bddb518ccfc3c21be1d30e2559dce43e369a997",
+    "test_runner.py": "7f8b79373c5095539d7aaa5454e2533bc79617e0219254e6c93ec448dccdd67f",
+    "test_runner_v3_3.py": "8ca187dde14dec2c66f7cba22ae8d9b9faa474bdec82abb158a17ba39b88d150",
+    "test_v31_freeze.py": "a70f5f96ee29a1da75a9eb5a768ce5420da6bc8a0d17798a378052f4d1cda193",
+    "test_benchmark_v3_1_contract.py": "d2bb34e4a655905074334ea8c9b976cd93f61859115382628dad60bc96de3c20"
+  },
+  "artifact_paths_sha256": {
+    "artifacts/sql-agent-bussiness/40-case-v3-1/cases_v3_1_draft.json": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/gold_sql_v3_1_draft.json": "bd3fde86d887493f82a2a498e3e58a4eb8beefa2af5d4b81596e6274158c4022",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/gold_results_v3_1_provisional.json": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py": "09736cff9ea4cb5edf40e470a0c1692c40b61f57e290e2384493e2f60c2a68f4",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md": "6a5c39b9bcc500876699d6830f87d16809116d0b38f24bc39fd68b1aabbfef22",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/semantic_audit_v3_1.py": "af041327fe3264042f0c6fa1cb3e886a96c5cf32a22232d0747d9f1464d41514",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py": "72a09a9ca856a27fc755664f50de0f31d7d236172a039cad010dd9d0aea1296d",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/review_v3_1_reviewer_1_Lenhan231_complete.json": "4de70c567e45e96ce32a8666885461fcad06be7d1154a759615981e4f8d8e48d",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/review_v3_1_reviewer_2_user_reported_complete.json": "0975c50545aabef7187c924b9b2b5aa94712d61c0879ac9eecd85abbcfffdbeb",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/ADJUDICATION_V3_1_CONSENSUS_20261122.json": "c050c667a276da8ad17de112355898d36c18488865a7569fb60bc6bb8dca9fc6",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/database_preflight_v3_1_live_20261122T005320Z.json": "864e7fd4ad08d1a6d0796ca21959c85b84c4a594499faf8c343f7990711e3386",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/FREEZE_README_V3_1_V1.md": "a4d002b4d52901b7c4ed700c4a64ed21f4c74f0871a529c761d9f1a4ebd3c6ed",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/SEMANTIC_REVIEW_V3_1.html": "86d270cbb6c1dd5aeb21199b9570972e0dd4e9548c450cd3de05b1e58e47d0f3",
+    "artifacts/sql-agent-bussiness/runner.py": "b226e07ad671e4c446418a756bddb518ccfc3c21be1d30e2559dce43e369a997",
+    "artifacts/sql-agent-bussiness/tests/test_runner.py": "7f8b79373c5095539d7aaa5454e2533bc79617e0219254e6c93ec448dccdd67f",
+    "artifacts/sql-agent-bussiness/tests/test_runner_v3_3.py": "8ca187dde14dec2c66f7cba22ae8d9b9faa474bdec82abb158a17ba39b88d150",
+    "artifacts/sql-agent-bussiness/tests/test_v31_freeze.py": "a70f5f96ee29a1da75a9eb5a768ce5420da6bc8a0d17798a378052f4d1cda193",
+    "tests/sql/test_benchmark_v3_1_contract.py": "d2bb34e4a655905074334ea8c9b976cd93f61859115382628dad60bc96de3c20"
+  },
+  "database": {
+    "classification": "frozen-analytics-snapshot",
+    "role_read_only": true,
+    "preflight_path": "artifacts/sql-agent-bussiness/40-case-v3-1/database_preflight_v3_1_live_20261122T005320Z.json",
+    "preflight_sha256": "864e7fd4ad08d1a6d0796ca21959c85b84c4a594499faf8c343f7990711e3386",
+    "preflight_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+    "fingerprint_matches_gold": true,
+    "preflight_coverage": {
+      "commerce.sales": {
+        "rows": 1400,
+        "date_min": "2023-01-01",
+        "date_max": "2026-11-13",
+        "rows_2025": 352,
+        "revenue_2025": "13299821.25"
+      },
+      "commerce.orders": {
+        "rows": 3300,
+        "date_min": "2023-01-01",
+        "date_max": "2026-11-13",
+        "delivered_orders_2025": 719,
+        "order_date_type": "date"
+      },
+      "commerce.inventory": {
+        "rows": 4559,
+        "snapshot_min": "2023-01-31",
+        "snapshot_max": "2026-11-13",
+        "snapshot_count": 47,
+        "rows_at_2026_11_13": 97
+      }
+    },
+    "database_write_attempts": 0
+  },
+  "review": {
+    "adjudication_path": "artifacts/sql-agent-bussiness/40-case-v3-1/ADJUDICATION_V3_1_CONSENSUS_20261122.json",
+    "adjudication_sha256": "c050c667a276da8ad17de112355898d36c18488865a7569fb60bc6bb8dca9fc6",
+    "decision": "CONSENSUS_APPROVE_ALL_40_WITH_PROVENANCE_LIMITATION",
+    "reviewers_recorded": 2,
+    "reviewer_1_approvals": 40,
+    "reviewer_2_user_reported_approvals": 40,
+    "consensus_approvals": 40,
+    "disagreements": 0,
+    "reviewer_2_identity_verified": false,
+    "independent_reviewer_status_cryptographically_verified": false,
+    "direct_reviewer_2_export_available": false,
+    "original_per_case_timestamps_available": false,
+    "original_rationales_available": false,
+    "limitations_disclosed": true
+  },
+  "sql_generation_configuration": {
+    "primary_provider": "cloudflare",
+    "primary_model": "@cf/openai/gpt-oss-20b",
+    "configured_sql_groq_model": "openai/gpt-oss-20b",
+    "fallback_chain": [
+      {
+        "provider": "groq",
+        "model": "qwen/qwen3.8-27b",
+        "condition": "Cloudflare primary failure; code calls GroqProvider() and uses GROQ_MODEL/default. SQL_GROQ_MODEL does not control this fallback."
+      },
+      {
+        "provider": "codex_cli",
+        "enabled": true,
+        "model": "gpt-6-luna",
+        "reasoning_effort": "xhigh",
+        "condition": "Earlier providers fail and the SQL CLI fallback is enabled."
+      }
+    ],
+    "schema_selection_model": "perplexity/pplx-decider-flash-v1.3:free",
+    "jev_router_model": "typesafe/jev-1.14",
+    "jev_provider": "OpenRouter",
+    "credentials_presence_only": {
+      "cloudflare": true,
+      "groq": true,
+      "openrouter": true
+    },
+    "repair_budget": 1,
+    "provider_cost_source": "Not available from configured provider adapters; token usage is captured per provider response when present."
+  },
+  "execution_policy": {
+    "attempts_per_case": 1,
+    "internal_bounded_sql_repair_budget": 1,
+    "resume_only_after_explicit_interruption": true,
+    "completed_cases_immutable": true,
+    "read_only_repository_only": true,
+    "preflight_fingerprint_mismatch": "STOP_BEFORE_MODEL_CALLS",
+    "gold_sql_reexecuted_during_agent_run": false,
+    "heldout_run_authorized_by_user": true
+  },
+  "validation_before_freeze_commit": {
+    "benchmark_package_tests": "PASS 54/54",
+    "runner_v3_3_tests": "PASS 4/4",
+    "v3_1_contract_tests": "PASS 52/52",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "python_version": "Python 3.11.16",
+    "commands": [
+      "PYTHONPATH=src uv run --no-sync python -m unittest discover -s artifacts/sql-agent-bussiness/tests -v",
+      "PYTHONPATH=src uv run --no-sync python -m unittest discover -s tests/sql -p test_benchmark_v3_1_contract.py -v"
+    ]
+  },
+  "waivers_and_unverified_requirements": [
+    "User authorized freezing after reporting that both reviewers approved all cases. Reviewer 2 identity and direct approval export are unavailable; independent reviewer identity is user-reported, not independently authenticated.",
+    "The HTML was local-storage based; the recovered approval records were logged from user confirmations, not original per-case browser action exports.",
+    "No original per-case timestamps, rationales, signatures, or cryptographic identity attestations are available."
+  ],
+  "historical_artifacts_preserved": true,
+  "cases_gold_sql_gold_results_and_scoring_rules_modified": false,
+  "heldout_sql_agent_executed_at_freeze_time": false,
+  "ready_for_official_40_case_run": true
+}

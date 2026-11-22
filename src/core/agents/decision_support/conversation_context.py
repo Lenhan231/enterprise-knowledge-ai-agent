@@ -59,3 +59,22 @@ class ConversationStore:
             while entry.history and sum(len(v) for turn in entry.history for v in turn.values()) > self.max_chars:
                 entry.history.pop(0)
             self.entries.move_to_end(key)
+
+
+def resolve_clarification_choice(selection, history):
+    """Resolve a UI choice against the clarification turn that offered it."""
+    if not isinstance(selection, dict) or not history:
+        return None
+    index = selection.get('index')
+    question = selection.get('question')
+    if type(index) is not int or not 0 <= index < 3 or not isinstance(question, str) or not question.strip():
+        return None
+    for turn in reversed(history):
+        if turn.get('question') != question:
+            continue
+        options = turn.get('clarification_options')
+        scope = turn.get('scope') or turn.get('question')
+        if (isinstance(options, list) and index < len(options)
+                and isinstance(options[index], str) and isinstance(scope, str) and scope.strip()):
+            return scope.strip(), index + 1, options[index], turn
+    return None

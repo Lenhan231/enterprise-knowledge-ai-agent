@@ -176,7 +176,7 @@ class InvoiceTextProcessorTest(unittest.TestCase):
         self.assertEqual(extract.call_args.kwargs, {"reference_id": None})
         self.assertEqual(result["invoice_extraction"], extraction)
         self.assertEqual(result["metadata"]["parser_engine"], "docling")
-        self.assertEqual(result["metadata"]["pipeline_id"], "docling_qwen_invoice_text")
+        self.assertEqual(result["metadata"]["pipeline_id"], "docling_invoice_text")
 
 
 if __name__ == "__main__":

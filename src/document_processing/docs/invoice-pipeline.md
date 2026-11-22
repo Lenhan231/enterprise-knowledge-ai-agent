@@ -4,7 +4,7 @@
 
 ```text
 PDF/image → Docling OCR, layout and TableFormer → reviewable text and tables
-  → Gemini, Groq, or Qwen extract from text and tables
+  → Gemini or Groq extract from text and tables
   → schema-checked JSON draft → public.invoice_extractions
 ```
 
@@ -12,17 +12,11 @@ PDF/image → Docling OCR, layout and TableFormer → reviewable text and tables
 extraction. Text providers receive OCR text and table cells. Set
 `DOCUMENT_PROCESSING_INVOICE_PROVIDER=gemini` and `GEMINI_API` to use the
 `gemini-3.1-flash-lite` API. The Gemini path sends the header and table prompts
-as separate JSON-mode requests. The default `modal` provider sends those same
-text prompts to the isolated GPU endpoint. When Modal is not configured, the
-Qwen path uses the local isolated Transformers worker, which loads the pinned
-`Qwen/Qwen3-0.6B` base revision and the
-private `lenhanm1/qwen3-0.6b-invoice-lora-900` adapter. Set
-`HF_INVOICE_LLM_TOKEN` in the
-document-processing service environment so the worker can read the adapter.
-Model and adapter revisions are pinned in [`text_processor.py`](../invoice/text_processor.py) and can
-be overridden with `DOCUMENT_PROCESSING_INVOICE_*` environment variables. The
-local worker uses the interpreter configured by `DOCUMENT_PROCESSING_INVOICE_WORKER_PYTHON`
-and shares the document-processing model cache.
+as separate JSON-mode requests. The alternative `groq` provider uses
+`GROQ_API_KEY` and defaults to `openai/gpt-oss-120b`. No invoice LLM
+fine-tuning or local GPU worker is required. Existing deployments must change
+any legacy `DOCUMENT_PROCESSING_INVOICE_PROVIDER=modal` or `local` setting to
+`gemini` or `groq` before rebuilding.
 
 Table extraction returns both item rows and explicitly labeled subtotal, tax,
 and total values. The merge accepts totals from OCR text or table evidence;
@@ -39,14 +33,6 @@ does not survive a service restart.
 The OCR pass classifies text-line orientation and recognizes VietOCR text in
 batches of up to 16 line crops per page. Both preserve crop order; orientation
 uses the same confidence and rotation rules as single-crop inference.
-
-For GPU inference, deploy [`modal_endpoint.py`](../invoice/modal_endpoint.py) from the repository root
-with `modal deploy src/document_processing/invoice/modal_endpoint.py`. The
-Modal Secret `invoice-hf-token` must expose `HF_INVOICE_LLM_TOKEN`. Set the
-endpoint URL as `DOCUMENT_PROCESSING_INVOICE_MODAL_URL` in the document-
-processing service environment; requests are authenticated with an HMAC derived
-from that same token. When the URL is unset, extraction falls back to the local
-isolated worker.
 
 ## JSON schema
 
@@ -72,14 +58,11 @@ records. `GET /api/invoices/{invoice_id}` is limited to the uploader and admins.
 The web Upload form exposes “Invoice extraction” separately from “Knowledge
 document”; it hides the knowledge-base access-role controls for invoice mode
 and displays the returned JSON draft. Invoice uploads can select Gemini 3.1
-Flash-Lite, Groq GPT-OSS 120B, or the fine-tuned Qwen3-0.6B adapter served
-through Modal GPU. When the Modal endpoint is unset, Qwen uses the local
-isolated invoice worker. The normal document upload remains on its existing
+Flash-Lite or Groq GPT-OSS 120B. The normal document upload remains on its existing
 parser/chunking/indexing route.
 
-The first local inference may download base and adapter weights into `/models`;
-subsequent loads use the persistent model cache. Modal loads the base and adapter
-once per GPU container and reuses them for later requests. The configured
-invoice request timeout is 1,200 seconds to allow for OCR and cold starts. Every
+The configured invoice request timeout is 1,200 seconds to allow for OCR and provider calls. Every
 result is marked `review_required`, so verify extracted fields against the
 source before using them in downstream financial workflows.
+
+Historical invoice model training artifacts are retained for provenance, but are not part of the supported or submitted workflow.

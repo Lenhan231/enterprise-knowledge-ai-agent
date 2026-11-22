@@ -26,16 +26,9 @@ def _invoice_provider_is_remote(config):
     provider = str(
         config.get("invoice_provider")
         or os.environ.get("DOCUMENT_PROCESSING_INVOICE_PROVIDER")
-        or "modal"
+        or "gemini"
     ).strip().lower()
-    if provider in {"gemini", "groq"}:
-        return True
-    if provider == "modal":
-        return bool(
-            config.get("invoice_modal_url")
-            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_MODAL_URL")
-        )
-    return False
+    return provider in {"gemini", "groq"}
 
 
 def authorize(request: Request):

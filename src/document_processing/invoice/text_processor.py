@@ -3,14 +3,9 @@
 from __future__ import annotations
 
 import json
-import hashlib
-import hmac
 import logging
 import os
-from pathlib import Path
 import re
-import subprocess
-import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
@@ -21,13 +16,8 @@ from urllib.request import Request, urlopen
 from document_processing.invoice.schema import (
     InvoiceFields, SCHEMA, SCHEMA_VERSION, merge_invoice_fields,
 )
-from document_processing.worker_runtime import resolve_invoice_worker_python, worker_environment
 
 
-MODEL_ID = "Qwen/Qwen3-0.6B"
-MODEL_REVISION = "c1899de289a04d12100db370d81485cdf75e47ca"
-ADAPTER_ID = "lenhanm1/qwen3-0.6b-invoice-lora-900"
-ADAPTER_REVISION = "7e062bb552f77af64b1c3bc9e205fa107c68c3d3"
 HEADER_SCHEMA = {
     key: SCHEMA[key]
     for key in (
@@ -295,9 +285,9 @@ class InvoiceTextProcessor:
         provider = str(
             self.config.get("invoice_provider")
             or os.environ.get("DOCUMENT_PROCESSING_INVOICE_PROVIDER")
-            or "modal"
+            or "gemini"
         ).strip().lower()
-        if provider not in {"gemini", "groq", "modal", "local"}:
+        if provider not in {"gemini", "groq"}:
             raise ValueError(f"Unsupported invoice extraction provider: {provider}")
 
         if provider == "gemini":
@@ -318,46 +308,12 @@ class InvoiceTextProcessor:
             revision = "Groq API"
             adapter_id = None
             adapter_revision = None
-        else:
-            model_id = str(
-                self.config.get("invoice_model")
-                or os.environ.get("DOCUMENT_PROCESSING_INVOICE_MODEL")
-                or MODEL_ID
-            )
-            revision = str(
-                self.config.get("invoice_model_revision")
-                or os.environ.get("DOCUMENT_PROCESSING_INVOICE_REVISION")
-                or (MODEL_REVISION if model_id == MODEL_ID else "main")
-            )
-            adapter_id = str(
-                self.config.get("invoice_adapter")
-                or os.environ.get("DOCUMENT_PROCESSING_INVOICE_ADAPTER")
-                or ADAPTER_ID
-            )
-            adapter_revision = str(
-                self.config.get("invoice_adapter_revision")
-                or os.environ.get("DOCUMENT_PROCESSING_INVOICE_ADAPTER_REVISION")
-                or (ADAPTER_REVISION if adapter_id == ADAPTER_ID else "main")
-            )
         stage_started = time.perf_counter()
         jobs = _groq_extraction_jobs(ocr_input) if provider == "groq" else _extraction_jobs(ocr_input)
-        request_payload = {
-            "model_id": model_id,
-            "revision": revision,
-            "adapter_id": adapter_id,
-            "adapter_revision": adapter_revision,
-            "jobs": jobs,
-            "cpu_threads": int(self.config.get("invoice_cpu_threads", 2)),
-        }
         timeout = int(self.config.get(
             "invoice_timeout_seconds",
             os.environ.get("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", 1200),
         ))
-        modal_url = str(
-            self.config.get("invoice_modal_url")
-            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_MODAL_URL")
-            or ""
-        ).strip()
         job_build_ms = (time.perf_counter() - stage_started) * 1000
         inference_started = time.perf_counter()
         try:
@@ -375,70 +331,6 @@ class InvoiceTextProcessor:
                     model_id=model_id,
                     timeout=min(timeout, 60),
                 )
-            elif provider == "modal" and modal_url:
-                if not modal_url.startswith("https://"):
-                    raise ValueError("DOCUMENT_PROCESSING_INVOICE_MODAL_URL must use HTTPS")
-                token = os.environ.get("HF_INVOICE_LLM_TOKEN", "")
-                if not token:
-                    raise RuntimeError("HF_INVOICE_LLM_TOKEN is required to authenticate with Modal")
-                canonical = json.dumps(
-                    request_payload, ensure_ascii=False, separators=(",", ":"),
-                ).encode("utf-8")
-                signed_payload = {
-                    **request_payload,
-                    "auth_signature": hmac.new(
-                        token.encode("utf-8"), canonical, hashlib.sha256,
-                    ).hexdigest(),
-                }
-                request = Request(
-                    modal_url,
-                    data=json.dumps(signed_payload, ensure_ascii=False).encode("utf-8"),
-                    headers={"Content-Type": "application/json"},
-                    method="POST",
-                )
-                try:
-                    with urlopen(request, timeout=timeout) as response:
-                        worker_result = json.loads(response.read().decode("utf-8"))
-                except HTTPError as error:
-                    detail = error.read(1000).decode("utf-8", errors="replace")
-                    raise RuntimeError(
-                        f"Modal invoice endpoint returned HTTP {error.code}: {detail}"
-                    ) from error
-                except (URLError, TimeoutError, json.JSONDecodeError) as error:
-                    raise RuntimeError(f"Modal invoice endpoint request failed: {error}") from error
-            else:
-                python_path = resolve_invoice_worker_python(self.config)
-                if python_path is None or not python_path.is_file():
-                    raise RuntimeError(
-                        "Invoice text extraction needs the isolated Transformers runtime; "
-                        "set DOCUMENT_PROCESSING_INVOICE_WORKER_PYTHON."
-                    )
-                with tempfile.TemporaryDirectory(prefix="invoice-text-") as temp_dir:
-                    request_path = Path(temp_dir) / "request.json"
-                    response_path = Path(temp_dir) / "response.json"
-                    request_path.write_text(
-                        json.dumps(request_payload, ensure_ascii=False), encoding="utf-8",
-                    )
-                    try:
-                        completed = subprocess.run(
-                            [str(python_path), "-m", "document_processing.invoice.qwen_worker",
-                             str(request_path), str(response_path)],
-                            capture_output=True, text=True, env=worker_environment(), timeout=timeout, check=False,
-                        )
-                    except subprocess.TimeoutExpired as error:
-                        raise RuntimeError(
-                            f"Invoice text worker exceeded the {timeout}s timeout"
-                        ) from error
-                    if completed.returncode != 0:
-                        details = (completed.stderr or completed.stdout).strip()[-3000:]
-                        raise RuntimeError(
-                            "Invoice text model failed in its isolated runtime. "
-                            f"{details or f'Worker exited with code {completed.returncode}.'}"
-                        )
-                    try:
-                        worker_result = json.loads(response_path.read_text(encoding="utf-8"))
-                    except (OSError, json.JSONDecodeError) as error:
-                        raise RuntimeError("Invoice text worker returned invalid output") from error
         finally:
             _LOGGER.info(
                 "INVOICE_EXTRACTION_COMPONENT %s",

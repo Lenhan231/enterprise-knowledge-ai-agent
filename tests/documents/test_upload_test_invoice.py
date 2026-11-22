@@ -17,7 +17,7 @@ class UploadTestInvoiceTest(unittest.TestCase):
             "metrics": {"inference_seconds": 8.5},
         }
         parsed = {
-            "metadata": {"pipeline_id": "docling_qwen_invoice_text"},
+            "metadata": {"pipeline_id": "docling_invoice_text"},
             "elements": [{"text": "Invoice title", "metadata": {}}],
             "tables": [],
             "invoice_extraction": extraction,

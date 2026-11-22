@@ -18,24 +18,10 @@ use a different folder. Upload Test can select pages from a PDF before
 processing and can select the `document` or `invoice` intent. Invoice
 extraction uses Docling and the configured [invoice provider](invoice-pipeline.md).
 
-## Local invoice worker
+## Invoice extraction configuration
 
-The local Qwen invoice worker uses a separate environment to isolate its
-Transformers and PyTorch versions. By default, the app looks for
-`.venv-invoice-worker/bin/python`; set
-`DOCUMENT_PROCESSING_INVOICE_WORKER_PYTHON` to use a different interpreter.
-
-```sh
-uv venv .venv-invoice-worker --python 3.11
-uv pip install --python .venv-invoice-worker/bin/python \
-  --index-url https://download.pytorch.org/whl/cpu \
-  torch==2.3.1
-uv pip install --python .venv-invoice-worker/bin/python \
-  transformers==4.57.6 accelerate==1.15.0 peft==0.21.2
-```
-
-These commands install CPU PyTorch. For GPU inference, install a PyTorch build
-that matches the host CUDA runtime. See the [invoice guide](invoice-pipeline.md).
+Configure `GEMINI_API` (default provider) or `GROQ_API_KEY` and select the
+corresponding provider. See the [invoice guide](invoice-pipeline.md).
 
 ## Build the parser image
 
@@ -62,8 +48,7 @@ should be mounted to persist downloads between local container runs.
    and review status where available.
 3. Check application logs for the upload/job ID, then the document-processing
    service logs for `/parse` status and worker traceback.
-4. For local invoice extraction, check the selected provider and the isolated
-   worker logs when Qwen runs outside Modal.
+4. For invoice extraction, check the selected API provider and extraction logs.
 
 Filter for `DOCUMENT_PROCESS_COMPONENT_ERROR` to see the failing component,
 error type, and available request identifiers. Docling can report a page and

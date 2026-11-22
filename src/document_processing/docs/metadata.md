@@ -27,7 +27,7 @@ Optional route-specific data includes `layout_detections`,
 | --- | --- | --- |
 | `filename` | element/table metadata and run metadata | Original uploaded filename |
 | `format` | element/table metadata and run metadata | File format, such as `PDF`, `DOCX`, or `CSV` |
-| `pipeline_id` | element/table metadata and run metadata | Selected route, e.g. `docling` or `docling_qwen_invoice_text` |
+| `pipeline_id` | element/table metadata and run metadata | Selected route, e.g. `docling` or `docling_invoice_text` |
 | `parser_engine` | element/table metadata and run metadata | Parser route selected by the caller |
 | `parser` | element/table metadata | Component that produced the content, commonly `docling` |
 | `text_extraction_method` | element/table metadata | Method used to produce text, such as `docling.native`, `docling.vietocr`, or `docling.tesseract` |
@@ -55,7 +55,7 @@ downstream chunking.
 
 ### Invoice text extraction
 
-- Run metadata records `pipeline_id="docling_qwen_invoice_text"` and
+- Run metadata records `pipeline_id="docling_invoice_text"` and
   `parser_engine="docling"`, plus the model/revision and review status.
 - `invoice_extraction.fields` is the schema-checked `invoice.v1` draft; raw
   model output and inference metrics remain in extraction metadata.

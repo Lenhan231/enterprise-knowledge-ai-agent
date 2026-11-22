@@ -23,9 +23,8 @@ DocumentProcessor.process
 parser output → application handoff → core/chunking → persistence / indexing
 ```
 
-The invoice intent runs Docling for reviewable text and tables. Gemini, Groq,
-and Qwen use that evidence to extract fields. Qwen runs through Modal when
-configured and otherwise uses the isolated local invoice worker.
+The invoice intent runs Docling for reviewable text and tables. Pretrained
+Gemini and Groq API models use that evidence to extract fields for human review.
 
 ## Useful entry points
 

@@ -904,8 +904,8 @@ async def upload_invoice(
     """OCR an invoice and save its reviewable JSON outside the document corpus."""
     _require_same_origin(request)
     model_provider = model_provider.strip().lower()
-    if model_provider not in {"gemini", "groq", "modal"}:
-        raise HTTPException(422, "Choose Gemini, Groq GPT-OSS 120B, or Qwen on Modal")
+    if model_provider not in {"gemini", "groq"}:
+        raise HTTPException(422, "Choose Gemini or Groq GPT-OSS 120B")
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     supported = {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
@@ -1086,7 +1086,7 @@ def _invoice_for_user(repository, invoice_id: str, user: dict) -> dict:
 
 
 class InvoiceRetryRequest(BaseModel):
-    model_provider: Literal["gemini", "groq", "modal"]
+    model_provider: Literal["gemini", "groq"]
 
 
 @app.post("/api/invoices/{invoice_id}/retry", status_code=202)

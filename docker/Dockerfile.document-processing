@@ -5,7 +5,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app/src \
     HF_HOME=/models \
     PADDLE_PDX_CACHE_HOME=/models/paddlex \
-    DOCUMENT_PROCESSING_INVOICE_WORKER_PYTHON=/opt/invoice-worker/bin/python \
     DOCUMENT_PROCESSING_OCR_ENGINE=vietocr \
     SERVICE_KIND=document-processing \
     EMBEDDING_BACKEND=local \
@@ -29,14 +28,6 @@ RUN apt-get update \
         "vietocr==0.3.13" "opencv-python-headless" "openai==2.41.0"
 
 RUN python -m pip install --no-cache-dir "pymupdf==1.27.2.3"
-
-RUN python -m venv /opt/invoice-worker \
-    && /opt/invoice-worker/bin/python -m pip install --no-cache-dir --upgrade pip \
-    && /opt/invoice-worker/bin/python -m pip install --no-cache-dir \
-        --index-url https://download.pytorch.org/whl/cpu \
-        "torch==2.3.1" \
-    && /opt/invoice-worker/bin/python -m pip install --no-cache-dir \
-        "transformers==4.57.6" "accelerate==1.15.0" "peft==0.21.2"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

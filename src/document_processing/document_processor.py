@@ -22,13 +22,8 @@ from document_processing.legacy_office import convert_legacy_office
 
 _INVOICE_EXTRACTION_CONFIG_KEYS = frozenset({
     "invoice_provider",
-    "invoice_worker_python",
     "gemini_invoice_model",
     "groq_invoice_model",
-    "invoice_model",
-    "invoice_model_revision",
-    "invoice_adapter",
-    "invoice_adapter_revision",
 })
 _LOGGER = logging.getLogger(__name__)
 _DOCUMENT_ONLY_FORMATS = (LEGACY_OFFICE_FORMATS.keys() | NORMALIZED_RASTER_FORMATS.keys()) - {".webp"}
@@ -103,15 +98,15 @@ class DocumentProcessor:
             provider = str(
                 self.config.get("invoice_provider")
                 or os.environ.get("DOCUMENT_PROCESSING_INVOICE_PROVIDER")
-                or "modal"
+                or "gemini"
             ).strip().lower()
             with component_errors(_LOGGER, "invoice_provider_validation", **log_context):
-                if provider not in {"gemini", "groq", "modal", "local"}:
+                if provider not in {"gemini", "groq"}:
                     raise ValueError(f"Unsupported invoice extraction provider: {provider}")
             from document_processing.invoice.text_processor import InvoiceTextProcessor
 
             extraction_processor = InvoiceTextProcessor(self.config)
-            engine = "docling_qwen_invoice_text"
+            engine = "docling_invoice_text"
 
             processor_config = {**self.config, "parser_engine": "docling", "intent": "document"}
             parser_content = content

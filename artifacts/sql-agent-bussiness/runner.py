@@ -742,6 +742,10 @@ def validate_v31_contract(case_set, reference, freeze_manifest, *, cases_path,
     """Validate frozen v3.1 inputs without executing Gold SQL or the Agent."""
     if freeze_manifest.get("freeze_status") != "FROZEN":
         raise ValueError("The v3.1 freeze manifest is not frozen.")
+    for relative, expected in freeze_manifest.get("artifact_paths_sha256", {}).items():
+        path = ROOT / relative
+        if not path.is_file() or sha256_file(path) != expected:
+            raise ValueError(f"Frozen artifact hash mismatch: {relative}.")
     paths = {
         "cases_v3_1_draft.json": Path(cases_path),
         "gold_sql_v3_1_draft.json": Path(gold_sql_path),

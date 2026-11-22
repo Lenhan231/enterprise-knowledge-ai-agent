@@ -60,7 +60,7 @@ async def _get_runtime(application):
         from core.agents.dashboard.charts import InventoryDashboardAgent
         from core.agents.main import _FallbackClassifier, _LazyKnowledgeAgent
         from core.agents.report.agent import ReportAgent
-        from core.agents.decision_support.router import AgentRouter
+        from core.agents.decision_support.orchestrator import AgentOrchestrator
         from core.agents.sql.agent import SQLAnalyticsAgent
         from core.database.commerce_repository import LazyCommerceRepository
 
@@ -70,7 +70,7 @@ async def _get_runtime(application):
         sql_engine = SQLAnalyticsAgent(
             repository, metric_retriever=knowledge.retrieve_metric_definition,
         )
-        runtime = AgentRouter(
+        runtime = AgentOrchestrator(
             _FallbackClassifier(), knowledge, sql_engine,
             dashboard_agent=InventoryDashboardAgent(repository),
             report_agent=ReportAgent(knowledge, sql_engine),

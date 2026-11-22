@@ -15,9 +15,9 @@ class AgentPackageLayoutTest(unittest.TestCase):
             ('knowledge', 'KnowledgeAgent'),
             ('report', 'ReportAgent'),
             ('dashboard', 'DashboardDocumentAgent'),
-            ('decision_support', 'AgentRouter'),
+            ('decision_support', 'AgentOrchestrator'),
         ):
-            module_name = 'router' if package == 'decision_support' else 'agent'
+            module_name = 'orchestrator' if package == 'decision_support' else 'agent'
             with self.subTest(package=package):
                 module = importlib.import_module(f'core.agents.{package}.{module_name}')
                 self.assertEqual(getattr(module, name).__module__, module.__name__)

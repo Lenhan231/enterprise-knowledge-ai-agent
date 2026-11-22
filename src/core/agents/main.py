@@ -17,7 +17,7 @@ from core.agents.dashboard.charts import InventoryDashboardAgent
 from core.agents.decision_support.intent_classifier import IntentClassifier
 from core.agents.knowledge.agent import KnowledgeAgent
 from core.agents.report.agent import ReportAgent
-from core.agents.decision_support.router import AgentRouter
+from core.agents.decision_support.orchestrator import AgentOrchestrator
 from core.agents.sql.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.agents.sql.assistant_endpoint import run_sql_assistant
 from core.database.commerce_repository import LazyCommerceRepository
@@ -143,7 +143,7 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
                 repository, llm=llm, metric_retriever=knowledge.retrieve_metric_definition,
             )
             runtime_report_agent = runtime_report_agent or ReportAgent(knowledge, runtime_sql_agent, llm=llm)
-            runtime_agent = AgentRouter(
+            runtime_agent = AgentOrchestrator(
                 classifier or _FallbackClassifier(), knowledge, runtime_sql_agent,
                 dashboard_agent=InventoryDashboardAgent(repository),
                 report_agent=runtime_report_agent,

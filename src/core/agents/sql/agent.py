@@ -221,7 +221,8 @@ class SQLAnalyticsAgent(BaseAgent):
         original_question = options.get('_original_question')
         if not isinstance(original_question, str) or not original_question.strip():
             original_question = question
-        if unspecified_comparison_period(original_question) and unspecified_comparison_period(question):
+        if (not conversation_context and unspecified_comparison_period(original_question)
+                and unspecified_comparison_period(question)):
             clarification = ('Bạn muốn so sánh hai khoảng thời gian nào?'
                              if re.search(r'kỳ trước', original_question, re.I)
                              else 'Which two date ranges would you like to compare?')

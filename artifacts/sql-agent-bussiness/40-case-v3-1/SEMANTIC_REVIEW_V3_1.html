@@ -281,7 +281,7 @@
     </aside>
 
     <main class="main" id="mainContent">
-      <div class="loading" id="loading">Đang tải ba file benchmark v3.1…</div>
+      <div class="loading" id="loading">Đang tải benchmark v3.1 và trạng thái freeze…</div>
     </main>
   </div>
 
@@ -303,6 +303,7 @@
       let caseData = [];
       let sqlById = {};
       let resultById = {};
+      let freezeManifest = null;
       let loaded = false;
 
       function storeKey(role = state.role, id = state.reviewerId) {
@@ -349,6 +350,10 @@
           return [key, JSON.parse(raw), await sha256(raw)];
         }));
         const data = Object.fromEntries(entries.map(([key, value]) => [key, value]));
+        try {
+          const response = await fetch("FREEZE_MANIFEST_V3_1_FROZEN_V1.json", { cache: "no-store" });
+          if (response.ok) freezeManifest = await response.json();
+        } catch (_) { /* Keep the review page usable for an unfrozen draft checkout. */ }
         state.hashes = Object.fromEntries(entries.map(([key, , hash]) => [FILES[key], hash]));
         caseData = data.cases.cases || [];
         sqlById = Object.fromEntries((data.sql.cases || []).map(item => [item.id, item]));
@@ -397,7 +402,9 @@
           `<span class="top-stat"><strong>${clarify}</strong> clarify</span>`,
           `<span class="top-stat"><strong>${abstain}</strong> abstain</span>`,
           `<span class="top-stat"><strong>${sqlCount}</strong> Gold SQL + kết quả</span>`,
-          `<span class="top-stat draft-pill">DRAFT · chưa freeze</span>`
+          freezeManifest?.freeze_status === "FROZEN"
+            ? `<span class="top-stat"><strong>FROZEN v1</strong> · consensus 40/40 · Reviewer 2 user-reported</span>`
+            : `<span class="top-stat draft-pill">DRAFT · chưa freeze</span>`
         ];
         $("#summaryStrip").innerHTML = values.join("");
       }
@@ -703,7 +710,9 @@
             const notice = $("#dataNotice");
             notice.hidden = false;
             notice.className = "notice success";
-            notice.textContent = "Đã khôi phục hai bản review đã ghi nhận: 40/40 APPROVE mỗi reviewer. Adjudication và freeze vẫn đang chờ.";
+            notice.textContent = freezeManifest?.freeze_status === "FROZEN"
+              ? "Đã khôi phục hai bản review: 40/40 APPROVE mỗi reviewer, không có bất đồng. Cohort đã freeze v1; Reviewer 2 là user-reported, chưa xác thực độc lập."
+              : "Đã khôi phục hai bản review đã ghi nhận: 40/40 APPROVE mỗi reviewer. Adjudication và freeze vẫn đang chờ.";
           }
         } catch (error) {
           const notice = $("#dataNotice");

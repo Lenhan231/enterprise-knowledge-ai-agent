@@ -1,11 +1,17 @@
 """Select the specialist route for one user request."""
+import json
+import logging
 from dataclasses import dataclass
+from urllib.error import HTTPError
 
 from core.agents.decision_support.intent_classifier import (
     JEV_ROUTE_THRESHOLD,
     classify_jev_route,
 )
 from core.agents.runtime import run_sync
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -28,7 +34,30 @@ class AgentRouter:
             decision = await run_sync(
                 classifier, question, approved_schema, history, _timeout=12,
             )
-        except Exception:
+        except Exception as error:
+            http_status = getattr(error, 'code', None)
+            provider_code = None
+            limit_source = None
+            if isinstance(error, HTTPError):
+                try:
+                    payload = json.loads(error.read(16_384))
+                    details = payload.get('error')
+                    if isinstance(details, dict):
+                        provider_code = details.get('code')
+                        metadata = details.get('metadata')
+                        if isinstance(metadata, dict):
+                            limit_source = metadata.get('limit_source')
+                except Exception:
+                    pass
+            if not isinstance(provider_code, (int, str)) or not str(provider_code).replace('_', '').isalnum():
+                provider_code = None
+            if not isinstance(limit_source, str) or not limit_source.replace('_', '').isalnum():
+                limit_source = None
+            logger.warning(
+                'JEV route selection failed; falling back to planner '
+                '(error_type=%s, http_status=%s, provider_code=%s, limit_source=%s)',
+                type(error).__name__, http_status, provider_code, limit_source,
+            )
             return RouteSelection(agent=None, selected_tools=None)
         if not isinstance(decision, dict):
             return RouteSelection(agent=None, selected_tools=None)

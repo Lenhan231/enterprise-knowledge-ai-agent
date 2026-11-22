@@ -15,6 +15,7 @@ JEV_ROUTE_THRESHOLD = 0.5
 JEV_HISTORY_THRESHOLD = 0.8
 JEV_ROUTES = {'knowledge', 'sql', 'plan_required'}
 JEV_TABLE_LIMIT = 5
+DECISION_ROUTER_MODEL = 'perplexity/pplx-decider-v1.2'
 SQL_SCHEMA_SELECTION_MODEL = 'perplexity/pplx-decider-flash-v1.3:free'
 
 
@@ -25,7 +26,7 @@ def classify_jev_route(question: str, approved_schema=None, history=()):
         raise RuntimeError('OPENROUTER_API_KEY is not configured')
     schema = {table: sorted(columns) for table, columns in (approved_schema or {}).items()}
     request_body = json.dumps({
-        'model': 'typesafe/jev-1.14',
+        'model': DECISION_ROUTER_MODEL,
         'state': {
             'question': question,
             'history': list(history)[-5:],

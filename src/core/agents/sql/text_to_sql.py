@@ -9,6 +9,7 @@ from datetime import date
 from core.agents.sql.join_validation import PRIMARY_KEYS
 from core.agents.sql.business_ontology import policy_context
 from core.agents.sql.metric_ontology import get_metric_definition, resolve_metric_names
+from core.agents.sql.metric_validation import monthly_year_anchor, monthly_year_comparison, requested_snapshot_labels
 from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY_SQL_INSTRUCTIONS, DASHBOARD_OUTPUT_INSTRUCTIONS
 from core.agents.sql.sql_validation import (
     APPROVED_COLUMNS,
@@ -75,9 +76,12 @@ def build_sql_prompt(
     if allowed_sources is not None:
         tables &= set(allowed_sources)
     prompt_columns = {table: set(columns) for table, columns in schema_columns.items() if table in tables}
+    historical_labels = requested_snapshot_labels(scope_question) if not dashboard_request else frozenset()
     if inventory:
-        prompt_columns['commerce.inventory'] -= {'year', 'month', 'category', 'segment', 'product_name'}
-        prompt_columns['commerce.products'] -= {'price', 'cogs'}
+        if 'commerce.inventory' in prompt_columns:
+            prompt_columns['commerce.inventory'] -= {'year', 'month', 'category', 'segment', 'product_name'} - historical_labels
+        if 'commerce.products' in prompt_columns:
+            prompt_columns['commerce.products'] -= {'price', 'cogs'}
     schema = "\n".join(f"{table}: {', '.join(sorted(columns))}" for table, columns in prompt_columns.items())
     joins = "\n".join(f"{left[0]}.{left[1]} = {right[0]}.{right[1]}" for join in sorted(approved_joins, key=lambda edge: sorted(edge))
                        for left, right in [sorted(join)] if left[0] in tables and right[0] in tables)
@@ -112,6 +116,21 @@ def build_sql_prompt(
             + '. Apply each filter to that exact source and column with the stated inclusion or exclusion '
             'semantics. Preserve these constraints in every repair; do not omit, broaden, narrow or substitute them.'
         )
+    if monthly_year_comparison(scope_question):
+        prompt_rules.append('\nFor a monthly comparison across calendar years, align the same month of year '
+                            'using EXTRACT(MONTH FROM the date) and keep the year as a separate key. '
+                            'Return both year values and their absolute difference (newer minus earlier) '
+                            'unless the request specifies a different output. Never equate full month-start dates across years. '
+                            'If an earlier user turn supplied a calendar year, “previous year” means one year before '
+                            'that anchor. The closing January 1 date boundary is exclusive. Reuse the inherited metric '
+                            'and year when they are already present.')
+        year = monthly_year_anchor(scope_question)
+        if year and re.search(r'previous year|prior year|last year|năm trước|năm ngoái', scope_question, re.I):
+            prompt_rules.append(f'\nThe user supplied {year} as the comparison anchor. Compare '
+                                f'{year} to {year - 1} with one row for each month of year.')
+    for label in sorted(historical_labels & prompt_columns.get('commerce.inventory', set())):
+        prompt_rules.append(f'\nUse commerce.inventory.{label} for the recorded snapshot label in grouping and filtering. '
+                            f'The historical source is resolved; do not ask whether to use commerce.products.{label}.')
     if query_intent:
         prompt_rules.append(
             '\nValidated structured user intent (authoritative request scope): '

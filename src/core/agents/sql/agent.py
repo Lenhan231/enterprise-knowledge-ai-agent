@@ -39,10 +39,16 @@ from core.agents.sql.metric_mapping import build_metric_mapping_prompt, compile_
 from core.agents.sql.metric_validation import (
     MetricDefinitionError,
     inventory_time_scope,
+    monthly_year_anchor,
+    monthly_year_comparison,
+    requested_snapshot_labels,
+    unspecified_comparison_period,
     validate_independent_query_period,
+    validate_monthly_year_comparison,
     validate_metric_definitions,
     validate_metric_request,
     validate_population_contract,
+    validate_snapshot_label_sources,
 )
 from core.agents.sql.join_validation import PRIMARY_KEYS
 from core.agents.sql.text_to_sql import (
@@ -215,6 +221,13 @@ class SQLAnalyticsAgent(BaseAgent):
         original_question = options.get('_original_question')
         if not isinstance(original_question, str) or not original_question.strip():
             original_question = question
+        if unspecified_comparison_period(original_question) and unspecified_comparison_period(question):
+            clarification = ('Bạn muốn so sánh hai khoảng thời gian nào?'
+                             if re.search(r'kỳ trước', original_question, re.I)
+                             else 'Which two date ranges would you like to compare?')
+            return self._generation_error(MetricDefinitionError(
+                clarification, code='comparison_period_required', clarification=True,
+            ))
         schema_scope_question = (question if original_question.strip() == question.strip()
                                  else question + '\n' + original_question.strip())
         context = options.get('_sql_context')
@@ -496,6 +509,11 @@ class SQLAnalyticsAgent(BaseAgent):
                     context_info.update(context_used=used,_sql_context_action='followup' if used else 'new')
                 if interpretation and interpretation.domain == 'inventory':
                     metric_names = set(interpretation.metrics)
+                    if (interpretation.time.mode != 'comparison' and not dashboard_request
+                            and options.get('_report_planned_task') is not True):
+                        labels = requested_snapshot_labels(schema_scope_question)
+                        if labels:
+                            interpretation = interpretation.model_copy(update={'snapshot_labels': sorted(labels)})
             resolved_latest = False
             if context is not None and interpretation and interpretation.domain == 'inventory' and interpretation.time.mode == 'latest':
                 snapshot_sql = 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i LIMIT 1'
@@ -641,12 +659,23 @@ class SQLAnalyticsAgent(BaseAgent):
                         validate_current_month_total_query(plan.sql, original_question,
                                                            date_columns=date_columns)
                         validate_latest_month_query(plan.sql, question)
+                    if plan.clarification and attempt == 0:
+                        labels = requested_snapshot_labels(schema_scope_question)
+                        if labels and re.search(r'category|segment|danh mục|phân khúc', plan.clarification, re.I):
+                            raise SQLValidationError('The requested label is already resolved to the historical inventory row.')
+                        anchor = monthly_year_anchor(schema_scope_question)
+                        if anchor and monthly_year_comparison(schema_scope_question) and re.search(
+                                r'year|năm', plan.clarification, re.I):
+                            raise SQLValidationError(f'The user already supplied {anchor} as the comparison anchor.')
                     if plan.clarification and attempt == 0 and approved_join_path(required_tables, approved_joins) and re.search(
                             r'join|relationship|relation|quan hệ|liên kết|khóa nối|kết nối', plan.clarification, re.I):
                         raise SQLValidationError('An approved bridge path exists in the supplied schema. '
                             'Use that path with independent aggregates or correlated EXISTS as appropriate; '
                             'do not introduce direct fact joins or ask the user to approve an existing relationship.')
                 if plan.sql:
+                    validate_monthly_year_comparison(plan.sql, schema_scope_question, plan.parameters)
+                    if not dashboard_request and options.get('_report_planned_task') is not True:
+                        validate_snapshot_label_sources(plan.sql, schema_scope_question)
                     validate_population_contract(
                         plan.sql, schema_scope_question, plan.parameters, metric_names,
                     )
@@ -759,7 +788,8 @@ class SQLAnalyticsAgent(BaseAgent):
                     }
                     break
                 if (isinstance(error, MetricDefinitionError) and attempt == 1
-                        and error.code not in {'population_filter', 'unrequested_population_filter', 'unrequested_time_filter'}
+                        and error.code not in {'population_filter', 'unrequested_population_filter', 'unrequested_time_filter',
+                                               'monthly_year_alignment', 'snapshot_label_source'}
                         and not self.inventory_only and direct is None and selected_compiler is None
                         and promotion_metric is None
                         and interpretation is None and not dashboard_build):

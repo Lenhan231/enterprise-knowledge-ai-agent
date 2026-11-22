@@ -13,6 +13,7 @@ from sqlglot import exp
 from core.agents.sql.field_retrieval import compile_field_query, field_contract
 from core.agents.sql.metric_mapping import MetricMapping, compile_inventory_query
 from core.agents.sql.metric_ontology import resolve_metric_names
+from core.agents.sql.metric_validation import requested_snapshot_labels
 from core.agents.sql.sql_validation import QueryPlan
 
 
@@ -24,6 +25,8 @@ class CompilerKind(str, Enum):
     MONTH_OVER_MONTH_REVENUE = "month_over_month_revenue"
     DIRECT_FIELD = "direct_field"
     INVENTORY_MAPPING = "inventory_mapping"
+    SNAPSHOT_STOCKOUT_COUNT = "snapshot_stockout_count"
+    SNAPSHOT_DAYS_OF_SUPPLY = "snapshot_days_of_supply"
 
 
 @dataclass(frozen=True)
@@ -275,6 +278,38 @@ def _promotion_match(question: str, today: date | None) -> FixedQueryMatch | Non
     return None
 
 
+def _snapshot_summary_match(question: str) -> FixedQueryMatch | None:
+    labels = requested_snapshot_labels(question)
+    dates = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", question)
+    if len(labels) != 1 or len(dates) != 1:
+        return None
+    try:
+        snapshot = date.fromisoformat(dates[0])
+    except ValueError:
+        return None
+    label = next(iter(labels))
+    text = question.casefold().replace(dates[0], "")
+    if not re.search(r"\b(?:by|per|theo)\b", text):
+        return None
+    allowed = frozenset("""
+        a all and as at average by calculate catalog category compute count counts date days day do each flag for
+        have how in is inventory many mean non nonnull not null number of on or per product products recorded
+        replace report row rows segment show snapshot stockout stored supply the true values with
+        bao bằng báo bình có danh được đếm ghi hàng không khúc mục nhiêu nhận phân phẩm sản số tại thay theo
+        tính trong trung từng và 0
+    """.split())
+    if _has_unrecognized_request_terms(text, allowed):
+        return None
+    if ("days_of_supply" not in text and re.search(r"\bstockout_flag\s*=\s*true\b", text)
+            and re.search(r"\bcount\b|\bđếm\b", text)):
+        return FixedQueryMatch(CompilerKind.SNAPSHOT_STOCKOUT_COUNT, parameters=(snapshot, label))
+    if ("stockout_flag" not in text and "days_of_supply" in text
+            and re.search(r"\b(?:average|mean|trung bình)\b", text)
+            and re.search(r"\bnon[ -]?null\b", text) and re.search(r"\b(?:and|và) null\b", text)):
+        return FixedQueryMatch(CompilerKind.SNAPSHOT_DAYS_OF_SUPPLY, parameters=(snapshot, label))
+    return None
+
+
 def match_fixed_query(
     question: str,
     *,
@@ -302,6 +337,10 @@ def match_fixed_query(
         )
     metric_names = (frozenset() if direct is not None or promotion is not None or explicit_order_item_formula
                     else frozenset(resolve_metric_names(question)))
+    if direct is None and question.strip() == original_question.strip():
+        snapshot_summary = _snapshot_summary_match(question)
+        if snapshot_summary is not None:
+            return snapshot_summary
     relative_month_followup = bool(re.fullmatch(
         r"\s*(?:(?:vậy|còn)\s+)?(?:tháng trước(?: thì sao)?|last month|previous month)\s*[?!.]*\s*",
         original_question, re.I))
@@ -350,6 +389,20 @@ def match_fixed_query(
 
 def _compile_fixed_match(match: FixedQueryMatch) -> QueryPlan:
     parameters = match.parameters
+    if match.compiler in {CompilerKind.SNAPSHOT_STOCKOUT_COUNT, CompilerKind.SNAPSHOT_DAYS_OF_SUPPLY}:
+        snapshot, label = parameters
+        projections = (
+            "COUNT(*) FILTER (WHERE i.stockout_flag = TRUE) AS stockout_product_count"
+            if match.compiler == CompilerKind.SNAPSHOT_STOCKOUT_COUNT else
+            "AVG(i.days_of_supply) AS average_days_of_supply, COUNT(i.days_of_supply) AS nonnull_product_count, "
+            "COUNT(*) FILTER (WHERE i.days_of_supply IS NULL) AS null_product_count"
+        )
+        return QueryPlan(
+            sql=(f"SELECT i.{label}, {projections} FROM commerce.inventory AS i "
+                 f"WHERE i.snapshot_date = $1 GROUP BY i.{label} LIMIT 200"),
+            parameters=(snapshot,),
+            explanation="Summarize the exact snapshot using its stored inventory labels.",
+        )
     if match.compiler == CompilerKind.ANNUAL_REVENUE:
         return QueryPlan(
             sql=("SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s "

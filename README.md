@@ -36,7 +36,9 @@ PYTHONPATH=src uvicorn app.main:app --reload --env-file .env --port 8000
 
 Open `http://localhost:8000` for the Commerce decision-support dashboard.
 The UI reads the indexed corpus and live, role-scoped aggregates from Supabase.
-Perplexity Decider V1.2 selects whether to use Knowledge, SQL or both; the planner then creates the task plan.
+Perplexity Decider V1.3 (`perplexity/pplx-decider-v1.3:free`) selects whether to
+use Knowledge, SQL or both; the planner then creates the task plan. The free
+endpoint is subject to OpenRouter rate limits.
 Planner models use `DECISION_PLANNER_LLM_PROVIDER` (auto selects Cloudflare when configured)
 and their component-specific model settings. Set it to `codex_cli` to use the authenticated
 local Codex CLI for planning. Final Auto answer synthesis uses

@@ -1,4 +1,3 @@
-import hashlib
 import importlib.util
 import json
 import sys
@@ -13,10 +12,6 @@ sys.path[:0] = [str(ROOT / "src"), str(PACKAGE_ROOT)]
 spec = importlib.util.spec_from_file_location("sql_benchmark_runner_freeze_test", PACKAGE_ROOT / "runner.py")
 RUNNER = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(RUNNER)
-
-
-def sha256(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
 class V31FreezeRecordTests(unittest.TestCase):
@@ -44,7 +39,7 @@ class V31FreezeRecordTests(unittest.TestCase):
         self.assertEqual(manifest["review"]["disagreements"], 0)
         self.assertTrue(manifest["review"]["limitations_disclosed"])
         for relative, expected in manifest["artifact_paths_sha256"].items():
-            self.assertEqual(sha256(ROOT / relative), expected, relative)
+            self.assertEqual(RUNNER.frozen_artifact_sha256(relative), expected, relative)
 
     def test_runner_accepts_the_committed_freeze_and_gold_inputs(self):
         manifest = json.loads((V31 / "FREEZE_MANIFEST_V3_1_FROZEN_V1.json").read_text(encoding="utf-8"))

@@ -1,0 +1,125 @@
+{
+  "document": {
+    "title": "What was total revenue for 2025?",
+    "queries": [
+      {
+        "id": "q0",
+        "question": "What was total revenue for 2025?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "main",
+        "title": "Kpi: revenue",
+        "kind": "kpi",
+        "query_id": "q0",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "table",
+        "title": "Table:",
+        "kind": "table",
+        "query_id": "q0",
+        "measures": [],
+        "dimension": null,
+        "span": 2
+      }
+    ],
+    "id": "1b5e0ae9ee834f878954901127b5ea2c",
+    "description": "What was total revenue for 2025?",
+    "scope": "",
+    "clarifications": [],
+    "revision": 1,
+    "created_at": "2026-11-21T09:25:35.963092Z",
+    "updated_at": "2026-11-21T09:25:35.963092Z",
+    "data_updated_at": "2026-11-21T09:25:35.964091Z",
+    "results": [
+      {
+        "id": "q0",
+        "question": "What was total revenue for 2025?",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "revenue": "13299821.25"
+            }
+          ],
+          "sql": "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1",
+          "parameters": [
+            "2025-01-01",
+            "2026-01-01"
+          ],
+          "metadata": {
+            "dashboard_outputs": [
+              {
+                "id": "main",
+                "kind": "kpi",
+                "measures": [
+                  "revenue"
+                ],
+                "dimension": null
+              },
+              {
+                "id": "table",
+                "kind": "table",
+                "measures": [],
+                "dimension": null
+              }
+            ]
+          },
+          "query_status": "executed"
+        },
+        "message": ""
+      }
+    ],
+    "tile_status": {
+      "main": {
+        "status": "complete",
+        "message": ""
+      },
+      "table": {
+        "status": "complete",
+        "message": ""
+      }
+    },
+    "status": "complete"
+  },
+  "charts": [],
+  "forwarded_question": "What was total revenue for 2025?",
+  "source_response": {
+    "query_status": "executed",
+    "ok": true,
+    "rows": [
+      {
+        "revenue": "13299821.25"
+      }
+    ],
+    "sql": "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1",
+    "parameters": [
+      "2025-01-01",
+      "2026-01-01"
+    ],
+    "metadata": {
+      "dashboard_outputs": [
+        {
+          "id": "main",
+          "kind": "kpi",
+          "measures": [
+            "revenue"
+          ],
+          "dimension": null
+        },
+        {
+          "id": "table",
+          "kind": "table",
+          "measures": [],
+          "dimension": null
+        }
+      ]
+    }
+  }
+}

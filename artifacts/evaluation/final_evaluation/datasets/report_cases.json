@@ -1,0 +1,490 @@
+[
+  {
+    "id": "R01",
+    "category": "numerical",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_value",
+    "expect": "accept",
+    "semantic": [
+      "factual_consistency"
+    ]
+  },
+  {
+    "id": "R02",
+    "category": "numerical",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_scope",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "R03",
+    "category": "numerical",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_unit",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R04",
+    "category": "numerical",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_nonfinite",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R05",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "stock_value",
+    "expect": "accept",
+    "semantic": [
+      "factual_consistency"
+    ]
+  },
+  {
+    "id": "R06",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "RATIO"
+    ],
+    "scenario": "ratio_value",
+    "expect": "accept",
+    "semantic": [
+      "factual_consistency"
+    ]
+  },
+  {
+    "id": "R07",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "fact_value",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R08",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "fact_unit",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R09",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "fact_period",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R10",
+    "category": "numerical",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "fact_entity",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R11",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_supported",
+    "expect": "accept",
+    "semantic": [
+      "citation_support",
+      "factual_consistency"
+    ]
+  },
+  {
+    "id": "R12",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_supported_second",
+    "expect": "accept",
+    "semantic": [
+      "citation_support",
+      "factual_consistency"
+    ]
+  },
+  {
+    "id": "R13",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_unknown",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R14",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_uncited",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R15",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_wrong_support",
+    "expect": "reject",
+    "semantic": [
+      "citation_support",
+      "factual_consistency"
+    ]
+  },
+  {
+    "id": "R16",
+    "category": "citation",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "citation_wrong_support_second",
+    "expect": "reject",
+    "semantic": [
+      "citation_support",
+      "factual_consistency"
+    ]
+  },
+  {
+    "id": "R17",
+    "category": "citation",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_citation",
+    "expect": "accept",
+    "semantic": [
+      "citation_support"
+    ]
+  },
+  {
+    "id": "R18",
+    "category": "citation",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_missing_citation",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R19",
+    "category": "template",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "marked_template",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "R20",
+    "category": "template",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "generated_table",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ]
+  },
+  {
+    "id": "R21",
+    "category": "template",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "bad_placeholder",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R22",
+    "category": "template",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "wrong_heading",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R23",
+    "category": "template",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_template",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "R24",
+    "category": "template",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_removed_section",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R25",
+    "category": "missing",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "inventory_empty",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ]
+  },
+  {
+    "id": "R26",
+    "category": "missing",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "P05"
+    ],
+    "scenario": "unsupported",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ]
+  },
+  {
+    "id": "R27",
+    "category": "missing",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "P05"
+    ],
+    "scenario": "partial_table",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ]
+  },
+  {
+    "id": "R28",
+    "category": "missing",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "wrong_snapshot",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R29",
+    "category": "missing",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "missing_metric",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R30",
+    "category": "missing",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_unavailable",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ]
+  },
+  {
+    "id": "R31",
+    "category": "rbac",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "anonymous",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R32",
+    "category": "rbac",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "no_document_scope",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R33",
+    "category": "rbac",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "no_analytics_scope",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R34",
+    "category": "rbac",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "POLICY"
+    ],
+    "scenario": "authorized_combined",
+    "expect": "accept",
+    "semantic": [
+      "citation_support"
+    ]
+  },
+  {
+    "id": "R35",
+    "category": "rbac",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_no_documents",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "R36",
+    "category": "rbac",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_no_analytics",
+    "expect": "reject",
+    "semantic": []
+  },
+  {
+    "id": "R37",
+    "category": "delivery",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "markdown",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ]
+  },
+  {
+    "id": "R38",
+    "category": "delivery",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04",
+      "P05"
+    ],
+    "scenario": "partial_docx",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ]
+  },
+  {
+    "id": "R39",
+    "category": "delivery",
+    "type": "inventory_risk",
+    "evidence": [
+      "P04"
+    ],
+    "scenario": "failed_delivery",
+    "expect": "accept",
+    "semantic": []
+  },
+  {
+    "id": "R40",
+    "category": "delivery",
+    "type": "sales_performance",
+    "evidence": [
+      "P01"
+    ],
+    "scenario": "sales_json",
+    "expect": "accept",
+    "semantic": [
+      "report_completeness"
+    ]
+  }
+]

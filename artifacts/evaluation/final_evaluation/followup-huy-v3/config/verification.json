@@ -1,0 +1,23 @@
+{
+  "provenance": "pass",
+  "judgment_schema": "pass",
+  "gold_replay_repeated": true,
+  "groq_failover_simulated": "pass",
+  "python": "3.11.16",
+  "platform": "Windows",
+  "packages": {
+    "openai": "2.41.0",
+    "pydantic": "2.11.7",
+    "sqlglot": "30.19.0",
+    "python-docx": "1.2.0",
+    "fastapi": "0.136.3"
+  },
+  "harness_sha256": {
+    "freeze.py": "b92928dd5bab3f496c5e863af3394c5acf88c8b75cf156e4d8887592381738e3",
+    "judge.py": "fca824c21d1931be96db23b11bce5d24cf1e991e45a5f9b9fba59cc6c323fcba",
+    "modal_judge_client.py": "de4aeb6e953915850cac9f026db5c54d5f1a4393fe42f679f1971ef54c13a38a",
+    "replay.py": "b4da91b1c45181cbf99f09b8fe3535441ce2f6376ef0556e5a98c39f72283cc0",
+    "summarize.py": "9f5a33db65b1492310582aeeff394edb25c10f0a4eeec0f81724d2860feacf28",
+    "verify.py": "5a8485f160446b6da02ea5e688e4ddd2f28cbd0fe0a2edad873c28d39a999cb8"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "document": {
+    "title": "Top 5 products by units sold from delivered orders between 2025-04-01 and 2025-06-30; return product_id and units, ties",
+    "queries": [
+      {
+        "id": "q0",
+        "question": "Top 5 products by units sold from delivered orders between 2025-04-01 and 2025-06-30; return product_id and units, ties by product_id ascending. Show the top-five ranking as a donut chart."
+      }
+    ],
+    "tiles": [
+      {
+        "id": "chart",
+        "title": "Units Sold by Product Id",
+        "kind": "donut",
+        "query_id": "q0",
+        "measures": [
+          "units_sold"
+        ],
+        "dimension": "product_id",
+        "span": 2
+      }
+    ],
+    "id": "f5dc5d1dba1f4d629e777e6d6ae2883b",
+    "description": "Top 5 products by units sold from delivered orders between 2025-04-01 and 2025-06-30; return product_id and units, ties by product_id ascending. Show the top-five ranking as a donut chart.",
+    "scope": "",
+    "clarifications": [],
+    "revision": 1,
+    "created_at": "2026-11-21T09:25:35.874424Z",
+    "updated_at": "2026-11-21T09:25:35.874424Z",
+    "data_updated_at": "2026-11-21T09:25:35.875545Z",
+    "results": [
+      {
+        "id": "q0",
+        "question": "Top 5 products by units sold from delivered orders between 2025-04-01 and 2025-06-30; return product_id and units, ties by product_id ascending. Show the top-five ranking as a donut chart.",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "product_id": 690,
+              "units_sold": 11
+            },
+            {
+              "product_id": 761,
+              "units_sold": 11
+            },
+            {
+              "product_id": 782,
+              "units_sold": 11
+            },
+            {
+              "product_id": 808,
+              "units_sold": 11
+            },
+            {
+              "product_id": 1059,
+              "units_sold": 11
+            }
+          ],
+          "sql": "SELECT oi.product_id, SUM(oi.quantity) AS units_sold FROM commerce.order_items AS oi JOIN commerce.orders AS o ON o.order_id = oi.order_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY oi.product_id ORDER BY units_sold DESC, oi.product_id ASC LIMIT 5",
+          "parameters": [
+            "delivered",
+            "2025-04-01",
+            "2025-07-01"
+          ],
+          "metadata": {},
+          "query_status": "executed"
+        },
+        "message": "Chart unavailable: Donut charts require a complete, exclusive grouping of one additive, nonnegative measure."
+      }
+    ],
+    "tile_status": {
+      "chart": {
+        "status": "unavailable",
+        "message": "Chart unavailable: Donut charts require a complete, exclusive grouping of one additive, nonnegative measure."
+      }
+    },
+    "status": "failed"
+  },
+  "charts": [],
+  "forwarded_question": "Top 5 products by units sold from delivered orders between 2025-04-01 and 2025-06-30; return product_id and units, ties by product_id ascending. Show the top-five ranking as a donut chart.",
+  "source_response": {
+    "query_status": "executed",
+    "ok": true,
+    "rows": [
+      {
+        "product_id": 690,
+        "units_sold": 11
+      },
+      {
+        "product_id": 761,
+        "units_sold": 11
+      },
+      {
+        "product_id": 782,
+        "units_sold": 11
+      },
+      {
+        "product_id": 808,
+        "units_sold": 11
+      },
+      {
+        "product_id": 1059,
+        "units_sold": 11
+      }
+    ],
+    "sql": "SELECT oi.product_id, SUM(oi.quantity) AS units_sold FROM commerce.order_items AS oi JOIN commerce.orders AS o ON o.order_id = oi.order_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY oi.product_id ORDER BY units_sold DESC, oi.product_id ASC LIMIT 5",
+    "parameters": [
+      "delivered",
+      "2025-04-01",
+      "2025-07-01"
+    ],
+    "metadata": {}
+  }
+}

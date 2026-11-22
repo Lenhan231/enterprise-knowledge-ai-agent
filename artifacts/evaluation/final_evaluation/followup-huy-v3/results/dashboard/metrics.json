@@ -1,0 +1,98 @@
+{
+  "deterministic": {
+    "planned": 20,
+    "blocked": 0,
+    "accuracy": {
+      "numerator": 17,
+      "denominator": 20,
+      "rate": 0.85
+    },
+    "invalid_detection": {
+      "numerator": 5,
+      "denominator": 8,
+      "rate": 0.625
+    },
+    "false_rejection": {
+      "numerator": 0,
+      "denominator": 12,
+      "rate": 0.0
+    },
+    "numerical_exact_match": {
+      "numerator": 28,
+      "denominator": 30,
+      "rate": 0.933333
+    },
+    "template_compliance": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "categories": {
+      "fidelity": {
+        "numerator": 3,
+        "denominator": 4,
+        "rate": 0.75
+      },
+      "chart": {
+        "numerator": 4,
+        "denominator": 4,
+        "rate": 1.0
+      },
+      "filters": {
+        "numerator": 3,
+        "denominator": 4,
+        "rate": 0.75
+      },
+      "kpi": {
+        "numerator": 3,
+        "denominator": 4,
+        "rate": 0.75
+      },
+      "failure": {
+        "numerator": 4,
+        "denominator": 4,
+        "rate": 1.0
+      }
+    },
+    "latency": {
+      "n": 20,
+      "p50_ms": 12.75,
+      "p95_ms": 21.34
+    }
+  },
+  "semantic": {
+    "coverage": {
+      "numerator": 6,
+      "denominator": 6,
+      "rate": 1.0
+    },
+    "blocked_or_unscored": 0,
+    "latency": {
+      "n": 6,
+      "p50_ms": 87161.6,
+      "p95_ms": 160296.13
+    },
+    "usage_observed": 6,
+    "total_tokens": 6724,
+    "dimensions": {
+      "chart_suitability": {
+        "eligible": 6,
+        "scored": 6,
+        "mean": 1.833,
+        "full_credit": {
+          "numerator": 5,
+          "denominator": 6,
+          "rate": 0.833333
+        },
+        "partial_credit": 1,
+        "zero_credit": 0
+      }
+    }
+  },
+  "failed_cases": [
+    "D04",
+    "D12",
+    "D16"
+  ],
+  "blocked_cases": []
+}

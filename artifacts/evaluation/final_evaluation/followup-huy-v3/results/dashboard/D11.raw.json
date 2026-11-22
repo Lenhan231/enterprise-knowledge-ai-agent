@@ -1,0 +1,126 @@
+{
+  "document": {
+    "title": "Show a bar chart of stock on hand for category Apparel grouped by product.",
+    "queries": [
+      {
+        "id": "q0",
+        "question": "Show a bar chart of stock on hand for category Apparel grouped by product."
+      }
+    ],
+    "tiles": [
+      {
+        "id": "chart",
+        "title": "Stock On Hand by Product Id",
+        "kind": "bar",
+        "query_id": "q0",
+        "measures": [
+          "stock_on_hand"
+        ],
+        "dimension": "product_id",
+        "span": 2
+      }
+    ],
+    "id": "a3aca3af470443299c9ae3c64d2eb3a5",
+    "description": "Show a bar chart of stock on hand for category Apparel grouped by product.",
+    "scope": "Category Apparel only, grouped by product_id",
+    "clarifications": [],
+    "revision": 1,
+    "created_at": "2026-11-22T03:34:38.175011Z",
+    "updated_at": "2026-11-22T03:34:38.175011Z",
+    "data_updated_at": "2026-11-22T03:34:38.176011Z",
+    "results": [
+      {
+        "id": "q0",
+        "question": "Show a bar chart of stock on hand for category Apparel grouped by product.\nRequired dashboard date/filter scope: Category Apparel only, grouped by product_id",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "product_id": 11,
+              "stock_on_hand": 13
+            },
+            {
+              "product_id": 12,
+              "stock_on_hand": 17
+            }
+          ],
+          "sql": "SELECT p.product_id, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE p.category=$1 GROUP BY 1 LIMIT 10",
+          "parameters": [
+            "Apparel"
+          ],
+          "metadata": {
+            "filters": [
+              "Category Apparel only, grouped by product_id"
+            ]
+          },
+          "query_status": "executed"
+        },
+        "message": ""
+      }
+    ],
+    "tile_status": {
+      "chart": {
+        "status": "complete",
+        "message": ""
+      }
+    },
+    "status": "complete"
+  },
+  "charts": [
+    {
+      "type": "bar",
+      "title": "Stock On Hand by Product Id",
+      "categories": [
+        "11",
+        "12"
+      ],
+      "series": [
+        {
+          "name": "Stock On Hand",
+          "values": [
+            13.0,
+            17.0
+          ]
+        }
+      ],
+      "unit": "units",
+      "x_label": "Product Id",
+      "y_label": "units",
+      "temporal": false,
+      "scope": {
+        "time": null,
+        "filters": [
+          "Category Apparel only, grouped by product_id"
+        ],
+        "dates": {},
+        "snapshot_dates": [],
+        "sources": [],
+        "policy": null
+      }
+    }
+  ],
+  "forwarded_question": "Show a bar chart of stock on hand for category Apparel grouped by product.\nRequired dashboard date/filter scope: Category Apparel only, grouped by product_id",
+  "source_response": {
+    "query_status": "executed",
+    "ok": true,
+    "rows": [
+      {
+        "product_id": 11,
+        "stock_on_hand": 13
+      },
+      {
+        "product_id": 12,
+        "stock_on_hand": 17
+      }
+    ],
+    "sql": "SELECT p.product_id, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE p.category=$1 GROUP BY 1 LIMIT 10",
+    "parameters": [
+      "Apparel"
+    ],
+    "metadata": {
+      "filters": [
+        "Category Apparel only, grouped by product_id"
+      ]
+    }
+  }
+}

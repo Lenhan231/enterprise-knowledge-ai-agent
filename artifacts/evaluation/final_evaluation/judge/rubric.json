@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "scale": {
+    "2": "Fully meets the dimension for the supplied request and scope.",
+    "1": "Partially meets it, with a material omission or ambiguity but no direct contradiction.",
+    "0": "Materially misleading, contradicted by the evidence, or unsuitable."
+  },
+  "dimensions": {
+    "chart_suitability": "Assess the visualization against the task and available data. A clearly disclosed refusal or table fallback earns full credit when the requested chart is unsuitable. A temporal trend needs ordered dates; top-N data are not a whole-population composition.",
+    "citation_support": "Determine whether the cited source actually supports the claim attached to it. Credit only evidence supplied in the input. A well-formed reference to a passage that says the opposite earns zero.",
+    "factual_consistency": "Check whether material assertions, qualifiers, and data interpretation agree with the supplied evidence, including its scope and limitations. Avoid inferring facts from omitted data.",
+    "report_completeness": "Assess whether the output covers decision-relevant requirements that the task and supplied evidence allow. Credit clear disclosure of missing, unsupported, or unverified information, including complete abstention when appropriate."
+  },
+  "schema": {
+    "scores": {"dimension": {"score": "integer 0 to 2", "reasoning": "one or two sentences", "evidence_ids": "array of supplied IDs"}}
+  }
+}

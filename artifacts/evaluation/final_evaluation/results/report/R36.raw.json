@@ -1,0 +1,6 @@
+{
+  "exception": "AnalyticsPermissionDenied",
+  "message": "Verified analytics:read permission is required",
+  "repository_calls": [],
+  "retrieval_calls": 0
+}

@@ -1,0 +1,58 @@
+{
+  "document": {
+    "title": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+    "queries": [
+      {
+        "id": "q0",
+        "question": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "data",
+        "title": "Source data",
+        "kind": "table",
+        "query_id": "q0",
+        "measures": [],
+        "dimension": null,
+        "span": 2
+      }
+    ],
+    "id": "ff40799dde18443fadc243f0773373e7",
+    "description": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+    "scope": "",
+    "clarifications": [],
+    "revision": 1,
+    "created_at": "2026-11-21T09:25:36.035057Z",
+    "updated_at": "2026-11-21T09:25:36.035057Z",
+    "data_updated_at": "2026-11-21T09:25:36.035057Z",
+    "results": [
+      {
+        "id": "q0",
+        "question": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+        "status": "failed",
+        "payload": {
+          "rows": [],
+          "query_status": "unsupported",
+          "metadata": {}
+        },
+        "message": "Warehouse inventory and supplier lead time are unsupported."
+      }
+    ],
+    "tile_status": {
+      "data": {
+        "status": "unavailable",
+        "message": "Warehouse inventory and supplier lead time are unsupported."
+      }
+    },
+    "status": "failed"
+  },
+  "charts": [],
+  "forwarded_question": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+  "source_response": {
+    "query_status": "unsupported",
+    "ok": false,
+    "rows": [],
+    "answer": "Warehouse inventory and supplier lead time are unsupported."
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "application_commit": "60eafaee964a6de48a0c8d13925e3207d5116588",
+  "sources": {
+    "artifacts/sql-agent-bussiness/cases.json": {
+      "commit": "60eafaee964a6de48a0c8d13925e3207d5116588",
+      "sha256": "93b88c56b84c7e594d83c77a3e619aaf2f6aa1ff32868c686e937fe2f67063d4",
+      "last_change": "c0d28cce445a99139517a0d7a91975a22a72ecda"
+    },
+    "artifacts/sql-agent-bussiness/runs/pilot5-origin-main-e6f3b909/reference.json": {
+      "commit": "60eafaee964a6de48a0c8d13925e3207d5116588",
+      "sha256": "295c53652e5fe3a7fc8c3c35cffb9ecf4f6bc23e44b6db861955e369d0932a17",
+      "last_change": "8e4abbd1e0a1352c93d747c825c15bf1aff3a1b4"
+    },
+    "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md": {
+      "commit": "60eafaee964a6de48a0c8d13925e3207d5116588",
+      "sha256": "e11a1baca9f2efaedb1715232dc30116593dd6b4efaa16cab57e01f3e4ddc823",
+      "last_change": "da2ce09a00224977050753e82981fe80ef3d91a1"
+    },
+    "artifacts/sql-agent-bussiness/40-case-preparation/FREEZE_MANIFEST.json": {
+      "commit": "60eafaee964a6de48a0c8d13925e3207d5116588",
+      "sha256": "844f1d62e3967905e0934d957a3c1b27496079871e0d1c87cb040033f7643c90",
+      "last_change": "60eafaee964a6de48a0c8d13925e3207d5116588"
+    }
+  },
+  "frozen_sha256": {
+    "evidence.json": "7b7cea0d89115939f08a8b3f365a8a77ae2db1bd9c400d65eaaccd2df0346032",
+    "dashboard_cases.json": "3fcdb5858c5fd4ea3083fb33098e1b2023a8dbab8819a3c059efd338821b8f39",
+    "report_cases.json": "3f3322a8d10acdf274d5a2e888ef645712d0bf24e4d4d3e4831b0ba5b333a37f"
+  },
+  "sql_expansion_excluded": {
+    "path": "artifacts/sql-agent-bussiness/40-case-preparation/FREEZE_MANIFEST.json",
+    "readiness": "PENDING_REVIEW"
+  },
+  "knowledge_benchmark": "out of cohort by user direction",
+  "upstream_calls": 0
+}

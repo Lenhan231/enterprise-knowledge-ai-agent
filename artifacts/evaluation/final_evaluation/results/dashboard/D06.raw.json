@@ -1,0 +1,112 @@
+{
+  "document": {
+    "title": "Show a monthly revenue line chart and table. Use a line chart.",
+    "queries": [
+      {
+        "id": "q0",
+        "question": "Show a monthly revenue line chart and table. Use a line chart."
+      }
+    ],
+    "tiles": [
+      {
+        "id": "chart",
+        "title": "Revenue by Month",
+        "kind": "line",
+        "query_id": "q0",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "month",
+        "span": 2
+      }
+    ],
+    "id": "57e1d8725e0f40b296c2e4042c8eadfa",
+    "description": "Show a monthly revenue line chart and table. Use a line chart.",
+    "scope": "",
+    "clarifications": [],
+    "revision": 1,
+    "created_at": "2026-11-21T09:25:35.841366Z",
+    "updated_at": "2026-11-21T09:25:35.841366Z",
+    "data_updated_at": "2026-11-21T09:25:35.841366Z",
+    "results": [
+      {
+        "id": "q0",
+        "question": "Show a monthly revenue line chart and table. Use a line chart.",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "month": "2025-01-01",
+              "revenue": 10
+            },
+            {
+              "month": "2025-02-01",
+              "revenue": 20
+            }
+          ],
+          "sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.revenue) AS revenue FROM commerce.sales s GROUP BY 1 ORDER BY 1 LIMIT 12",
+          "parameters": [],
+          "metadata": {},
+          "query_status": "executed"
+        },
+        "message": ""
+      }
+    ],
+    "tile_status": {
+      "chart": {
+        "status": "complete",
+        "message": ""
+      }
+    },
+    "status": "complete"
+  },
+  "charts": [
+    {
+      "type": "line",
+      "title": "Revenue by Month",
+      "categories": [
+        "2025-01-01",
+        "2025-02-01"
+      ],
+      "series": [
+        {
+          "name": "Revenue",
+          "values": [
+            10.0,
+            20.0
+          ]
+        }
+      ],
+      "unit": "currency (unconfirmed)",
+      "x_label": "Month",
+      "y_label": "currency (unconfirmed)",
+      "temporal": true,
+      "scope": {
+        "time": null,
+        "filters": [],
+        "dates": {},
+        "snapshot_dates": [],
+        "sources": [],
+        "policy": null
+      }
+    }
+  ],
+  "forwarded_question": "Show a monthly revenue line chart and table. Use a line chart.",
+  "source_response": {
+    "query_status": "executed",
+    "ok": true,
+    "rows": [
+      {
+        "month": "2025-01-01",
+        "revenue": 10
+      },
+      {
+        "month": "2025-02-01",
+        "revenue": 20
+      }
+    ],
+    "sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.revenue) AS revenue FROM commerce.sales s GROUP BY 1 ORDER BY 1 LIMIT 12",
+    "parameters": [],
+    "metadata": {}
+  }
+}

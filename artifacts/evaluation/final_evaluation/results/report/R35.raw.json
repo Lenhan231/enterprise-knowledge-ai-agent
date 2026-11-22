@@ -1,0 +1,3991 @@
+{
+  "result": {
+    "answer": "{\"report_type\": \"sales_performance\", \"request\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"metrics\": [{\"id\": \"company_revenue\", \"label\": \"Company revenue\", \"source\": \"commerce.sales\", \"formula\": \"SUM(revenue)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount\", \"grain\": \"daily_company\", \"value\": 13299821.25, \"status\": \"available\", \"evidence\": [{\"source_table\": \"commerce.sales\", \"query_id\": \"200f38f24fb50a06\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 1, \"document_id\": null, \"citation\": null}], \"notes\": null}, {\"id\": \"company_cogs\", \"label\": \"Company COGS\", \"source\": \"commerce.sales\", \"formula\": \"SUM(cogs)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount\", \"grain\": \"daily_company\", \"value\": null, \"status\": \"not_available\", \"evidence\": [{\"source_table\": \"commerce.sales\", \"query_id\": \"200f38f24fb50a06\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 1, \"document_id\": null, \"citation\": null}], \"notes\": null}, {\"id\": \"company_gross_profit\", \"label\": \"Company gross profit\", \"source\": \"commerce.sales\", \"formula\": \"SUM(revenue)-SUM(cogs)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount\", \"grain\": \"daily_company\", \"value\": null, \"status\": \"not_available\", \"evidence\": [{\"source_table\": \"commerce.sales\", \"query_id\": \"200f38f24fb50a06\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 1, \"document_id\": null, \"citation\": null}], \"notes\": null}, {\"id\": \"company_gross_margin_pct\", \"label\": \"Company gross margin\", \"source\": \"commerce.sales\", \"formula\": \"100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"percent\", \"grain\": \"daily_company\", \"value\": null, \"status\": \"not_available\", \"evidence\": [{\"source_table\": \"commerce.sales\", \"query_id\": \"200f38f24fb50a06\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 1, \"document_id\": null, \"citation\": null}], \"notes\": \"Derived ratio of defined company-level aggregates; NULL for zero denominator\"}, {\"id\": \"company_revenue_change_pct\", \"label\": \"Company revenue period-over-period change\", \"source\": \"commerce.sales\", \"formula\": \"100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"percent\", \"grain\": \"comparable_periods\", \"value\": null, \"status\": \"not_available\", \"evidence\": [{\"source_table\": \"commerce.sales\", \"query_id\": \"200f38f24fb50a06\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 1, \"document_id\": null, \"citation\": null}], \"notes\": \"Same length/comparable calendar period; set unavailable if prior coverage insufficient\"}, {\"id\": \"order_count\", \"label\": \"Order count\", \"source\": \"commerce.orders\", \"formula\": \"COUNT(DISTINCT order_id)\", \"allowed_dimensions\": [\"all\", \"region\", \"order_source\"], \"scope\": \"\", \"unit\": \"orders\", \"grain\": \"orders\", \"value\": null, \"status\": \"no_data\", \"evidence\": [{\"source_table\": \"commerce.orders\", \"query_id\": \"b635a266a4dd8260\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 0, \"document_id\": null, \"citation\": null}], \"notes\": \"No implicit status filter\"}, {\"id\": \"delivered_line_revenue\", \"label\": \"Delivered order-line revenue\", \"source\": \"commerce.order_items + commerce.orders\", \"formula\": \"SUM(quantity*unit_price-discount_amount) WHERE orders.order_status = delivered\", \"allowed_dimensions\": [\"all\", \"category\", \"region\", \"product\", \"order_source\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount\", \"grain\": \"order_items\", \"value\": null, \"status\": \"no_data\", \"evidence\": [{\"source_table\": \"commerce.order_items, commerce.orders\", \"query_id\": \"baf9a4fe4d846e1e\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 0, \"document_id\": null, \"citation\": null}], \"notes\": \"Never reconcile or mix with company_revenue; aggregate by order_date and approved joins\"}, {\"id\": \"delivered_average_order_value\", \"label\": \"Delivered AOV\", \"source\": \"commerce.order_items + commerce.orders\", \"formula\": \"delivered_line_revenue / NULLIF(COUNT(DISTINCT delivered orders.order_id),0)\", \"allowed_dimensions\": [\"all\", \"category\", \"region\", \"product\", \"order_source\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount_per_order\", \"grain\": \"order_population\", \"value\": null, \"status\": \"no_data\", \"evidence\": [{\"source_table\": \"commerce.order_items, commerce.orders\", \"query_id\": \"baf9a4fe4d846e1e\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 0, \"document_id\": null, \"citation\": null}], \"notes\": \"If dimension product/category, denominator is delivered orders containing that dimension; not company-level AOV\"}, {\"id\": \"promotion_discount\", \"label\": \"Order-line discount total\", \"source\": \"commerce.order_items + commerce.orders\", \"formula\": \"SUM(discount_amount)\", \"allowed_dimensions\": [\"all\", \"category\", \"region\", \"product\", \"order_source\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount\", \"grain\": \"order_items\", \"value\": null, \"status\": \"no_data\", \"evidence\": [{\"source_table\": \"commerce.order_items, commerce.orders\", \"query_id\": \"baf9a4fe4d846e1e\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 0, \"document_id\": null, \"citation\": null}], \"notes\": \"Descriptive discount only, not promotion ROI\"}, {\"id\": \"sessions\", \"label\": \"Web sessions\", \"source\": \"commerce.web_traffic\", \"formula\": \"SUM(sessions)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"sessions\", \"grain\": \"date_traffic_source\", \"value\": null, \"status\": \"no_data\", \"evidence\": [{\"source_table\": \"commerce.web_traffic\", \"query_id\": \"3b47b49484171c89\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 0, \"document_id\": null, \"citation\": null}], \"notes\": \"Do not infer conversion/attribution to orders\"}], \"dashboard\": {\"layout\": \"fixed\", \"columns\": 2, \"widgets\": [{\"id\": \"sales_kpis\", \"type\": \"kpi_row\", \"title\": \"Company financial KPIs\", \"metric_ids\": [\"company_revenue\", \"company_gross_profit\", \"company_gross_margin_pct\", \"company_revenue_change_pct\"], \"x_dimension\": \"period\", \"data\": [{\"period\": \"2025-01-01\", \"company_revenue\": 13299821.25, \"company_gross_profit\": null, \"company_gross_margin_pct\": null, \"company_revenue_change_pct\": null}], \"notes\": \"\"}, {\"id\": \"sales_trend\", \"type\": \"line\", \"title\": \"Company revenue and gross profit\", \"metric_ids\": [\"company_revenue\", \"company_gross_profit\"], \"x_dimension\": \"period\", \"data\": [], \"notes\": \"\"}, {\"id\": \"order_kpis\", \"type\": \"kpi_row\", \"title\": \"Orders and delivered-line sales\", \"metric_ids\": [\"order_count\", \"delivered_line_revenue\", \"delivered_average_order_value\"], \"x_dimension\": \"period\", \"data\": [{\"period\": \"2025-01-01\", \"order_count\": null, \"delivered_line_revenue\": null, \"delivered_average_order_value\": null}], \"notes\": \"\"}, {\"id\": \"line_breakdown\", \"type\": \"bar\", \"title\": \"Delivered-line revenue by selected dimension\", \"metric_ids\": [\"delivered_line_revenue\"], \"x_dimension\": \"dimension\", \"data\": [], \"notes\": \"If all selected, display single total; unsupported dimensions yield no data\"}, {\"id\": \"sales_discount\", \"type\": \"line\", \"title\": \"Line discounts over time\", \"metric_ids\": [\"promotion_discount\"], \"x_dimension\": \"period\", \"data\": [], \"notes\": \"\"}, {\"id\": \"web_sessions\", \"type\": \"line\", \"title\": \"Website sessions (separate source)\", \"metric_ids\": [\"sessions\"], \"x_dimension\": \"period\", \"data\": [], \"notes\": \"No conversion or revenue attribution\"}]}, \"decisions\": [{\"id\": \"S01\", \"title\": \"Revenue decline\", \"condition\": \"company_revenue_change_pct < 0 AND both periods have sufficient coverage\", \"action\": \"Review company-level revenue trend and investigate; do not assert cause\", \"required_metric_ids\": [\"company_revenue_change_pct\"], \"triggered\": null, \"evidence\": [], \"priority\": \"fixed_rule_order\", \"status\": \"not_available\"}, {\"id\": \"S02\", \"title\": \"Nonpositive gross profit\", \"condition\": \"company_gross_profit <= 0 AND company_revenue > 0\", \"action\": \"Review company-level COGS and pricing conditions\", \"required_metric_ids\": [\"company_gross_profit\", \"company_revenue\"], \"triggered\": null, \"evidence\": [], \"priority\": \"fixed_rule_order\", \"status\": \"not_available\"}, {\"id\": \"S03\", \"title\": \"Positive revenue with negative profit trend\", \"condition\": \"company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage\", \"action\": \"Investigate increased cost pressure; avoid causal claims\", \"required_metric_ids\": [\"company_revenue_change_pct\", \"company_gross_profit\"], \"triggered\": null, \"evidence\": [], \"priority\": \"fixed_rule_order\", \"status\": \"not_available\"}, {\"id\": \"S04\", \"title\": \"No decision trigger\", \"condition\": \"none of S01-S03 triggered and required metrics available\", \"action\": \"No predefined risk trigger; do not assert business health\", \"required_metric_ids\": [\"company_revenue\", \"company_gross_profit\"], \"triggered\": null, \"evidence\": [], \"priority\": \"fixed_rule_order\", \"status\": \"not_available\"}], \"data_quality\": {\"coverage_start\": null, \"coverage_end\": null, \"partial_period\": true, \"missing_or_unmatched_count\": null, \"limitations\": [\"Synthetic commerce demo data; currency unspecified. Company sales and delivered-line revenue are separate sources.\", \"Order and traffic source completeness is unverified; totals describe matching records, not certified complete periods. No causal explanations are established.\", \"Missing count describes absent company sales dates. Null dimension labels are retained as unknown; unmatched dimension counts are unverified.\", \"Company daily coverage is incomplete or unknown; comparison rules require complete current and prior periods.\", \"Period-over-period comparison uses calendar-month totals. Daily records verify source coverage only. 2025-01-01 to 2026-01-01 (end excluded): unknown of unknown days; 2024-01-01 to 2025-01-01 (end excluded): unknown of unknown days. Whole-period revenue change and aggregate comparison-dependent decisions are unavailable; monthly decisions use separate calendar-month baselines. Current-period revenue and profitability remain usable.\"]}, \"sections\": {\"executive_summary\": {\"revenue_overview\": \"Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].\", \"profitability_overview\": null, \"order_activity\": null}, \"sales_kpis\": {\"company_revenue\": 13299821.25, \"company_cogs\": null, \"company_gross_profit\": null, \"company_gross_margin_pct\": null, \"company_revenue_change_pct\": null, \"order_count\": null, \"delivered_line_revenue\": null, \"delivered_average_order_value\": null, \"promotion_discount\": null, \"sessions\": null}, \"performance_analysis\": {\"company_revenue_trend\": \"Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].\", \"delivered_order_line_breakdown\": null, \"discount_activity\": null, \"web_traffic\": null}, \"key_findings_and_explanations\": {\"revenue_movement\": null, \"profitability\": null, \"order_activity\": null}, \"decision_support\": {\"rule_ids\": [\"S01\", \"S02\", \"S03\", \"S04\"]}}}",
+    "agent": "report",
+    "evidence": [
+      {
+        "citation_id": "200f38f24fb50a06",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "200f38f24fb50a06",
+          "filters": {
+            "period": {
+              "start": "2025-01-01",
+              "end_exclusive": "2026-01-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 1,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "b635a266a4dd8260",
+        "source_type": "database",
+        "source": "commerce.orders",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.orders",
+          "query_id": "b635a266a4dd8260",
+          "filters": {
+            "period": {
+              "start": "2025-01-01",
+              "end_exclusive": "2026-01-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "baf9a4fe4d846e1e",
+        "source_type": "database",
+        "source": "commerce.order_items, commerce.orders",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.order_items, commerce.orders",
+          "query_id": "baf9a4fe4d846e1e",
+          "filters": {
+            "period": {
+              "start": "2025-01-01",
+              "end_exclusive": "2026-01-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "3b47b49484171c89",
+        "source_type": "database",
+        "source": "commerce.web_traffic",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.web_traffic",
+          "query_id": "3b47b49484171c89",
+          "filters": {
+            "period": {
+              "start": "2025-01-01",
+              "end_exclusive": "2026-01-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "09d35469cbd6b2e5",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "09d35469cbd6b2e5",
+          "filters": {
+            "period": {
+              "start": "2025-01-01",
+              "end_exclusive": "2025-02-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "6559d00c76235b68",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "6559d00c76235b68",
+          "filters": {
+            "period": {
+              "start": "2025-02-01",
+              "end_exclusive": "2025-03-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "70538a185046d28f",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "70538a185046d28f",
+          "filters": {
+            "period": {
+              "start": "2025-03-01",
+              "end_exclusive": "2025-04-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "3d7ad4b7ca18fb5c",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "3d7ad4b7ca18fb5c",
+          "filters": {
+            "period": {
+              "start": "2025-04-01",
+              "end_exclusive": "2025-05-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "27c599b69aeed007",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "27c599b69aeed007",
+          "filters": {
+            "period": {
+              "start": "2025-05-01",
+              "end_exclusive": "2025-06-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "714de2855dc3a06e",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "714de2855dc3a06e",
+          "filters": {
+            "period": {
+              "start": "2025-06-01",
+              "end_exclusive": "2025-07-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "952cfece079961cd",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "952cfece079961cd",
+          "filters": {
+            "period": {
+              "start": "2025-07-01",
+              "end_exclusive": "2025-08-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "39fafd12b190d26f",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "39fafd12b190d26f",
+          "filters": {
+            "period": {
+              "start": "2025-08-01",
+              "end_exclusive": "2025-09-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "f527d9b51750c198",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "f527d9b51750c198",
+          "filters": {
+            "period": {
+              "start": "2025-09-01",
+              "end_exclusive": "2025-10-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "e9fd300fbd02b8cd",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "e9fd300fbd02b8cd",
+          "filters": {
+            "period": {
+              "start": "2025-10-01",
+              "end_exclusive": "2025-11-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "db7dd68028e8d35d",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "db7dd68028e8d35d",
+          "filters": {
+            "period": {
+              "start": "2025-11-01",
+              "end_exclusive": "2025-12-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "3df1f9a5945e6583",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "3df1f9a5945e6583",
+          "filters": {
+            "period": {
+              "start": "2025-12-01",
+              "end_exclusive": "2026-01-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      },
+      {
+        "citation_id": "1d532e9bd87dd1d2",
+        "source_type": "database",
+        "source": "commerce.sales",
+        "content": null,
+        "metadata": {
+          "source_table": "commerce.sales",
+          "query_id": "1d532e9bd87dd1d2",
+          "filters": {
+            "period": {
+              "start": "2024-12-01",
+              "end_exclusive": "2026-01-01"
+            },
+            "granularity": "month",
+            "dimension": "all",
+            "dimension_value": null
+          },
+          "row_count": 0,
+          "document_id": null,
+          "citation": null
+        }
+      }
+    ],
+    "data": {
+      "report": {
+        "report_type": "sales_performance",
+        "request": {
+          "period": {
+            "start": "2025-01-01",
+            "end_exclusive": "2026-01-01"
+          },
+          "granularity": "month",
+          "dimension": "all",
+          "dimension_value": null
+        },
+        "metrics": [
+          {
+            "id": "company_revenue",
+            "label": "Company revenue",
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": 13299821.25,
+            "status": "available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_cogs",
+            "label": "Company COGS",
+            "source": "commerce.sales",
+            "formula": "SUM(cogs)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_gross_profit",
+            "label": "Company gross profit",
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)-SUM(cogs)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "id": "company_gross_margin_pct",
+            "label": "Company gross margin",
+            "source": "commerce.sales",
+            "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "percent",
+            "grain": "daily_company",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+          },
+          {
+            "id": "company_revenue_change_pct",
+            "label": "Company revenue period-over-period change",
+            "source": "commerce.sales",
+            "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "percent",
+            "grain": "comparable_periods",
+            "value": null,
+            "status": "not_available",
+            "evidence": [
+              {
+                "source_table": "commerce.sales",
+                "query_id": "200f38f24fb50a06",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 1,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+          },
+          {
+            "id": "order_count",
+            "label": "Order count",
+            "source": "commerce.orders",
+            "formula": "COUNT(DISTINCT order_id)",
+            "allowed_dimensions": [
+              "all",
+              "region",
+              "order_source"
+            ],
+            "scope": "",
+            "unit": "orders",
+            "grain": "orders",
+            "value": null,
+            "status": "no_data",
+            "evidence": [
+              {
+                "source_table": "commerce.orders",
+                "query_id": "b635a266a4dd8260",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 0,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": "No implicit status filter"
+          },
+          {
+            "id": "delivered_line_revenue",
+            "label": "Delivered order-line revenue",
+            "source": "commerce.order_items + commerce.orders",
+            "formula": "SUM(quantity*unit_price-discount_amount) WHERE orders.order_status = delivered",
+            "allowed_dimensions": [
+              "all",
+              "category",
+              "region",
+              "product",
+              "order_source"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "order_items",
+            "value": null,
+            "status": "no_data",
+            "evidence": [
+              {
+                "source_table": "commerce.order_items, commerce.orders",
+                "query_id": "baf9a4fe4d846e1e",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 0,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": "Never reconcile or mix with company_revenue; aggregate by order_date and approved joins"
+          },
+          {
+            "id": "delivered_average_order_value",
+            "label": "Delivered AOV",
+            "source": "commerce.order_items + commerce.orders",
+            "formula": "delivered_line_revenue / NULLIF(COUNT(DISTINCT delivered orders.order_id),0)",
+            "allowed_dimensions": [
+              "all",
+              "category",
+              "region",
+              "product",
+              "order_source"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount_per_order",
+            "grain": "order_population",
+            "value": null,
+            "status": "no_data",
+            "evidence": [
+              {
+                "source_table": "commerce.order_items, commerce.orders",
+                "query_id": "baf9a4fe4d846e1e",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 0,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": "If dimension product/category, denominator is delivered orders containing that dimension; not company-level AOV"
+          },
+          {
+            "id": "promotion_discount",
+            "label": "Order-line discount total",
+            "source": "commerce.order_items + commerce.orders",
+            "formula": "SUM(discount_amount)",
+            "allowed_dimensions": [
+              "all",
+              "category",
+              "region",
+              "product",
+              "order_source"
+            ],
+            "scope": "",
+            "unit": "unknown_currency_amount",
+            "grain": "order_items",
+            "value": null,
+            "status": "no_data",
+            "evidence": [
+              {
+                "source_table": "commerce.order_items, commerce.orders",
+                "query_id": "baf9a4fe4d846e1e",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 0,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": "Descriptive discount only, not promotion ROI"
+          },
+          {
+            "id": "sessions",
+            "label": "Web sessions",
+            "source": "commerce.web_traffic",
+            "formula": "SUM(sessions)",
+            "allowed_dimensions": [
+              "all"
+            ],
+            "scope": "",
+            "unit": "sessions",
+            "grain": "date_traffic_source",
+            "value": null,
+            "status": "no_data",
+            "evidence": [
+              {
+                "source_table": "commerce.web_traffic",
+                "query_id": "3b47b49484171c89",
+                "filters": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end_exclusive": "2026-01-01"
+                  },
+                  "granularity": "month",
+                  "dimension": "all",
+                  "dimension_value": null
+                },
+                "row_count": 0,
+                "document_id": null,
+                "citation": null
+              }
+            ],
+            "notes": "Do not infer conversion/attribution to orders"
+          }
+        ],
+        "dashboard": {
+          "layout": "fixed",
+          "columns": 2,
+          "widgets": [
+            {
+              "id": "sales_kpis",
+              "type": "kpi_row",
+              "title": "Company financial KPIs",
+              "metric_ids": [
+                "company_revenue",
+                "company_gross_profit",
+                "company_gross_margin_pct",
+                "company_revenue_change_pct"
+              ],
+              "x_dimension": "period",
+              "data": [
+                {
+                  "period": "2025-01-01",
+                  "company_revenue": 13299821.25,
+                  "company_gross_profit": null,
+                  "company_gross_margin_pct": null,
+                  "company_revenue_change_pct": null
+                }
+              ],
+              "notes": ""
+            },
+            {
+              "id": "sales_trend",
+              "type": "line",
+              "title": "Company revenue and gross profit",
+              "metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "x_dimension": "period",
+              "data": [],
+              "notes": ""
+            },
+            {
+              "id": "order_kpis",
+              "type": "kpi_row",
+              "title": "Orders and delivered-line sales",
+              "metric_ids": [
+                "order_count",
+                "delivered_line_revenue",
+                "delivered_average_order_value"
+              ],
+              "x_dimension": "period",
+              "data": [
+                {
+                  "period": "2025-01-01",
+                  "order_count": null,
+                  "delivered_line_revenue": null,
+                  "delivered_average_order_value": null
+                }
+              ],
+              "notes": ""
+            },
+            {
+              "id": "line_breakdown",
+              "type": "bar",
+              "title": "Delivered-line revenue by selected dimension",
+              "metric_ids": [
+                "delivered_line_revenue"
+              ],
+              "x_dimension": "dimension",
+              "data": [],
+              "notes": "If all selected, display single total; unsupported dimensions yield no data"
+            },
+            {
+              "id": "sales_discount",
+              "type": "line",
+              "title": "Line discounts over time",
+              "metric_ids": [
+                "promotion_discount"
+              ],
+              "x_dimension": "period",
+              "data": [],
+              "notes": ""
+            },
+            {
+              "id": "web_sessions",
+              "type": "line",
+              "title": "Website sessions (separate source)",
+              "metric_ids": [
+                "sessions"
+              ],
+              "x_dimension": "period",
+              "data": [],
+              "notes": "No conversion or revenue attribution"
+            }
+          ]
+        },
+        "decisions": [
+          {
+            "id": "S01",
+            "title": "Revenue decline",
+            "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+            "action": "Review company-level revenue trend and investigate; do not assert cause",
+            "required_metric_ids": [
+              "company_revenue_change_pct"
+            ],
+            "triggered": null,
+            "evidence": [],
+            "priority": "fixed_rule_order",
+            "status": "not_available"
+          },
+          {
+            "id": "S02",
+            "title": "Nonpositive gross profit",
+            "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+            "action": "Review company-level COGS and pricing conditions",
+            "required_metric_ids": [
+              "company_gross_profit",
+              "company_revenue"
+            ],
+            "triggered": null,
+            "evidence": [],
+            "priority": "fixed_rule_order",
+            "status": "not_available"
+          },
+          {
+            "id": "S03",
+            "title": "Positive revenue with negative profit trend",
+            "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+            "action": "Investigate increased cost pressure; avoid causal claims",
+            "required_metric_ids": [
+              "company_revenue_change_pct",
+              "company_gross_profit"
+            ],
+            "triggered": null,
+            "evidence": [],
+            "priority": "fixed_rule_order",
+            "status": "not_available"
+          },
+          {
+            "id": "S04",
+            "title": "No decision trigger",
+            "condition": "none of S01-S03 triggered and required metrics available",
+            "action": "No predefined risk trigger; do not assert business health",
+            "required_metric_ids": [
+              "company_revenue",
+              "company_gross_profit"
+            ],
+            "triggered": null,
+            "evidence": [],
+            "priority": "fixed_rule_order",
+            "status": "not_available"
+          }
+        ],
+        "data_quality": {
+          "coverage_start": null,
+          "coverage_end": null,
+          "partial_period": true,
+          "missing_or_unmatched_count": null,
+          "limitations": [
+            "Synthetic commerce demo data; currency unspecified. Company sales and delivered-line revenue are separate sources.",
+            "Order and traffic source completeness is unverified; totals describe matching records, not certified complete periods. No causal explanations are established.",
+            "Missing count describes absent company sales dates. Null dimension labels are retained as unknown; unmatched dimension counts are unverified.",
+            "Company daily coverage is incomplete or unknown; comparison rules require complete current and prior periods.",
+            "Period-over-period comparison uses calendar-month totals. Daily records verify source coverage only. 2025-01-01 to 2026-01-01 (end excluded): unknown of unknown days; 2024-01-01 to 2025-01-01 (end excluded): unknown of unknown days. Whole-period revenue change and aggregate comparison-dependent decisions are unavailable; monthly decisions use separate calendar-month baselines. Current-period revenue and profitability remain usable."
+          ]
+        },
+        "sections": {
+          "executive_summary": {
+            "revenue_overview": "Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].",
+            "profitability_overview": null,
+            "order_activity": null
+          },
+          "sales_kpis": {
+            "company_revenue": 13299821.25,
+            "company_cogs": null,
+            "company_gross_profit": null,
+            "company_gross_margin_pct": null,
+            "company_revenue_change_pct": null,
+            "order_count": null,
+            "delivered_line_revenue": null,
+            "delivered_average_order_value": null,
+            "promotion_discount": null,
+            "sessions": null
+          },
+          "performance_analysis": {
+            "company_revenue_trend": "Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].",
+            "delivered_order_line_breakdown": null,
+            "discount_activity": null,
+            "web_traffic": null
+          },
+          "key_findings_and_explanations": {
+            "revenue_movement": null,
+            "profitability": null,
+            "order_activity": null
+          },
+          "decision_support": {
+            "rule_ids": [
+              "S01",
+              "S02",
+              "S03",
+              "S04"
+            ]
+          }
+        }
+      },
+      "section_count": 5,
+      "monthly_decisions": [
+        {
+          "period": {
+            "start": "2025-01-01",
+            "end_exclusive": "2025-02-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "09d35469cbd6b2e5",
+                  "filters": {
+                    "period": {
+                      "start": "2025-01-01",
+                      "end_exclusive": "2025-02-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "09d35469cbd6b2e5",
+                  "filters": {
+                    "period": {
+                      "start": "2025-01-01",
+                      "end_exclusive": "2025-02-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "09d35469cbd6b2e5",
+                  "filters": {
+                    "period": {
+                      "start": "2025-01-01",
+                      "end_exclusive": "2025-02-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "09d35469cbd6b2e5",
+                  "filters": {
+                    "period": {
+                      "start": "2025-01-01",
+                      "end_exclusive": "2025-02-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "09d35469cbd6b2e5",
+                  "filters": {
+                    "period": {
+                      "start": "2025-01-01",
+                      "end_exclusive": "2025-02-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-02-01",
+            "end_exclusive": "2025-03-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "6559d00c76235b68",
+                  "filters": {
+                    "period": {
+                      "start": "2025-02-01",
+                      "end_exclusive": "2025-03-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "6559d00c76235b68",
+                  "filters": {
+                    "period": {
+                      "start": "2025-02-01",
+                      "end_exclusive": "2025-03-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "6559d00c76235b68",
+                  "filters": {
+                    "period": {
+                      "start": "2025-02-01",
+                      "end_exclusive": "2025-03-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "6559d00c76235b68",
+                  "filters": {
+                    "period": {
+                      "start": "2025-02-01",
+                      "end_exclusive": "2025-03-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "6559d00c76235b68",
+                  "filters": {
+                    "period": {
+                      "start": "2025-02-01",
+                      "end_exclusive": "2025-03-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-03-01",
+            "end_exclusive": "2025-04-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "70538a185046d28f",
+                  "filters": {
+                    "period": {
+                      "start": "2025-03-01",
+                      "end_exclusive": "2025-04-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "70538a185046d28f",
+                  "filters": {
+                    "period": {
+                      "start": "2025-03-01",
+                      "end_exclusive": "2025-04-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "70538a185046d28f",
+                  "filters": {
+                    "period": {
+                      "start": "2025-03-01",
+                      "end_exclusive": "2025-04-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "70538a185046d28f",
+                  "filters": {
+                    "period": {
+                      "start": "2025-03-01",
+                      "end_exclusive": "2025-04-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "70538a185046d28f",
+                  "filters": {
+                    "period": {
+                      "start": "2025-03-01",
+                      "end_exclusive": "2025-04-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-04-01",
+            "end_exclusive": "2025-05-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "3d7ad4b7ca18fb5c",
+                  "filters": {
+                    "period": {
+                      "start": "2025-04-01",
+                      "end_exclusive": "2025-05-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "3d7ad4b7ca18fb5c",
+                  "filters": {
+                    "period": {
+                      "start": "2025-04-01",
+                      "end_exclusive": "2025-05-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "3d7ad4b7ca18fb5c",
+                  "filters": {
+                    "period": {
+                      "start": "2025-04-01",
+                      "end_exclusive": "2025-05-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "3d7ad4b7ca18fb5c",
+                  "filters": {
+                    "period": {
+                      "start": "2025-04-01",
+                      "end_exclusive": "2025-05-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "3d7ad4b7ca18fb5c",
+                  "filters": {
+                    "period": {
+                      "start": "2025-04-01",
+                      "end_exclusive": "2025-05-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-05-01",
+            "end_exclusive": "2025-06-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "27c599b69aeed007",
+                  "filters": {
+                    "period": {
+                      "start": "2025-05-01",
+                      "end_exclusive": "2025-06-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "27c599b69aeed007",
+                  "filters": {
+                    "period": {
+                      "start": "2025-05-01",
+                      "end_exclusive": "2025-06-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "27c599b69aeed007",
+                  "filters": {
+                    "period": {
+                      "start": "2025-05-01",
+                      "end_exclusive": "2025-06-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "27c599b69aeed007",
+                  "filters": {
+                    "period": {
+                      "start": "2025-05-01",
+                      "end_exclusive": "2025-06-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "27c599b69aeed007",
+                  "filters": {
+                    "period": {
+                      "start": "2025-05-01",
+                      "end_exclusive": "2025-06-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-06-01",
+            "end_exclusive": "2025-07-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "714de2855dc3a06e",
+                  "filters": {
+                    "period": {
+                      "start": "2025-06-01",
+                      "end_exclusive": "2025-07-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "714de2855dc3a06e",
+                  "filters": {
+                    "period": {
+                      "start": "2025-06-01",
+                      "end_exclusive": "2025-07-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "714de2855dc3a06e",
+                  "filters": {
+                    "period": {
+                      "start": "2025-06-01",
+                      "end_exclusive": "2025-07-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "714de2855dc3a06e",
+                  "filters": {
+                    "period": {
+                      "start": "2025-06-01",
+                      "end_exclusive": "2025-07-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "714de2855dc3a06e",
+                  "filters": {
+                    "period": {
+                      "start": "2025-06-01",
+                      "end_exclusive": "2025-07-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-07-01",
+            "end_exclusive": "2025-08-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "952cfece079961cd",
+                  "filters": {
+                    "period": {
+                      "start": "2025-07-01",
+                      "end_exclusive": "2025-08-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "952cfece079961cd",
+                  "filters": {
+                    "period": {
+                      "start": "2025-07-01",
+                      "end_exclusive": "2025-08-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "952cfece079961cd",
+                  "filters": {
+                    "period": {
+                      "start": "2025-07-01",
+                      "end_exclusive": "2025-08-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "952cfece079961cd",
+                  "filters": {
+                    "period": {
+                      "start": "2025-07-01",
+                      "end_exclusive": "2025-08-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "952cfece079961cd",
+                  "filters": {
+                    "period": {
+                      "start": "2025-07-01",
+                      "end_exclusive": "2025-08-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-08-01",
+            "end_exclusive": "2025-09-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "39fafd12b190d26f",
+                  "filters": {
+                    "period": {
+                      "start": "2025-08-01",
+                      "end_exclusive": "2025-09-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "39fafd12b190d26f",
+                  "filters": {
+                    "period": {
+                      "start": "2025-08-01",
+                      "end_exclusive": "2025-09-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "39fafd12b190d26f",
+                  "filters": {
+                    "period": {
+                      "start": "2025-08-01",
+                      "end_exclusive": "2025-09-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "39fafd12b190d26f",
+                  "filters": {
+                    "period": {
+                      "start": "2025-08-01",
+                      "end_exclusive": "2025-09-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "39fafd12b190d26f",
+                  "filters": {
+                    "period": {
+                      "start": "2025-08-01",
+                      "end_exclusive": "2025-09-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-09-01",
+            "end_exclusive": "2025-10-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "f527d9b51750c198",
+                  "filters": {
+                    "period": {
+                      "start": "2025-09-01",
+                      "end_exclusive": "2025-10-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "f527d9b51750c198",
+                  "filters": {
+                    "period": {
+                      "start": "2025-09-01",
+                      "end_exclusive": "2025-10-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "f527d9b51750c198",
+                  "filters": {
+                    "period": {
+                      "start": "2025-09-01",
+                      "end_exclusive": "2025-10-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "f527d9b51750c198",
+                  "filters": {
+                    "period": {
+                      "start": "2025-09-01",
+                      "end_exclusive": "2025-10-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "f527d9b51750c198",
+                  "filters": {
+                    "period": {
+                      "start": "2025-09-01",
+                      "end_exclusive": "2025-10-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-10-01",
+            "end_exclusive": "2025-11-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "e9fd300fbd02b8cd",
+                  "filters": {
+                    "period": {
+                      "start": "2025-10-01",
+                      "end_exclusive": "2025-11-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "e9fd300fbd02b8cd",
+                  "filters": {
+                    "period": {
+                      "start": "2025-10-01",
+                      "end_exclusive": "2025-11-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "e9fd300fbd02b8cd",
+                  "filters": {
+                    "period": {
+                      "start": "2025-10-01",
+                      "end_exclusive": "2025-11-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "e9fd300fbd02b8cd",
+                  "filters": {
+                    "period": {
+                      "start": "2025-10-01",
+                      "end_exclusive": "2025-11-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "e9fd300fbd02b8cd",
+                  "filters": {
+                    "period": {
+                      "start": "2025-10-01",
+                      "end_exclusive": "2025-11-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-11-01",
+            "end_exclusive": "2025-12-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "db7dd68028e8d35d",
+                  "filters": {
+                    "period": {
+                      "start": "2025-11-01",
+                      "end_exclusive": "2025-12-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "db7dd68028e8d35d",
+                  "filters": {
+                    "period": {
+                      "start": "2025-11-01",
+                      "end_exclusive": "2025-12-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "db7dd68028e8d35d",
+                  "filters": {
+                    "period": {
+                      "start": "2025-11-01",
+                      "end_exclusive": "2025-12-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "db7dd68028e8d35d",
+                  "filters": {
+                    "period": {
+                      "start": "2025-11-01",
+                      "end_exclusive": "2025-12-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "db7dd68028e8d35d",
+                  "filters": {
+                    "period": {
+                      "start": "2025-11-01",
+                      "end_exclusive": "2025-12-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        },
+        {
+          "period": {
+            "start": "2025-12-01",
+            "end_exclusive": "2026-01-01"
+          },
+          "metrics": [
+            {
+              "id": "company_revenue",
+              "label": "Company revenue",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "3df1f9a5945e6583",
+                  "filters": {
+                    "period": {
+                      "start": "2025-12-01",
+                      "end_exclusive": "2026-01-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_cogs",
+              "label": "Company COGS",
+              "source": "commerce.sales",
+              "formula": "SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "3df1f9a5945e6583",
+                  "filters": {
+                    "period": {
+                      "start": "2025-12-01",
+                      "end_exclusive": "2026-01-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_profit",
+              "label": "Company gross profit",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "unknown_currency_amount",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "3df1f9a5945e6583",
+                  "filters": {
+                    "period": {
+                      "start": "2025-12-01",
+                      "end_exclusive": "2026-01-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "company_gross_margin_pct",
+              "label": "Company gross margin",
+              "source": "commerce.sales",
+              "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "daily_company",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "3df1f9a5945e6583",
+                  "filters": {
+                    "period": {
+                      "start": "2025-12-01",
+                      "end_exclusive": "2026-01-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+            },
+            {
+              "id": "company_revenue_change_pct",
+              "label": "Company revenue period-over-period change",
+              "source": "commerce.sales",
+              "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+              "allowed_dimensions": [
+                "all"
+              ],
+              "scope": "",
+              "unit": "percent",
+              "grain": "comparable_periods",
+              "value": null,
+              "status": "not_available",
+              "evidence": [
+                {
+                  "source_table": "commerce.sales",
+                  "query_id": "3df1f9a5945e6583",
+                  "filters": {
+                    "period": {
+                      "start": "2025-12-01",
+                      "end_exclusive": "2026-01-01"
+                    },
+                    "granularity": "month",
+                    "dimension": "all",
+                    "dimension_value": null
+                  },
+                  "row_count": 0,
+                  "document_id": null,
+                  "citation": null
+                }
+              ],
+              "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+            }
+          ],
+          "comparison": {
+            "comparable": null,
+            "prior_gross_profit": null
+          },
+          "coverage": {
+            "current_days": null,
+            "expected_current_days": null,
+            "prior_days": null,
+            "expected_prior_days": null
+          },
+          "decisions": [
+            {
+              "id": "S01",
+              "title": "Revenue decline",
+              "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+              "action": "Review company-level revenue trend and investigate; do not assert cause",
+              "required_metric_ids": [
+                "company_revenue_change_pct"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S02",
+              "title": "Nonpositive gross profit",
+              "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+              "action": "Review company-level COGS and pricing conditions",
+              "required_metric_ids": [
+                "company_gross_profit",
+                "company_revenue"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S03",
+              "title": "Positive revenue with negative profit trend",
+              "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+              "action": "Investigate increased cost pressure; avoid causal claims",
+              "required_metric_ids": [
+                "company_revenue_change_pct",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            },
+            {
+              "id": "S04",
+              "title": "No decision trigger",
+              "condition": "none of S01-S03 triggered and required metrics available",
+              "action": "No predefined risk trigger; do not assert business health",
+              "required_metric_ids": [
+                "company_revenue",
+                "company_gross_profit"
+              ],
+              "triggered": null,
+              "evidence": [],
+              "priority": "fixed_rule_order",
+              "status": "not_available"
+            }
+          ]
+        }
+      ],
+      "sales_context": {
+        "retrieval_status": "access_denied",
+        "documents": [],
+        "coverage_status": "available",
+        "observed_dates": [],
+        "coverage_evidence": [
+          {
+            "citation_id": "1d532e9bd87dd1d2",
+            "source_type": "database",
+            "source": "commerce.sales",
+            "content": null,
+            "metadata": {
+              "source_table": "commerce.sales",
+              "query_id": "1d532e9bd87dd1d2",
+              "filters": {
+                "period": {
+                  "start": "2024-12-01",
+                  "end_exclusive": "2026-01-01"
+                },
+                "granularity": "month",
+                "dimension": "all",
+                "dimension_value": null
+              },
+              "row_count": 0,
+              "document_id": null,
+              "citation": null
+            }
+          }
+        ],
+        "access_limited": false,
+        "as_of": "2026-11-21"
+      },
+      "insights": {
+        "decision_summary": "0 of 12 reporting months fully evaluated; 0 additional months have partial rule results.",
+        "actions": [],
+        "findings": [],
+        "document_context": [],
+        "data_needs": [
+          "Missing or incomplete commerce.sales records: 2024-12-01 to 2025-12-31. Supply genuine daily date, revenue, cogs records, including the preceding-month baseline. Do not fill missing observations with zero.",
+          "Document access is not authorized for this identity. Grant the appropriate existing document role; uploading duplicate data will not fix access.",
+          "For causal explanations, provide dated pricing/COGS change logs, campaign execution and outcome reports, or approved sales reviews linked to the requested period and company/source. Index them through the existing document ingestion flow with the correct access roles. A general policy alone does not prove cause."
+        ],
+        "coverage_evidence": [
+          {
+            "source_table": "commerce.sales",
+            "query_id": "1d532e9bd87dd1d2",
+            "filters": {
+              "period": {
+                "start": "2024-12-01",
+                "end_exclusive": "2026-01-01"
+              },
+              "granularity": "month",
+              "dimension": "all",
+              "dimension_value": null
+            },
+            "row_count": 0,
+            "document_id": null,
+            "citation": null
+          }
+        ],
+        "documents": []
+      }
+    },
+    "metadata": {
+      "ok": false,
+      "status": "partial",
+      "report_type": "sales_performance",
+      "retrieval_status": "access_denied",
+      "limitations": [
+        "Synthetic commerce demo data; currency unspecified. Company sales and delivered-line revenue are separate sources.",
+        "Order and traffic source completeness is unverified; totals describe matching records, not certified complete periods. No causal explanations are established.",
+        "Missing count describes absent company sales dates. Null dimension labels are retained as unknown; unmatched dimension counts are unverified.",
+        "Company daily coverage is incomplete or unknown; comparison rules require complete current and prior periods.",
+        "Period-over-period comparison uses calendar-month totals. Daily records verify source coverage only. 2025-01-01 to 2026-01-01 (end excluded): unknown of unknown days; 2024-01-01 to 2025-01-01 (end excluded): unknown of unknown days. Whole-period revenue change and aggregate comparison-dependent decisions are unavailable; monthly decisions use separate calendar-month baselines. Current-period revenue and profitability remain usable."
+      ],
+      "timing": {
+        "total_ms": 125
+      }
+    }
+  },
+  "rendered": "{\"report_type\": \"sales_performance\", \"request\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"metrics\": [{\"id\": \"company_revenue\", \"label\": \"Company revenue\", \"source\": \"commerce.sales\", \"formula\": \"SUM(revenue)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount\", \"grain\": \"daily_company\", \"value\": 13299821.25, \"status\": \"available\", \"evidence\": [{\"source_table\": \"commerce.sales\", \"query_id\": \"200f38f24fb50a06\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 1, \"document_id\": null, \"citation\": null}], \"notes\": null}, {\"id\": \"company_cogs\", \"label\": \"Company COGS\", \"source\": \"commerce.sales\", \"formula\": \"SUM(cogs)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount\", \"grain\": \"daily_company\", \"value\": null, \"status\": \"not_available\", \"evidence\": [{\"source_table\": \"commerce.sales\", \"query_id\": \"200f38f24fb50a06\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 1, \"document_id\": null, \"citation\": null}], \"notes\": null}, {\"id\": \"company_gross_profit\", \"label\": \"Company gross profit\", \"source\": \"commerce.sales\", \"formula\": \"SUM(revenue)-SUM(cogs)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount\", \"grain\": \"daily_company\", \"value\": null, \"status\": \"not_available\", \"evidence\": [{\"source_table\": \"commerce.sales\", \"query_id\": \"200f38f24fb50a06\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 1, \"document_id\": null, \"citation\": null}], \"notes\": null}, {\"id\": \"company_gross_margin_pct\", \"label\": \"Company gross margin\", \"source\": \"commerce.sales\", \"formula\": \"100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"percent\", \"grain\": \"daily_company\", \"value\": null, \"status\": \"not_available\", \"evidence\": [{\"source_table\": \"commerce.sales\", \"query_id\": \"200f38f24fb50a06\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 1, \"document_id\": null, \"citation\": null}], \"notes\": \"Derived ratio of defined company-level aggregates; NULL for zero denominator\"}, {\"id\": \"company_revenue_change_pct\", \"label\": \"Company revenue period-over-period change\", \"source\": \"commerce.sales\", \"formula\": \"100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"percent\", \"grain\": \"comparable_periods\", \"value\": null, \"status\": \"not_available\", \"evidence\": [{\"source_table\": \"commerce.sales\", \"query_id\": \"200f38f24fb50a06\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 1, \"document_id\": null, \"citation\": null}], \"notes\": \"Same length/comparable calendar period; set unavailable if prior coverage insufficient\"}, {\"id\": \"order_count\", \"label\": \"Order count\", \"source\": \"commerce.orders\", \"formula\": \"COUNT(DISTINCT order_id)\", \"allowed_dimensions\": [\"all\", \"region\", \"order_source\"], \"scope\": \"\", \"unit\": \"orders\", \"grain\": \"orders\", \"value\": null, \"status\": \"no_data\", \"evidence\": [{\"source_table\": \"commerce.orders\", \"query_id\": \"b635a266a4dd8260\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 0, \"document_id\": null, \"citation\": null}], \"notes\": \"No implicit status filter\"}, {\"id\": \"delivered_line_revenue\", \"label\": \"Delivered order-line revenue\", \"source\": \"commerce.order_items + commerce.orders\", \"formula\": \"SUM(quantity*unit_price-discount_amount) WHERE orders.order_status = delivered\", \"allowed_dimensions\": [\"all\", \"category\", \"region\", \"product\", \"order_source\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount\", \"grain\": \"order_items\", \"value\": null, \"status\": \"no_data\", \"evidence\": [{\"source_table\": \"commerce.order_items, commerce.orders\", \"query_id\": \"baf9a4fe4d846e1e\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 0, \"document_id\": null, \"citation\": null}], \"notes\": \"Never reconcile or mix with company_revenue; aggregate by order_date and approved joins\"}, {\"id\": \"delivered_average_order_value\", \"label\": \"Delivered AOV\", \"source\": \"commerce.order_items + commerce.orders\", \"formula\": \"delivered_line_revenue / NULLIF(COUNT(DISTINCT delivered orders.order_id),0)\", \"allowed_dimensions\": [\"all\", \"category\", \"region\", \"product\", \"order_source\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount_per_order\", \"grain\": \"order_population\", \"value\": null, \"status\": \"no_data\", \"evidence\": [{\"source_table\": \"commerce.order_items, commerce.orders\", \"query_id\": \"baf9a4fe4d846e1e\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 0, \"document_id\": null, \"citation\": null}], \"notes\": \"If dimension product/category, denominator is delivered orders containing that dimension; not company-level AOV\"}, {\"id\": \"promotion_discount\", \"label\": \"Order-line discount total\", \"source\": \"commerce.order_items + commerce.orders\", \"formula\": \"SUM(discount_amount)\", \"allowed_dimensions\": [\"all\", \"category\", \"region\", \"product\", \"order_source\"], \"scope\": \"\", \"unit\": \"unknown_currency_amount\", \"grain\": \"order_items\", \"value\": null, \"status\": \"no_data\", \"evidence\": [{\"source_table\": \"commerce.order_items, commerce.orders\", \"query_id\": \"baf9a4fe4d846e1e\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 0, \"document_id\": null, \"citation\": null}], \"notes\": \"Descriptive discount only, not promotion ROI\"}, {\"id\": \"sessions\", \"label\": \"Web sessions\", \"source\": \"commerce.web_traffic\", \"formula\": \"SUM(sessions)\", \"allowed_dimensions\": [\"all\"], \"scope\": \"\", \"unit\": \"sessions\", \"grain\": \"date_traffic_source\", \"value\": null, \"status\": \"no_data\", \"evidence\": [{\"source_table\": \"commerce.web_traffic\", \"query_id\": \"3b47b49484171c89\", \"filters\": {\"period\": {\"start\": \"2025-01-01\", \"end_exclusive\": \"2026-01-01\"}, \"granularity\": \"month\", \"dimension\": \"all\", \"dimension_value\": null}, \"row_count\": 0, \"document_id\": null, \"citation\": null}], \"notes\": \"Do not infer conversion/attribution to orders\"}], \"dashboard\": {\"layout\": \"fixed\", \"columns\": 2, \"widgets\": [{\"id\": \"sales_kpis\", \"type\": \"kpi_row\", \"title\": \"Company financial KPIs\", \"metric_ids\": [\"company_revenue\", \"company_gross_profit\", \"company_gross_margin_pct\", \"company_revenue_change_pct\"], \"x_dimension\": \"period\", \"data\": [{\"period\": \"2025-01-01\", \"company_revenue\": 13299821.25, \"company_gross_profit\": null, \"company_gross_margin_pct\": null, \"company_revenue_change_pct\": null}], \"notes\": \"\"}, {\"id\": \"sales_trend\", \"type\": \"line\", \"title\": \"Company revenue and gross profit\", \"metric_ids\": [\"company_revenue\", \"company_gross_profit\"], \"x_dimension\": \"period\", \"data\": [], \"notes\": \"\"}, {\"id\": \"order_kpis\", \"type\": \"kpi_row\", \"title\": \"Orders and delivered-line sales\", \"metric_ids\": [\"order_count\", \"delivered_line_revenue\", \"delivered_average_order_value\"], \"x_dimension\": \"period\", \"data\": [{\"period\": \"2025-01-01\", \"order_count\": null, \"delivered_line_revenue\": null, \"delivered_average_order_value\": null}], \"notes\": \"\"}, {\"id\": \"line_breakdown\", \"type\": \"bar\", \"title\": \"Delivered-line revenue by selected dimension\", \"metric_ids\": [\"delivered_line_revenue\"], \"x_dimension\": \"dimension\", \"data\": [], \"notes\": \"If all selected, display single total; unsupported dimensions yield no data\"}, {\"id\": \"sales_discount\", \"type\": \"line\", \"title\": \"Line discounts over time\", \"metric_ids\": [\"promotion_discount\"], \"x_dimension\": \"period\", \"data\": [], \"notes\": \"\"}, {\"id\": \"web_sessions\", \"type\": \"line\", \"title\": \"Website sessions (separate source)\", \"metric_ids\": [\"sessions\"], \"x_dimension\": \"period\", \"data\": [], \"notes\": \"No conversion or revenue attribution\"}]}, \"decisions\": [{\"id\": \"S01\", \"title\": \"Revenue decline\", \"condition\": \"company_revenue_change_pct < 0 AND both periods have sufficient coverage\", \"action\": \"Review company-level revenue trend and investigate; do not assert cause\", \"required_metric_ids\": [\"company_revenue_change_pct\"], \"triggered\": null, \"evidence\": [], \"priority\": \"fixed_rule_order\", \"status\": \"not_available\"}, {\"id\": \"S02\", \"title\": \"Nonpositive gross profit\", \"condition\": \"company_gross_profit <= 0 AND company_revenue > 0\", \"action\": \"Review company-level COGS and pricing conditions\", \"required_metric_ids\": [\"company_gross_profit\", \"company_revenue\"], \"triggered\": null, \"evidence\": [], \"priority\": \"fixed_rule_order\", \"status\": \"not_available\"}, {\"id\": \"S03\", \"title\": \"Positive revenue with negative profit trend\", \"condition\": \"company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage\", \"action\": \"Investigate increased cost pressure; avoid causal claims\", \"required_metric_ids\": [\"company_revenue_change_pct\", \"company_gross_profit\"], \"triggered\": null, \"evidence\": [], \"priority\": \"fixed_rule_order\", \"status\": \"not_available\"}, {\"id\": \"S04\", \"title\": \"No decision trigger\", \"condition\": \"none of S01-S03 triggered and required metrics available\", \"action\": \"No predefined risk trigger; do not assert business health\", \"required_metric_ids\": [\"company_revenue\", \"company_gross_profit\"], \"triggered\": null, \"evidence\": [], \"priority\": \"fixed_rule_order\", \"status\": \"not_available\"}], \"data_quality\": {\"coverage_start\": null, \"coverage_end\": null, \"partial_period\": true, \"missing_or_unmatched_count\": null, \"limitations\": [\"Synthetic commerce demo data; currency unspecified. Company sales and delivered-line revenue are separate sources.\", \"Order and traffic source completeness is unverified; totals describe matching records, not certified complete periods. No causal explanations are established.\", \"Missing count describes absent company sales dates. Null dimension labels are retained as unknown; unmatched dimension counts are unverified.\", \"Company daily coverage is incomplete or unknown; comparison rules require complete current and prior periods.\", \"Period-over-period comparison uses calendar-month totals. Daily records verify source coverage only. 2025-01-01 to 2026-01-01 (end excluded): unknown of unknown days; 2024-01-01 to 2025-01-01 (end excluded): unknown of unknown days. Whole-period revenue change and aggregate comparison-dependent decisions are unavailable; monthly decisions use separate calendar-month baselines. Current-period revenue and profitability remain usable.\"]}, \"sections\": {\"executive_summary\": {\"revenue_overview\": \"Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].\", \"profitability_overview\": null, \"order_activity\": null}, \"sales_kpis\": {\"company_revenue\": 13299821.25, \"company_cogs\": null, \"company_gross_profit\": null, \"company_gross_margin_pct\": null, \"company_revenue_change_pct\": null, \"order_count\": null, \"delivered_line_revenue\": null, \"delivered_average_order_value\": null, \"promotion_discount\": null, \"sessions\": null}, \"performance_analysis\": {\"company_revenue_trend\": \"Company revenue: 13299821.25 (unknown_currency_amount) [200f38f24fb50a06].\", \"delivered_order_line_breakdown\": null, \"discount_activity\": null, \"web_traffic\": null}, \"key_findings_and_explanations\": {\"revenue_movement\": null, \"profitability\": null, \"order_activity\": null}, \"decision_support\": {\"rule_ids\": [\"S01\", \"S02\", \"S03\", \"S04\"]}}}",
+  "http": {
+    "status_code": 200,
+    "headers": {
+      "x-report-status": "partial",
+      "cache-control": "no-store",
+      "content-length": "11214",
+      "content-type": "application/json"
+    }
+  },
+  "media_type": "application/json",
+  "repository_calls": [
+    {
+      "sql": "WITH totals AS (\n        SELECT SUM(s.revenue) FILTER (WHERE s.date >= $1) AS revenue,\n        SUM(s.cogs) FILTER (WHERE s.date >= $1) AS cogs,\n        SUM(s.revenue) FILTER (WHERE s.date < $1) AS prior_revenue,\n        SUM(s.cogs) FILTER (WHERE s.date < $1) AS prior_cogs,\n        COUNT(DISTINCT s.date) FILTER (WHERE s.date >= $1) AS days,\n        COUNT(DISTINCT s.date) FILTER (WHERE s.date < $1) AS prior_days,\n        MIN(s.date) FILTER (WHERE s.date >= $1) AS coverage_start,\n        MAX(s.date) FILTER (WHERE s.date >= $1) AS coverage_end,\n        ($2::date - $1::date) AS expected_current_days, ($1::date - $3::date) AS expected_prior_days\n        FROM commerce.sales AS s WHERE s.date >= $3 AND s.date < $2) SELECT t.revenue AS company_revenue, t.cogs AS company_cogs,\n        t.revenue-t.cogs AS company_gross_profit,\n        100*(t.revenue-t.cogs)/NULLIF(t.revenue,0) AS company_gross_margin_pct,\n        CASE WHEN t.days = t.expected_current_days AND t.prior_days = t.expected_prior_days\n        THEN 100*(t.revenue-t.prior_revenue)/NULLIF(t.prior_revenue,0) END AS company_revenue_change_pct,\n        t.prior_revenue-t.prior_cogs AS prior_gross_profit,\n        t.days = t.expected_current_days AND t.prior_days = t.expected_prior_days AS comparable,\n        t.days <> t.expected_current_days AS partial_period,\n        t.coverage_start, t.coverage_end, t.expected_current_days-t.days AS missing_or_unmatched_count,\n        t.days AS current_days, t.prior_days AS prior_days,\n        t.prior_revenue AS prior_revenue,\n        t.expected_current_days, t.expected_prior_days, t.days AS source_count FROM totals AS t LIMIT 1",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01",
+        "2024-01-01"
+      ]
+    },
+    {
+      "sql": "SELECT ARRAY_AGG(DISTINCT s.date ORDER BY s.date) AS dates FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 AND s.revenue IS NOT NULL AND s.cogs IS NOT NULL LIMIT 1",
+      "parameters": [
+        "2024-12-01",
+        "2026-01-01"
+      ]
+    },
+    {
+      "sql": "WITH monthly AS (\n        SELECT DATE_TRUNC('month', s.date)::date AS period, SUM(s.revenue) AS revenue,\n        SUM(s.cogs) AS cogs, COUNT(DISTINCT s.date) AS days, MIN(s.date) AS coverage_start, MAX(s.date) AS coverage_end\n        FROM commerce.sales AS s WHERE s.date >= $3 AND s.date < $2 GROUP BY 1),\n        totals AS (SELECT c.period, c.revenue, c.cogs, p.revenue AS prior_revenue, p.cogs AS prior_cogs,\n        c.days, COALESCE(p.days,0) AS prior_days, c.coverage_start, c.coverage_end,\n        (c.period + INTERVAL '1 month')::date-c.period AS expected_current_days,\n        c.period-(c.period - INTERVAL '1 month')::date AS expected_prior_days\n        FROM monthly AS c LEFT JOIN monthly AS p ON p.period = (c.period - INTERVAL '1 month')::date\n        WHERE c.period >= $1) SELECT t.period, t.revenue AS company_revenue, t.cogs AS company_cogs,\n        t.revenue-t.cogs AS company_gross_profit,\n        100*(t.revenue-t.cogs)/NULLIF(t.revenue,0) AS company_gross_margin_pct,\n        CASE WHEN t.days = t.expected_current_days AND t.prior_days = t.expected_prior_days\n        THEN 100*(t.revenue-t.prior_revenue)/NULLIF(t.prior_revenue,0) END AS company_revenue_change_pct,\n        t.prior_revenue-t.prior_cogs AS prior_gross_profit,\n        t.days = t.expected_current_days AND t.prior_days = t.expected_prior_days AS comparable,\n        t.days <> t.expected_current_days AS partial_period,\n        t.coverage_start, t.coverage_end, t.expected_current_days-t.days AS missing_or_unmatched_count,\n        t.days AS current_days, t.prior_days AS prior_days,\n        t.prior_revenue AS prior_revenue,\n        t.expected_current_days, t.expected_prior_days, t.days AS source_count FROM totals AS t ORDER BY t.period LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01",
+        "2024-12-01"
+      ]
+    },
+    {
+      "sql": "SELECT DATE_TRUNC('month', s.date)::date AS period, SUM(s.revenue) AS company_revenue, SUM(s.revenue)-SUM(s.cogs) AS company_gross_profit FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY 1 ORDER BY 1 LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ]
+    },
+    {
+      "sql": "SELECT COUNT(DISTINCT o.order_id) AS order_count, COUNT(*) AS source_count FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 LIMIT 1",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ]
+    },
+    {
+      "sql": "SELECT SUM(oi.quantity*oi.unit_price-oi.discount_amount) FILTER (WHERE o.order_status = 'delivered') AS delivered_line_revenue, SUM(oi.quantity*oi.unit_price-oi.discount_amount) FILTER (WHERE o.order_status = 'delivered') / NULLIF(COUNT(DISTINCT o.order_id) FILTER (WHERE o.order_status = 'delivered'),0) AS delivered_average_order_value, SUM(oi.discount_amount) AS promotion_discount, COUNT(oi.order_item_id) AS source_count FROM commerce.orders AS o LEFT JOIN commerce.order_items AS oi ON oi.order_id = o.order_id WHERE o.order_date >= $1 AND o.order_date < $2 LIMIT 1",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ]
+    },
+    {
+      "sql": "SELECT 'all' AS dimension, SUM(oi.quantity*oi.unit_price-oi.discount_amount) AS delivered_line_revenue FROM commerce.orders AS o LEFT JOIN commerce.order_items AS oi ON oi.order_id = o.order_id WHERE o.order_date >= $1 AND o.order_date < $2 AND o.order_status = 'delivered' GROUP BY 1 ORDER BY 1 LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ]
+    },
+    {
+      "sql": "SELECT DATE_TRUNC('month', o.order_date)::date AS period, SUM(oi.discount_amount) AS promotion_discount FROM commerce.orders AS o LEFT JOIN commerce.order_items AS oi ON oi.order_id = o.order_id WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY 1 ORDER BY 1 LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ]
+    },
+    {
+      "sql": "SELECT SUM(w.sessions) AS sessions, COUNT(*) AS source_count FROM commerce.web_traffic AS w WHERE w.date >= $1 AND w.date < $2 LIMIT 1",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ]
+    },
+    {
+      "sql": "SELECT DATE_TRUNC('month', w.date)::date AS period, SUM(w.sessions) AS sessions FROM commerce.web_traffic AS w WHERE w.date >= $1 AND w.date < $2 GROUP BY 1 ORDER BY 1 LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ]
+    }
+  ],
+  "retrieval_calls": 0,
+  "scripted_drafts": []
+}

@@ -1,0 +1,20 @@
+{
+  "model": "openai/gpt-oss-120b",
+  "temperature": 0.01,
+  "raw": "{\n  \"score\": 2,\n  \"reasoning\": \"The candidate's statement that the total is 42 exactly matches the information provided in evidence E1, which also states that the total is 42. Therefore, the answer is fully correct.\",\n  \"evidence_ids\": [\"E1\"]\n}",
+  "served_model": "openai/gpt-oss-120b",
+  "usage": {
+    "completion_tokens": 167,
+    "prompt_tokens": 107,
+    "total_tokens": 274,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": null,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": null
+    },
+    "prompt_tokens_details": null
+  },
+  "status": "pass",
+  "latency_ms": 157448.33
+}

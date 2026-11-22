@@ -1,0 +1,154 @@
+{
+  "document": {
+    "title": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng",
+    "queries": [
+      {
+        "id": "q0",
+        "question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần. Show a bar chart."
+      }
+    ],
+    "tiles": [
+      {
+        "id": "chart",
+        "title": "Query result",
+        "kind": "bar",
+        "query_id": "q0",
+        "measures": [],
+        "dimension": null,
+        "span": 2
+      }
+    ],
+    "id": "f3db5c0be9774bacb695d22d2eeaa45d",
+    "description": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần. Show a bar chart.",
+    "scope": "",
+    "clarifications": [],
+    "revision": 1,
+    "created_at": "2026-11-21T09:25:35.795464Z",
+    "updated_at": "2026-11-21T09:25:35.795464Z",
+    "data_updated_at": "2026-11-21T09:25:35.795464Z",
+    "results": [
+      {
+        "id": "q0",
+        "question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần. Show a bar chart.",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "product_id": 1974,
+              "product_name": "UrbanVN RP-49",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 2091,
+              "product_name": "UrbanVN UC-26",
+              "stock_on_hand": 60
+            },
+            {
+              "product_id": 556,
+              "product_name": "SaigonFlex UC-21",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2180,
+              "product_name": "PhoenixWear UC-10",
+              "stock_on_hand": 59
+            },
+            {
+              "product_id": 2219,
+              "product_name": "VietMotion RP-16",
+              "stock_on_hand": 59
+            }
+          ],
+          "sql": "SELECT i.product_id, i.product_name, i.stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.stock_on_hand IS NOT NULL ORDER BY i.stock_on_hand DESC, i.product_id ASC LIMIT 5",
+          "parameters": [
+            "2026-11-13"
+          ],
+          "metadata": {},
+          "query_status": "executed"
+        },
+        "message": ""
+      }
+    ],
+    "tile_status": {
+      "chart": {
+        "status": "complete",
+        "message": ""
+      }
+    },
+    "status": "complete"
+  },
+  "charts": [
+    {
+      "type": "bar",
+      "title": "Query result",
+      "categories": [
+        "1974.0",
+        "2091.0",
+        "556.0",
+        "2180.0",
+        "2219.0"
+      ],
+      "series": [
+        {
+          "name": "Stock On Hand",
+          "values": [
+            60.0,
+            60.0,
+            59.0,
+            59.0,
+            59.0
+          ]
+        }
+      ],
+      "unit": "units",
+      "x_label": "Product Id",
+      "y_label": "units",
+      "temporal": false,
+      "scope": {
+        "time": null,
+        "filters": [],
+        "dates": {},
+        "snapshot_dates": [],
+        "sources": [],
+        "policy": null
+      }
+    }
+  ],
+  "forwarded_question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần. Show a bar chart.",
+  "source_response": {
+    "query_status": "executed",
+    "ok": true,
+    "rows": [
+      {
+        "product_id": 1974,
+        "product_name": "UrbanVN RP-49",
+        "stock_on_hand": 60
+      },
+      {
+        "product_id": 2091,
+        "product_name": "UrbanVN UC-26",
+        "stock_on_hand": 60
+      },
+      {
+        "product_id": 556,
+        "product_name": "SaigonFlex UC-21",
+        "stock_on_hand": 59
+      },
+      {
+        "product_id": 2180,
+        "product_name": "PhoenixWear UC-10",
+        "stock_on_hand": 59
+      },
+      {
+        "product_id": 2219,
+        "product_name": "VietMotion RP-16",
+        "stock_on_hand": 59
+      }
+    ],
+    "sql": "SELECT i.product_id, i.product_name, i.stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.stock_on_hand IS NOT NULL ORDER BY i.stock_on_hand DESC, i.product_id ASC LIMIT 5",
+    "parameters": [
+      "2026-11-13"
+    ],
+    "metadata": {}
+  }
+}

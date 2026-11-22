@@ -1,0 +1,66 @@
+{
+  "document": {
+    "title": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+    "queries": [
+      {
+        "id": "q0",
+        "question": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "data",
+        "title": "Source data",
+        "kind": "table",
+        "query_id": "q0",
+        "measures": [],
+        "dimension": null,
+        "span": 2
+      }
+    ],
+    "id": "635fbdf53a0b43569676d30926a0360b",
+    "description": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+    "scope": "",
+    "clarifications": [],
+    "revision": 1,
+    "created_at": "2026-11-21T09:25:36.040889Z",
+    "updated_at": "2026-11-21T09:25:36.040889Z",
+    "data_updated_at": "2026-11-21T09:25:36.040889Z",
+    "results": [
+      {
+        "id": "q0",
+        "question": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+        "status": "failed",
+        "payload": {
+          "rows": [
+            {
+              "stock_on_hand": 987654
+            }
+          ],
+          "query_status": "rejected",
+          "metadata": {}
+        },
+        "message": "Source query rejected."
+      }
+    ],
+    "tile_status": {
+      "data": {
+        "status": "unavailable",
+        "message": "Source query rejected."
+      }
+    },
+    "status": "failed"
+  },
+  "charts": [],
+  "forwarded_question": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+  "source_response": {
+    "query_status": "rejected",
+    "ok": false,
+    "rows": [
+      {
+        "stock_on_hand": 987654
+      }
+    ],
+    "answer": "Source query rejected."
+  }
+}

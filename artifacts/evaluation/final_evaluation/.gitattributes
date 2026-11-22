@@ -1,0 +1,3 @@
+# Keep frozen fixture hashes and rendered artifacts byte-for-byte.
+* -text whitespace=cr-at-eol
+.gitattributes text eol=lf

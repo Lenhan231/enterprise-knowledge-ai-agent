@@ -1,0 +1,1136 @@
+{
+  "settings": {
+    "model": "openai/gpt-oss-120b",
+    "temperature": 0.01,
+    "max_completion_tokens": 4000,
+    "context_tokens": 32768,
+    "reasoning_effort": "model default",
+    "max_retries": 6,
+    "timeout_seconds": 300,
+    "idle_seconds": 60,
+    "response_format": "json_object",
+    "max_concurrent_requests": 2
+  },
+  "rubric_version": 1,
+  "client_sha256": "de4aeb6e953915850cac9f026db5c54d5f1a4393fe42f679f1971ef54c13a38a",
+  "records": [
+    {
+      "id": "D05",
+      "dimensions": [
+        "chart_suitability"
+      ],
+      "input_sha256": "f9be2da0eb24fd8fe2c3363fb0f6f37a3d9fa06108cfc42f1d09317f77c05e86",
+      "started_utc": "2026-11-21T09:14:39.524661+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 179303.4,
+      "usage": {
+        "completion_tokens": 415,
+        "prompt_tokens": 836,
+        "total_tokens": 1251,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-a8dd8fbdb6b23413",
+      "raw": "{\n  \"scores\": {\n    \"chart_suitability\": {\n      \"score\": 2,\n      \"reasoning\": \"The bar chart accurately presents the top‑5 customers by delivered order count for 2025, ordered by count descending and customer_id ascending as required, and the evidence provides the corresponding data.\",\n      \"evidence_ids\": [\"P02\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "chart_suitability": {
+          "score": 2,
+          "reasoning": "The bar chart accurately presents the top‑5 customers by delivered order count for 2025, ordered by count descending and customer_id ascending as required, and the evidence provides the corresponding data.",
+          "evidence_ids": [
+            "P02"
+          ]
+        }
+      }
+    },
+    {
+      "id": "D06",
+      "dimensions": [
+        "chart_suitability"
+      ],
+      "input_sha256": "ee0e6084914876fdb4e155532f191f4f4649b57d7799354828966dc20e4d78b8",
+      "started_utc": "2026-11-21T09:14:39.525656+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 160296.13,
+      "usage": {
+        "completion_tokens": 369,
+        "prompt_tokens": 702,
+        "total_tokens": 1071,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-80cac97f20bfc6f9",
+      "raw": "{\n  \"scores\": {\n    \"chart_suitability\": {\n      \"score\": 2,\n      \"reasoning\": \"The line chart correctly visualizes monthly revenue with ordered dates and matches the provided evidence rows.\",\n      \"evidence_ids\": [\"SYN-TREND\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "chart_suitability": {
+          "score": 2,
+          "reasoning": "The line chart correctly visualizes monthly revenue with ordered dates and matches the provided evidence rows.",
+          "evidence_ids": [
+            "SYN-TREND"
+          ]
+        }
+      }
+    },
+    {
+      "id": "D07",
+      "dimensions": [
+        "chart_suitability"
+      ],
+      "input_sha256": "bc62f598fc70db47415d1da426ef1c42641d0fced352dad05da24e2d816c48b7",
+      "started_utc": "2026-11-21T09:17:19.822165+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 33013.84,
+      "usage": {
+        "completion_tokens": 307,
+        "prompt_tokens": 719,
+        "total_tokens": 1026,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-a60ba60787294e19",
+      "raw": "{\n  \"scores\": {\n    \"chart_suitability\": {\n      \"score\": 2,\n      \"reasoning\": \"The response correctly identified that a line chart is unsuitable for a top‑5 list and refused to render it, providing an appropriate unavailable message, which matches the expected rejection.\",\n      \"evidence_ids\": [\"P04\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "chart_suitability": {
+          "score": 2,
+          "reasoning": "The response correctly identified that a line chart is unsuitable for a top‑5 list and refused to render it, providing an appropriate unavailable message, which matches the expected rejection.",
+          "evidence_ids": [
+            "P04"
+          ]
+        }
+      }
+    },
+    {
+      "id": "D08",
+      "dimensions": [
+        "chart_suitability"
+      ],
+      "input_sha256": "21ad536118b5001c8db786fbcfdcbd482617e19fa0f40acc81610a1fee0b8043",
+      "started_utc": "2026-11-21T09:17:38.828610+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 34880.81,
+      "usage": {
+        "completion_tokens": 441,
+        "prompt_tokens": 695,
+        "total_tokens": 1136,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-a40e22cfef2ad81f",
+      "raw": "{\n  \"scores\": {\n    \"chart_suitability\": {\n      \"score\": 2,\n      \"reasoning\": \"The candidate correctly refuses to render a donut chart because a donut requires a complete, exclusive grouping of a single additive measure, which the top‑5 ranking does not provide.\",\n      \"evidence_ids\": [\"P03\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "chart_suitability": {
+          "score": 2,
+          "reasoning": "The candidate correctly refuses to render a donut chart because a donut requires a complete, exclusive grouping of a single additive measure, which the top‑5 ranking does not provide.",
+          "evidence_ids": [
+            "P03"
+          ]
+        }
+      }
+    },
+    {
+      "id": "D11",
+      "dimensions": [
+        "chart_suitability"
+      ],
+      "input_sha256": "e38b5320a0c3cfa4fd3bb2308583ec7daba79d78d3e1bd3f020c8edd2fa15a95",
+      "started_utc": "2026-11-21T09:17:52.836250+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 34916.35,
+      "usage": {
+        "completion_tokens": 302,
+        "prompt_tokens": 710,
+        "total_tokens": 1012,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-be48931359e86f22",
+      "raw": "{\n  \"scores\": {\n    \"chart_suitability\": {\n      \"score\": 2,\n      \"reasoning\": \"The bar chart correctly shows stock on hand for each Apparel product, matching the requested grouping and using appropriate categorical visualization, and the evidence provides the exact values displayed.\",\n      \"evidence_ids\": [\"SYN-CATEGORY\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "chart_suitability": {
+          "score": 2,
+          "reasoning": "The bar chart correctly shows stock on hand for each Apparel product, matching the requested grouping and using appropriate categorical visualization, and the evidence provides the exact values displayed.",
+          "evidence_ids": [
+            "SYN-CATEGORY"
+          ]
+        }
+      }
+    },
+    {
+      "id": "D14",
+      "dimensions": [
+        "chart_suitability"
+      ],
+      "input_sha256": "c9198c4aef78a4c2000249301056dc25afd76e1f1122d954773c298f0cdcd960",
+      "started_utc": "2026-11-21T09:18:13.709815+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 35828.91,
+      "usage": {
+        "completion_tokens": 470,
+        "prompt_tokens": 864,
+        "total_tokens": 1334,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-a27321a889b6808b",
+      "raw": "{\n  \"scores\": {\n    \"chart_suitability\": {\n      \"score\": 1,\n      \"reasoning\": \"The line chart correctly displays monthly revenue using the provided evidence, but the accompanying table lacks the revenue data, so the request is only partially fulfilled.\",\n      \"evidence_ids\": [\n        \"SYN-TREND\"\n      ]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "chart_suitability": {
+          "score": 1,
+          "reasoning": "The line chart correctly displays monthly revenue using the provided evidence, but the accompanying table lacks the revenue data, so the request is only partially fulfilled.",
+          "evidence_ids": [
+            "SYN-TREND"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R01",
+      "dimensions": [
+        "factual_consistency"
+      ],
+      "input_sha256": "c78a24413695eb477d97e7343102debc8883c04c865561def39d648a4476813c",
+      "started_utc": "2026-11-21T09:18:27.752589+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 40453.81,
+      "usage": {
+        "completion_tokens": 394,
+        "prompt_tokens": 1805,
+        "total_tokens": 2199,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-b03a29ce39878dbf",
+      "raw": "{\n  \"scores\": {\n    \"factual_consistency\": {\n      \"score\": 2,\n      \"reasoning\": \"The reported company revenue of 13,299,821.25 matches the supplied evidence (P01). All other metrics are correctly marked as unavailable, consistent with the lack of supporting evidence.\",\n      \"evidence_ids\": [\"P01\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "factual_consistency": {
+          "score": 2,
+          "reasoning": "The reported company revenue of 13,299,821.25 matches the supplied evidence (P01). All other metrics are correctly marked as unavailable, consistent with the lack of supporting evidence.",
+          "evidence_ids": [
+            "P01"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R05",
+      "dimensions": [
+        "factual_consistency"
+      ],
+      "input_sha256": "b4d6479af4ea68bd1d3d3ceb3ae676f0547efce44e1305281b6cab9a72fa255f",
+      "started_utc": "2026-11-21T09:18:49.539014+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 33576.82,
+      "usage": {
+        "completion_tokens": 323,
+        "prompt_tokens": 1063,
+        "total_tokens": 1386,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-b5d94757d4ca3148",
+      "raw": "{\n  \"scores\": {\n    \"factual_consistency\": {\n      \"score\": 2,\n      \"reasoning\": \"The candidate report lists the same five products, stock_on_hand values, and snapshot date as the rows provided in evidence P04, with no discrepancies.\",\n      \"evidence_ids\": [\"P04\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "factual_consistency": {
+          "score": 2,
+          "reasoning": "The candidate report lists the same five products, stock_on_hand values, and snapshot date as the rows provided in evidence P04, with no discrepancies.",
+          "evidence_ids": [
+            "P04"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R06",
+      "dimensions": [
+        "factual_consistency"
+      ],
+      "input_sha256": "2efdbfa9758bd3d584b1be6fc8c1d0bfc79da055296bb96988860b961559825b",
+      "started_utc": "2026-11-21T09:19:08.207256+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 26782.82,
+      "usage": {
+        "completion_tokens": 261,
+        "prompt_tokens": 796,
+        "total_tokens": 1057,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-9f62e31788baa477",
+      "raw": "{\n  \"scores\": {\n    \"factual_consistency\": {\n      \"score\": 2,\n      \"reasoning\": \"The candidate report correctly reports a stored_fill_rate of 25% for product_id 11 (fixture) on the snapshot 2026-11-13, which matches the evidence value of 0.25 (i.e., 25%). All qualifiers and units align with the supplied evidence.\",\n      \"evidence_ids\": [\"RATIO\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "factual_consistency": {
+          "score": 2,
+          "reasoning": "The candidate report correctly reports a stored_fill_rate of 25% for product_id 11 (fixture) on the snapshot 2026-11-13, which matches the evidence value of 0.25 (i.e., 25%). All qualifiers and units align with the supplied evidence.",
+          "evidence_ids": [
+            "RATIO"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R11",
+      "dimensions": [
+        "citation_support",
+        "factual_consistency"
+      ],
+      "input_sha256": "2ff5b77c5294fe169657ba56330305ce8a0cdba4291e14c12463a1eb082c6d0c",
+      "started_utc": "2026-11-21T09:19:23.116052+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 46814.83,
+      "usage": {
+        "completion_tokens": 758,
+        "prompt_tokens": 1216,
+        "total_tokens": 1974,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-939047422054f5ea",
+      "raw": "{\n  \"scores\": {\n    \"citation_support\": {\n      \"score\": 1,\n      \"reasoning\": \"The policy citation [S2] is correctly supported by the supplied S2 document, but the product data citations ([F1], [S1], etc.) do not correspond to any provided evidence IDs, so they are unsupported.\",\n      \"evidence_ids\": [\"S2\"]\n    },\n    \"factual_consistency\": {\n      \"score\": 2,\n      \"reasoning\": \"The listed top‑5 products and their stock_on_hand values exactly match the rows in evidence P04, and the policy statement aligns with S2, so the factual content is fully consistent with the evidence.\",\n      \"evidence_ids\": [\"P04\", \"S2\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "citation_support": {
+          "score": 1,
+          "reasoning": "The policy citation [S2] is correctly supported by the supplied S2 document, but the product data citations ([F1], [S1], etc.) do not correspond to any provided evidence IDs, so they are unsupported.",
+          "evidence_ids": [
+            "S2"
+          ]
+        },
+        "factual_consistency": {
+          "score": 2,
+          "reasoning": "The listed top‑5 products and their stock_on_hand values exactly match the rows in evidence P04, and the policy statement aligns with S2, so the factual content is fully consistent with the evidence.",
+          "evidence_ids": [
+            "P04",
+            "S2"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R12",
+      "dimensions": [
+        "citation_support",
+        "factual_consistency"
+      ],
+      "input_sha256": "43f2773c802da00c9b7344b727a92e7e178b07bb53f5176f846995dd65311b76",
+      "started_utc": "2026-11-21T09:19:34.990507+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 60259.59,
+      "usage": {
+        "completion_tokens": 551,
+        "prompt_tokens": 1219,
+        "total_tokens": 1770,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-920de6784fdaf1eb",
+      "raw": "{\n  \"scores\": {\n    \"citation_support\": {\n      \"score\": 2,\n      \"reasoning\": \"The policy claim is directly supported by S2, and the stock quantities match the rows provided in evidence P04.\",\n      \"evidence_ids\": [\"P04\", \"S2\"]\n    },\n    \"factual_consistency\": {\n      \"score\": 2,\n      \"reasoning\": \"All reported stock values and the snapshot date align with the supplied evidence, and the policy statement reflects the content of S2.\",\n      \"evidence_ids\": [\"P04\", \"S2\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "citation_support": {
+          "score": 2,
+          "reasoning": "The policy claim is directly supported by S2, and the stock quantities match the rows provided in evidence P04.",
+          "evidence_ids": [
+            "P04",
+            "S2"
+          ]
+        },
+        "factual_consistency": {
+          "score": 2,
+          "reasoning": "All reported stock values and the snapshot date align with the supplied evidence, and the policy statement reflects the content of S2.",
+          "evidence_ids": [
+            "P04",
+            "S2"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R15",
+      "dimensions": [
+        "citation_support",
+        "factual_consistency"
+      ],
+      "input_sha256": "614c1706f57c4beb472380d1c8692f17e7dd623c4aeb5c411eac652067e3263b",
+      "started_utc": "2026-11-21T09:20:09.931671+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 56416.9,
+      "usage": {
+        "completion_tokens": 670,
+        "prompt_tokens": 1216,
+        "total_tokens": 1886,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-ac40b7ba44f560a4",
+      "raw": "{\n  \"scores\": {\n    \"citation_support\": {\n      \"score\": 0,\n      \"reasoning\": \"The report cites S2 to claim missing products should be treated as zero inventory, but S2 explicitly states the opposite, and other citations have no supporting evidence.\",\n      \"evidence_ids\": [\"S2\"]\n    },\n    \"factual_consistency\": {\n      \"score\": 1,\n      \"reasoning\": \"The listed top‑5 products and their stock values match the data in P04, but the policy interpretation contradicts the content of S2, making the overall claim only partially consistent.\",\n      \"evidence_ids\": [\"P04\", \"S2\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "citation_support": {
+          "score": 0,
+          "reasoning": "The report cites S2 to claim missing products should be treated as zero inventory, but S2 explicitly states the opposite, and other citations have no supporting evidence.",
+          "evidence_ids": [
+            "S2"
+          ]
+        },
+        "factual_consistency": {
+          "score": 1,
+          "reasoning": "The listed top‑5 products and their stock values match the data in P04, but the policy interpretation contradicts the content of S2, making the overall claim only partially consistent.",
+          "evidence_ids": [
+            "P04",
+            "S2"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R16",
+      "dimensions": [
+        "citation_support",
+        "factual_consistency"
+      ],
+      "input_sha256": "8395261de0d90328de1ed083559a355a747303d55a3b20fef588b376de9c78bf",
+      "started_utc": "2026-11-21T09:20:35.250447+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 64104.23,
+      "usage": {
+        "completion_tokens": 712,
+        "prompt_tokens": 1218,
+        "total_tokens": 1930,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-85dcecbb791a8f7d",
+      "raw": "{\n  \"scores\": {\n    \"citation_support\": {\n      \"score\": 0,\n      \"reasoning\": \"The report cites S2 for the claim that stock quantities should be summed across dates, but S2 explicitly states the opposite, so the citation does not support the claim.\",\n      \"evidence_ids\": [\"S2\"]\n    },\n    \"factual_consistency\": {\n      \"score\": 0,\n      \"reasoning\": \"The statement about summing across dates contradicts the policy evidence, and the report provides no valid citation for the table data; thus the factual assertions are not fully consistent with the supplied evidence.\",\n      \"evidence_ids\": [\"P04\", \"S2\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "citation_support": {
+          "score": 0,
+          "reasoning": "The report cites S2 for the claim that stock quantities should be summed across dates, but S2 explicitly states the opposite, so the citation does not support the claim.",
+          "evidence_ids": [
+            "S2"
+          ]
+        },
+        "factual_consistency": {
+          "score": 0,
+          "reasoning": "The statement about summing across dates contradicts the policy evidence, and the report provides no valid citation for the table data; thus the factual assertions are not fully consistent with the supplied evidence.",
+          "evidence_ids": [
+            "P04",
+            "S2"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R17",
+      "dimensions": [
+        "citation_support"
+      ],
+      "input_sha256": "c70f35ab8fabbda50d0e294cd3c33848f882f7fef70fa42df156ec256288585b",
+      "started_utc": "2026-11-21T09:22:10.389407+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 34262.53,
+      "usage": {
+        "completion_tokens": 412,
+        "prompt_tokens": 1930,
+        "total_tokens": 2342,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-a3d5ab02a639e41d",
+      "raw": "{\n  \"scores\": {\n    \"citation_support\": {\n      \"score\": 2,\n      \"reasoning\": \"The cited source 200f38f24fb50a06 contains a row with revenue 13299821.25, which matches the reported company revenue claim.\",\n      \"evidence_ids\": [\n        \"200f38f24fb50a06\"\n      ]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "citation_support": {
+          "score": 2,
+          "reasoning": "The cited source 200f38f24fb50a06 contains a row with revenue 13299821.25, which matches the reported company revenue claim.",
+          "evidence_ids": [
+            "200f38f24fb50a06"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R20",
+      "dimensions": [
+        "report_completeness"
+      ],
+      "input_sha256": "95901f0ab3081fe4914b459526ec8739a46d2c4eed07f430d52a598bf5b04e0d",
+      "started_utc": "2026-11-21T09:22:10.390455+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 47804.23,
+      "usage": {
+        "completion_tokens": 298,
+        "prompt_tokens": 1070,
+        "total_tokens": 1368,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-97203464e6336a88",
+      "raw": "{\n  \"scores\": {\n    \"report_completeness\": {\n      \"score\": 2,\n      \"reasoning\": \"The report lists exactly the five products with the highest stock on hand for the requested snapshot, matching all rows in the supplied evidence and includes the required fields and date, with no omissions.\",\n      \"evidence_ids\": [\"P04\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "report_completeness": {
+          "score": 2,
+          "reasoning": "The report lists exactly the five products with the highest stock on hand for the requested snapshot, matching all rows in the supplied evidence and includes the required fields and date, with no omissions.",
+          "evidence_ids": [
+            "P04"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R25",
+      "dimensions": [
+        "report_completeness"
+      ],
+      "input_sha256": "81345308820d38331c123270ab9502b5d389c7bafe122e8d4e57143968c1452c",
+      "started_utc": "2026-11-21T09:22:44.652419+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 30094.98,
+      "usage": {
+        "completion_tokens": 358,
+        "prompt_tokens": 385,
+        "total_tokens": 743,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-9e7441d6ac8db174",
+      "raw": "{\n  \"scores\": {\n    \"report_completeness\": {\n      \"score\": 2,\n      \"reasoning\": \"Given the supplied evidence contains no observations for the requested snapshot, the candidate correctly reports the absence of data and does not fabricate results, fully satisfying the completeness requirement within the available information.\",\n      \"evidence_ids\": [\"EMPTY\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "report_completeness": {
+          "score": 2,
+          "reasoning": "Given the supplied evidence contains no observations for the requested snapshot, the candidate correctly reports the absence of data and does not fabricate results, fully satisfying the completeness requirement within the available information.",
+          "evidence_ids": [
+            "EMPTY"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R26",
+      "dimensions": [
+        "report_completeness"
+      ],
+      "input_sha256": "b9e55361967d2134c741e214cfcff1acd1b8da5516c070c56fbd38b1b4e72ac2",
+      "started_utc": "2026-11-21T09:22:58.194476+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 31401.31,
+      "usage": {
+        "completion_tokens": 323,
+        "prompt_tokens": 432,
+        "total_tokens": 755,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-b88a7d573d2c18d3",
+      "raw": "{\n  \"scores\": {\n    \"report_completeness\": {\n      \"score\": 2,\n      \"reasoning\": \"The candidate correctly indicates that the requested data are unavailable, discloses the limitation, and aligns with the evidence that both inventory and lead time are not present in the source.\",\n      \"evidence_ids\": [\"P05\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "report_completeness": {
+          "score": 2,
+          "reasoning": "The candidate correctly indicates that the requested data are unavailable, discloses the limitation, and aligns with the evidence that both inventory and lead time are not present in the source.",
+          "evidence_ids": [
+            "P05"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R27",
+      "dimensions": [
+        "report_completeness"
+      ],
+      "input_sha256": "05fc8346fbad43199e3f9d53ac811990367d8da16483e41c685b608944220df2",
+      "started_utc": "2026-11-21T09:23:14.748283+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 33164.79,
+      "usage": {
+        "completion_tokens": 397,
+        "prompt_tokens": 1177,
+        "total_tokens": 1574,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-b98dcc4f088945c9",
+      "raw": "{\n  \"scores\": {\n    \"report_completeness\": {\n      \"score\": 2,\n      \"reasoning\": \"The report lists the top 5 products by stock on hand using the provided stock data (P04) and clearly states that supplier lead time is unavailable, matching the evidence (P05). It therefore fully satisfies the completeness requirement given the available evidence.\",\n      \"evidence_ids\": [\"P04\", \"P05\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "report_completeness": {
+          "score": 2,
+          "reasoning": "The report lists the top 5 products by stock on hand using the provided stock data (P04) and clearly states that supplier lead time is unavailable, matching the evidence (P05). It therefore fully satisfies the completeness requirement given the available evidence.",
+          "evidence_ids": [
+            "P04",
+            "P05"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R30",
+      "dimensions": [
+        "report_completeness"
+      ],
+      "input_sha256": "90d785d4c9379c1de92bc5ca51595f0363c90b7939c8d09560d5e28bbcfa8d91",
+      "started_utc": "2026-11-21T09:23:29.595886+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 40077.08,
+      "usage": {
+        "completion_tokens": 471,
+        "prompt_tokens": 1326,
+        "total_tokens": 1797,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-808dc63aaf43fe7d",
+      "raw": "{\n  \"scores\": {\n    \"report_completeness\": {\n      \"score\": 1,\n      \"reasoning\": \"The report acknowledges extensive data gaps and lists limitations, but it fails to provide the requested category‑grouped sales figures, leaving the core requirement unmet.\",\n      \"evidence_ids\": []\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "report_completeness": {
+          "score": 1,
+          "reasoning": "The report acknowledges extensive data gaps and lists limitations, but it fails to provide the requested category‑grouped sales figures, leaving the core requirement unmet.",
+          "evidence_ids": []
+        }
+      }
+    },
+    {
+      "id": "R34",
+      "dimensions": [
+        "citation_support"
+      ],
+      "input_sha256": "3972b22029426970e8b19c2bc5c896f1d6c4482623b6df822efcb43b0cb11286",
+      "started_utc": "2026-11-21T09:23:47.912612+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 43339.73,
+      "usage": {
+        "completion_tokens": 462,
+        "prompt_tokens": 1178,
+        "total_tokens": 1640,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-a439aa7750f58a30",
+      "raw": "{\n  \"scores\": {\n    \"citation_support\": {\n      \"score\": 2,\n      \"reasoning\": \"The policy citation S2 states that missing products should not be treated as zero inventory, which directly supports the claim in the report.\",\n      \"evidence_ids\": [\"S2\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "citation_support": {
+          "score": 2,
+          "reasoning": "The policy citation S2 states that missing products should not be treated as zero inventory, which directly supports the claim in the report.",
+          "evidence_ids": [
+            "S2"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R37",
+      "dimensions": [
+        "report_completeness"
+      ],
+      "input_sha256": "95901f0ab3081fe4914b459526ec8739a46d2c4eed07f430d52a598bf5b04e0d",
+      "started_utc": "2026-11-21T09:24:09.673545+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 35283.73,
+      "usage": {
+        "completion_tokens": 298,
+        "prompt_tokens": 1070,
+        "total_tokens": 1368,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-bbe4d0938a0abeb9",
+      "raw": "{\n  \"scores\": {\n    \"report_completeness\": {\n      \"score\": 2,\n      \"reasoning\": \"The report lists exactly the five products with the highest stock on hand for the requested snapshot, matching all rows provided in evidence P04, and includes the required fields and date without omissions.\",\n      \"evidence_ids\": [\"P04\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "report_completeness": {
+          "score": 2,
+          "reasoning": "The report lists exactly the five products with the highest stock on hand for the requested snapshot, matching all rows provided in evidence P04, and includes the required fields and date without omissions.",
+          "evidence_ids": [
+            "P04"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R38",
+      "dimensions": [
+        "report_completeness"
+      ],
+      "input_sha256": "6b1271211f8c7d8b27c24a6f4ad7418860971465219394f1eac5501b51a8f7da",
+      "started_utc": "2026-11-21T09:24:31.252794+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 34053.56,
+      "usage": {
+        "completion_tokens": 434,
+        "prompt_tokens": 1254,
+        "total_tokens": 1688,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-a8dc493ced7156ae",
+      "raw": "{\n  \"scores\": {\n    \"report_completeness\": {\n      \"score\": 2,\n      \"reasoning\": \"The report provides the top 5 products by stock on hand for the requested snapshot using evidence P04, and clearly discloses that supplier lead time cannot be supplied because it is unavailable in the evidence (P05). This transparent handling of missing data satisfies the completeness criterion.\",\n      \"evidence_ids\": [\"P04\", \"P05\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "report_completeness": {
+          "score": 2,
+          "reasoning": "The report provides the top 5 products by stock on hand for the requested snapshot using evidence P04, and clearly discloses that supplier lead time cannot be supplied because it is unavailable in the evidence (P05). This transparent handling of missing data satisfies the completeness criterion.",
+          "evidence_ids": [
+            "P04",
+            "P05"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R40",
+      "dimensions": [
+        "report_completeness"
+      ],
+      "input_sha256": "270679f68e28a33e670d9a530aa7f8e9071fd9d81990448c0b8a593d8bee9565",
+      "started_utc": "2026-11-21T09:24:44.957613+00:00",
+      "settings": {
+        "model": "openai/gpt-oss-120b",
+        "temperature": 0.01,
+        "max_completion_tokens": 4000,
+        "context_tokens": 32768,
+        "reasoning_effort": "model default",
+        "max_retries": 6,
+        "timeout_seconds": 300,
+        "idle_seconds": 60,
+        "response_format": "json_object",
+        "max_concurrent_requests": 2
+      },
+      "status": "scored",
+      "latency_ms": 45426.18,
+      "usage": {
+        "completion_tokens": 540,
+        "prompt_tokens": 1812,
+        "total_tokens": 2352,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": null
+      },
+      "served_model": "openai/gpt-oss-120b",
+      "request_id": "chatcmpl-8fa0ffc93e8ee2c2",
+      "raw": "{\n  \"scores\": {\n    \"report_completeness\": {\n      \"score\": 2,\n      \"reasoning\": \"The report presents the sole metric supported by the evidence (company revenue) and explicitly discloses all unavailable metrics and limitations, thereby covering all decision-relevant information that the supplied evidence permits.\",\n      \"evidence_ids\": [\"P01\"]\n    }\n  }\n}",
+      "finish_reason": "stop",
+      "scores": {
+        "report_completeness": {
+          "score": 2,
+          "reasoning": "The report presents the sole metric supported by the evidence (company revenue) and explicitly discloses all unavailable metrics and limitations, thereby covering all decision-relevant information that the supplied evidence permits.",
+          "evidence_ids": [
+            "P01"
+          ]
+        }
+      }
+    }
+  ]
+}

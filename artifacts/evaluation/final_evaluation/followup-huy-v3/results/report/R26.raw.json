@@ -1,0 +1,53 @@
+{
+  "result": {
+    "answer": "Supplier lead time is unavailable from the approved source. Choose a report supported by the approved schema and metric definitions.",
+    "agent": "report",
+    "evidence": [],
+    "data": {},
+    "metadata": {
+      "ok": false,
+      "status": "unsupported",
+      "limitations": [
+        "Supplier lead time is unavailable from the approved source. Choose a report supported by the approved schema and metric definitions."
+      ],
+      "plan": {
+        "purpose": "Unsupported supplier lead time",
+        "sections": [],
+        "tasks": [],
+        "unsupported_requirements": [
+          "Supplier lead time is unavailable from the approved source."
+        ],
+        "clarification": null,
+        "compare_periods": false,
+        "template_mismatches": []
+      },
+      "verification_scope": "Quantitative facts are checked against metric identity, value, unit, dimensions, filters and snapshot date. Generated interpretation is not fully semantically verified. Retained template text is user-provided and unverified.",
+      "report_type": "inventory_risk",
+      "timing": {
+        "total_ms": 0
+      }
+    }
+  },
+  "rendered": "Supplier lead time is unavailable from the approved source. Choose a report supported by the approved schema and metric definitions.",
+  "http": {
+    "status_code": 422,
+    "detail": {
+      "status": "unsupported",
+      "code": "unsupported",
+      "limitations": [
+        "Supplier lead time is unavailable from the approved source. Choose a report supported by the approved schema and metric definitions."
+      ]
+    }
+  },
+  "media_type": "text/markdown; charset=utf-8",
+  "repository_calls": [],
+  "retrieval_calls": 0,
+  "scripted_drafts": [
+    {
+      "purpose": "Unsupported supplier lead time",
+      "unsupported_requirements": [
+        "Supplier lead time is unavailable from the approved source."
+      ]
+    }
+  ]
+}

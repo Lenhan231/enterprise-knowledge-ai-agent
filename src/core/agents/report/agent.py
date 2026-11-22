@@ -115,10 +115,10 @@ class ReportAgent:
                 accept_supported_scope=accept_supported_scope)
         if source_mode in {'orchestrated', 'combined'} and self.source_router is None:
             from core.agents.sql.analytics_agent import AnalyticsAgent
-            from core.agents.decision_support.router import AgentRouter
+            from core.agents.decision_support.orchestrator import AgentOrchestrator
             analytics = (self.analytics_agent if isinstance(self.analytics_agent, AnalyticsAgent)
                          else AnalyticsAgent(self.analytics_agent))
-            self.source_router = AgentRouter(None, self.knowledge_agent, analytics, llm=self._provider())
+            self.source_router = AgentOrchestrator(None, self.knowledge_agent, analytics, llm=self._provider())
         capabilities = {h: section_capability(h, report_type) for h in template.headings} if report_type else None
         if capabilities is not None:
             template = replace(template, preserve_static=True)

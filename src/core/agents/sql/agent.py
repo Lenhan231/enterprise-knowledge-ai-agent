@@ -215,6 +215,8 @@ class SQLAnalyticsAgent(BaseAgent):
             original_question = question
         schema_scope_question = (question if original_question.strip() == question.strip()
                                  else question + '\n' + original_question.strip())
+        original_ranking_requested = has_ranking_request(original_question)
+        task_ranking_requested = has_ranking_request(question)
         context = options.get('_sql_context')
         predecessor_evidence = options.get('_predecessor_evidence')
         if not isinstance(predecessor_evidence, str):
@@ -318,7 +320,9 @@ class SQLAnalyticsAgent(BaseAgent):
         elif (not fixed_selection.matched and direct is None and not inventory_candidate
               and not dashboard_request and options.get('_report_planned_task') is not True):
             try:
-                interpreted = await interpret_query_intent(question, self._provider(), table_columns)
+                intent_question = (original_question
+                                   if original_ranking_requested != task_ranking_requested else question)
+                interpreted = await interpret_query_intent(intent_question, self._provider(), table_columns)
             except Exception as error:
                 # If intent extraction fails, try SQL generation from the original
                 # question. The generated query still passes SQL and schema validation.
@@ -354,6 +358,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 if error.code != 'snapshot_required':
                     raise
             metric_definitions = {name: get_metric_definition(name) for name in metric_names}
+            request_ranking_intent = resolve_ranking_intent(original_question)
             deterministic_plan = fixed_selection.matched
             if deterministic_plan:
                 table_selection = None
@@ -378,6 +383,14 @@ class SQLAnalyticsAgent(BaseAgent):
                     context_info['schema_table_selection'] = 'full_schema_fallback'
                 else:
                     context_info['schema_table_selection'] = 'decision_model_top_five'
+            if (table_selection and request_ranking_intent
+                    and request_ranking_intent.entity == 'customer'
+                    and request_ranking_intent.measure
+                    and request_ranking_intent.measure.source == 'commerce.payments'):
+                payment_tables = {'commerce.orders', 'commerce.payments'} & set(table_columns)
+                table_selection['tables'].update(payment_tables)
+                table_selection['required_tables'].update(payment_tables)
+                table_selection['candidate_tables'].update(payment_tables)
             schema_tables = table_selection['tables'] if table_selection else None
             required_tables = table_selection['required_tables'] if table_selection else set()
             if table_selection:
@@ -490,8 +503,8 @@ class SQLAnalyticsAgent(BaseAgent):
                     context_info.update(context_used=used,_sql_context_action='followup' if used else 'new')
                 if interpretation and interpretation.domain == 'inventory':
                     metric_names = set(interpretation.metrics)
-            ranking_requested = has_ranking_request(schema_scope_question)
-            ranking_intent = resolve_ranking_intent(schema_scope_question)
+            ranking_requested = original_ranking_requested
+            ranking_intent = request_ranking_intent
             if interpretation and interpretation.domain == 'inventory':
                 # Inventory mappings already carry and validate their typed MetricRanking contract.
                 ranking_intent = None
@@ -587,8 +600,8 @@ class SQLAnalyticsAgent(BaseAgent):
                                 raise MetricDefinitionError('This semantic request requires the existing single-query workflow. '
                                     'Please narrow it to one supported dataset.', clarification=True)
                             from core.agents.dashboard.requirements import validate_outputs
-                            ranking_requested = has_ranking_request(schema_scope_question)
-                            request_ranking = resolve_ranking_intent(schema_scope_question)
+                            ranking_requested = original_ranking_requested
+                            request_ranking = request_ranking_intent
                             for _, data_plan, _ in bundle:
                                 effective_ranking = request_ranking
                                 if effective_ranking and data_plan.ranking_contract is not None:
@@ -610,6 +623,10 @@ class SQLAnalyticsAgent(BaseAgent):
                                         'The ranking request was not included in a typed ranking_contract.'
                                     )
                                 elif effective_ranking is None and data_plan.ranking_contract is not None:
+                                    if not ranking_requested:
+                                        raise SQLValidationError(
+                                            'The SQL plan added a ranking that the original request did not ask for.'
+                                        )
                                     effective_ranking = complete_ranking_intent(
                                         None, data_plan.ranking_contract, table_columns
                                     )
@@ -694,6 +711,10 @@ class SQLAnalyticsAgent(BaseAgent):
                     if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validated_sql.sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
                     if plan.ranking_contract is not None:
+                        if not ranking_requested:
+                            raise SQLValidationError(
+                                'The SQL plan added a ranking that the original request did not ask for.'
+                            )
                         if (ranking_intent is None or not ranking_intent.resolved
                                 or ranking_intent.partition_entities or ranking_intent.partition_grains):
                             ranking_intent = complete_ranking_intent(

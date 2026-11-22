@@ -237,6 +237,17 @@ def build_sql_prompt(
             '\nApply every filter declared by a selected canonical metric definition automatically, even if the user did not repeat it; '
             'these filters define the metric and are not invented. Do not add filters absent from both the request and selected metric definition.'
         )
+    from core.agents.sql.sql_ranking import resolve_ranking_intent
+    ranking_question = (original_question.strip()
+                        if isinstance(original_question, str) and original_question.strip() else question)
+    ranking_intent = resolve_ranking_intent(ranking_question)
+    if (ranking_intent and ranking_intent.entity == 'customer' and ranking_intent.measure
+            and ranking_intent.measure.source == 'commerce.payments'):
+        prompt_rules.append(
+            '\nFor this customer-spend ranking, sum commerce.payments.payment_value and join payments to '
+            'commerce.orders on order_id, grouping by orders.customer_id. Do not substitute invoice totals or '
+            'the unlinked free-text invoices.buyer field; this payment calculation remains unverified.'
+        )
     if 'commerce.products' in tables:
         prompt_rules.append(
             '\nProduct names are not unique: product-level results include product_id and group by it. '
@@ -317,7 +328,9 @@ def build_sql_prompt(
     if original_question and original_question.strip() != question.strip():
         prompt += ('\nThe original user request is authoritative for every applicable formula, date range, cohort, '
                    'event cutoff, criterion and output constraint. The focused SQL task may narrow which data to '
-                   'retrieve, but must preserve the original request scope. Original request: '
+                   'retrieve, but must preserve the original request scope and must not introduce a ranking the '
+                   'user did not ask for. A request asking how many entities there are needs a count, not a ranking. '
+                   'Original request: '
                    + original_question.strip())
     excerpts = {
         name: [

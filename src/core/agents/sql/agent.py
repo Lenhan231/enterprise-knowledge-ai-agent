@@ -44,10 +44,6 @@ from core.agents.sql.metric_validation import (
     validate_population_contract,
 )
 from core.agents.sql.join_validation import PRIMARY_KEYS
-from core.agents.sql.sql_ranking import (
-    complete_ranking_intent, has_ranking_request, resolve_ranking_intent,
-    validate_ranking_semantics,
-)
 from core.agents.sql.text_to_sql import (
     APPROVED_COLUMNS, APPROVED_JOINS, APPROVED_DATE_COLUMNS, INVENTORY_SOURCES, inventory_scope_enabled,
     approved_join_path,
@@ -215,8 +211,6 @@ class SQLAnalyticsAgent(BaseAgent):
             original_question = question
         schema_scope_question = (question if original_question.strip() == question.strip()
                                  else question + '\n' + original_question.strip())
-        original_ranking_requested = has_ranking_request(original_question)
-        task_ranking_requested = has_ranking_request(question)
         context = options.get('_sql_context')
         predecessor_evidence = options.get('_predecessor_evidence')
         if not isinstance(predecessor_evidence, str):
@@ -320,9 +314,7 @@ class SQLAnalyticsAgent(BaseAgent):
         elif (not fixed_selection.matched and direct is None and not inventory_candidate
               and not dashboard_request and options.get('_report_planned_task') is not True):
             try:
-                intent_question = (original_question
-                                   if original_ranking_requested != task_ranking_requested else question)
-                interpreted = await interpret_query_intent(intent_question, self._provider(), table_columns)
+                interpreted = await interpret_query_intent(question, self._provider(), table_columns)
             except Exception as error:
                 # If intent extraction fails, try SQL generation from the original
                 # question. The generated query still passes SQL and schema validation.
@@ -358,7 +350,6 @@ class SQLAnalyticsAgent(BaseAgent):
                 if error.code != 'snapshot_required':
                     raise
             metric_definitions = {name: get_metric_definition(name) for name in metric_names}
-            request_ranking_intent = resolve_ranking_intent(original_question)
             deterministic_plan = fixed_selection.matched
             if deterministic_plan:
                 table_selection = None
@@ -383,14 +374,6 @@ class SQLAnalyticsAgent(BaseAgent):
                     context_info['schema_table_selection'] = 'full_schema_fallback'
                 else:
                     context_info['schema_table_selection'] = 'decision_model_top_five'
-            if (table_selection and request_ranking_intent
-                    and request_ranking_intent.entity == 'customer'
-                    and request_ranking_intent.measure
-                    and request_ranking_intent.measure.source == 'commerce.payments'):
-                payment_tables = {'commerce.orders', 'commerce.payments'} & set(table_columns)
-                table_selection['tables'].update(payment_tables)
-                table_selection['required_tables'].update(payment_tables)
-                table_selection['candidate_tables'].update(payment_tables)
             schema_tables = table_selection['tables'] if table_selection else None
             required_tables = table_selection['required_tables'] if table_selection else set()
             if table_selection:
@@ -503,21 +486,6 @@ class SQLAnalyticsAgent(BaseAgent):
                     context_info.update(context_used=used,_sql_context_action='followup' if used else 'new')
                 if interpretation and interpretation.domain == 'inventory':
                     metric_names = set(interpretation.metrics)
-            ranking_requested = original_ranking_requested
-            ranking_intent = request_ranking_intent
-            if interpretation and interpretation.domain == 'inventory':
-                # Inventory mappings already carry and validate their typed MetricRanking contract.
-                ranking_intent = None
-                ranking_requested = False
-            elif (ranking_intent and not ranking_intent.resolved
-                  and not ranking_intent.measure_contract_eligible):
-                raise MetricDefinitionError(
-                    ranking_intent.issue or 'The requested ranking could not be verified safely.',
-                    code='ranking_intent_unresolved', clarification=True,
-                )
-            ranking_semantics_required = ranking_requested or bool(ranking_intent) or bool(
-                interpretation and interpretation.domain == 'inventory' and interpretation.ranking
-            )
             resolved_latest = False
             if context is not None and interpretation and interpretation.domain == 'inventory' and interpretation.time.mode == 'latest':
                 snapshot_sql = 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i LIMIT 1'
@@ -580,7 +548,6 @@ class SQLAnalyticsAgent(BaseAgent):
             return self._generation_error(error)
         dashboard_outputs = None
         selected_compiler = None
-        ranking_validation = None
         for attempt in range(2):
             plan = known_plan
             selected_compiler = fixed_selection.compiler.value if plan is not None else None
@@ -600,42 +567,6 @@ class SQLAnalyticsAgent(BaseAgent):
                                 raise MetricDefinitionError('This semantic request requires the existing single-query workflow. '
                                     'Please narrow it to one supported dataset.', clarification=True)
                             from core.agents.dashboard.requirements import validate_outputs
-                            ranking_requested = original_ranking_requested
-                            request_ranking = request_ranking_intent
-                            for _, data_plan, _ in bundle:
-                                effective_ranking = request_ranking
-                                if effective_ranking and data_plan.ranking_contract is not None:
-                                    if (not effective_ranking.resolved
-                                            or effective_ranking.partition_entities
-                                            or effective_ranking.partition_grains):
-                                        effective_ranking = complete_ranking_intent(
-                                            effective_ranking, data_plan.ranking_contract, table_columns
-                                        )
-                                elif (effective_ranking and
-                                      (effective_ranking.measure_contract_eligible
-                                       or effective_ranking.partition_grains)):
-                                    raise SQLValidationError(
-                                        'A ranking with an unresolved measure or time partition needs a complete typed ranking_contract.'
-                                    )
-                                elif (ranking_requested and effective_ranking is None
-                                      and data_plan.ranking_contract is None):
-                                    raise SQLValidationError(
-                                        'The ranking request was not included in a typed ranking_contract.'
-                                    )
-                                elif effective_ranking is None and data_plan.ranking_contract is not None:
-                                    if not ranking_requested:
-                                        raise SQLValidationError(
-                                            'The SQL plan added a ranking that the original request did not ask for.'
-                                        )
-                                    effective_ranking = complete_ranking_intent(
-                                        None, data_plan.ranking_contract, table_columns
-                                    )
-                                if effective_ranking:
-                                    if not effective_ranking.resolved:
-                                        raise SQLValidationError(
-                                            'A dashboard query omitted or obscured the requested ranking contract.'
-                                        )
-                                    validate_ranking_semantics(data_plan.sql, effective_ranking, table_columns)
                             dashboard_outputs = validate_outputs(parse_json_response(raw).get('outputs'), bundle, question, date_columns)
                             datasets = []
                             for index, (data_question, data_plan, data_definitions) in enumerate(bundle):
@@ -687,8 +618,7 @@ class SQLAnalyticsAgent(BaseAgent):
                                          explanation=plan.explanation, clarification=plan.clarification,
                                          request_contract=plan.request_contract,
                                          request_contract_warning=plan.request_contract_warning,
-                                         clarification_options=plan.clarification_options,
-                                         ranking_contract=plan.ranking_contract)
+                                         clarification_options=plan.clarification_options)
                     validate_current_year_month_range(plan.sql or '', plan.parameters, original_question,
                                                       date_columns=date_columns)
                     validate_rolling_days_range(plan.sql or '', plan.parameters, original_question,
@@ -703,35 +633,23 @@ class SQLAnalyticsAgent(BaseAgent):
                             'Use that path with independent aggregates or correlated EXISTS as appropriate; '
                             'do not introduce direct fact joins or ask the user to approve an existing relationship.')
                 if plan.sql:
-                    validated_sql = validate_commerce_sql(plan.sql, allowed_sources=set(table_columns), schema_columns=table_columns,
-                        approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
                     validate_population_contract(
                         plan.sql, schema_scope_question, plan.parameters, metric_names,
                     )
+                    if query_intent is not None and not (
+                            interpretation is not None and interpretation.domain == 'inventory'):
+                        require_query_contract(query_intent, plan.sql, plan.parameters, table_columns)
+                    validated_sql = validate_commerce_sql(plan.sql, allowed_sources=set(table_columns), schema_columns=table_columns,
+                        approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
                     if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validated_sql.sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
-                    if plan.ranking_contract is not None:
-                        if not ranking_requested:
-                            raise SQLValidationError(
-                                'The SQL plan added a ranking that the original request did not ask for.'
-                            )
-                        if (ranking_intent is None or not ranking_intent.resolved
-                                or ranking_intent.partition_entities or ranking_intent.partition_grains):
-                            ranking_intent = complete_ranking_intent(
-                                ranking_intent, plan.ranking_contract, table_columns
-                            )
-                        ranking_semantics_required = True
-                    elif ranking_requested and ranking_intent is None:
-                        raise SQLValidationError(
-                            'The ranking request was not included in a typed ranking_contract.'
-                        )
-                    elif ranking_intent and (
-                            ranking_intent.measure_contract_eligible or ranking_intent.partition_grains):
-                        raise SQLValidationError(
-                            'The ranking measure or time partition was not included in a validated ranking_contract.'
-                        )
-                    if ranking_intent:
-                        ranking_validation = validate_ranking_semantics(plan.sql, ranking_intent, table_columns)
+                    if (query_intent is not None and interpretation is not None
+                            and interpretation.domain == 'inventory' and query_intent.explicit_source_restriction):
+                        allowed_intent_sources = {source.name for source in query_intent.requested_sources}
+                        if not set(validated_sql.sources) <= allowed_intent_sources:
+                            raise MetricDefinitionError(
+                                'The compiled inventory query exceeds the explicit source restriction.',
+                                code='source_scope_conflict', clarification=True)
                     revenue_compiler = selected_compiler in {
                         'annual_revenue', 'completed_months_revenue',
                         'explicit_month_revenue', 'month_over_month_revenue',
@@ -778,16 +696,6 @@ class SQLAnalyticsAgent(BaseAgent):
                         }}
                     if interpretation:
                         validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
-                    if query_intent is not None:
-                        if interpretation is not None and interpretation.domain == 'inventory':
-                            if query_intent.explicit_source_restriction:
-                                allowed_intent_sources = {source.name for source in query_intent.requested_sources}
-                                if not set(validated_sql.sources) <= allowed_intent_sources:
-                                    raise MetricDefinitionError(
-                                        'The compiled inventory query exceeds the explicit source restriction.',
-                                        code='source_scope_conflict', clarification=True)
-                        else:
-                            require_query_contract(query_intent, plan.sql, plan.parameters, table_columns)
                     if dashboard_build:
                         from core.agents.dashboard.requirements import validate_outputs
                         output_manifest = mapped_outputs if interpretation and interpretation.domain == 'inventory' else parse_json_response(raw).get('outputs')
@@ -797,8 +705,6 @@ class SQLAnalyticsAgent(BaseAgent):
             except (SQLValidationError, MetricDefinitionError) as error:
                 if (isinstance(error, (SQLSchemaMismatchError, SQLJoinValidationError))
                         and plan is not None and plan.sql
-                        and unverified_scope
-                        and not ranking_semantics_required
                         and (attempt == 1 or direct is not None
                              or (interpretation and interpretation.domain == 'inventory'))):
                     definitions = {}
@@ -839,8 +745,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     }
                     break
                 if (isinstance(error, MetricDefinitionError) and attempt == 1
-                        and unverified_scope
-                        and error.code not in {'population_filter', 'unrequested_population_filter'}
+                        and error.code not in {'population_filter', 'unrequested_population_filter', 'unrequested_time_filter'}
                         and not self.inventory_only and direct is None and selected_compiler is None
                         and promotion_metric is None
                         and interpretation is None and not dashboard_build):
@@ -909,8 +814,6 @@ class SQLAnalyticsAgent(BaseAgent):
                                            primary_keys, date_columns, interpretation,
                                            allowed_sources=set(table_columns),
                                            allow_unverified=unverified_sql)
-        if ranking_validation:
-            payload.setdefault('metadata', {})['ranking_validation'] = ranking_validation
         if plan.request_contract_warning:
             payload.setdefault('metadata', {}).update(
                 request_contract_status='ignored',
@@ -940,7 +843,7 @@ class SQLAnalyticsAgent(BaseAgent):
         bundle, seen_questions, seen_sql, found_metrics, found_sources = [], set(), set(), set(), set()
         for item in items:
             if (not isinstance(item, dict) or set(item) - {
-                    'question', 'sql', 'parameters', 'explanation', 'request_contract', 'ranking_contract'}
+                    'question', 'sql', 'parameters', 'explanation', 'request_contract'}
                     or not isinstance(item.get('question'), str) or not 1 <= len(item['question'].strip()) <= 2000):
                 raise SQLValidationError('Each independent query needs a bounded, self-contained question and SQL plan.')
             data_question = item['question'].strip()

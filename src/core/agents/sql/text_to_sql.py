@@ -111,23 +111,6 @@ def build_sql_prompt(
             + '. Apply each filter to that exact source and column with the stated inclusion or exclusion '
             'semantics. Preserve these constraints in every repair; do not omit, broaden, narrow or substitute them.'
         )
-    prompt_rules.append(
-        '\nFor any requested top/bottom/ranked result, include a typed ranking_contract with exactly '
-        'entity, measure, direction, limit and partition_by. entity must be one of customer, product, order, '
-        'promotion, category, region or acquisition_channel and must match a returned stable identity. '
-        'direction is asc or desc; limit is 1..200; partition_by lists only explicitly requested dimensions, '
-        'using an entity ID or a schema reference {"source":"commerce.table","column":"column"}; '
-        'for a time bucket, use that reference with date_part set to day, week, month, quarter or year. '
-        'For a catalog metric, measure is {"metric_id":"catalog_id"}. For one custom field, measure is '
-        '{"source":"commerce.table","column":"approved_column","aggregation":"sum|avg|min|max|count|count_distinct"}. '
-        'When the user explicitly requests an arithmetic formula, preserve its exact operands and operators with '
-        'measure={"aggregation":"sum|avg|min|max|count|count_distinct","expression":typed_node}; a typed_node is '
-        'either {"source":"commerce.table","column":"approved_column"}, {"value":numeric_constant} or '
-        '{"op":"add|sub|mul|div","left":typed_node,"right":typed_node}. '
-        'These are schema references, not SQL. Never put SQL text, aliases or approval status inside ranking_contract. '
-        'The server validates the tree against the approved schema and marks custom calculations unverified. '
-        'Use null only when the question does not request ranking or must be clarified; do not silently omit a recognized ranking.'
-    )
     if query_intent:
         prompt_rules.append(
             '\nValidated structured user intent (authoritative request scope): '
@@ -236,17 +219,6 @@ def build_sql_prompt(
         prompt_rules.append(
             '\nApply every filter declared by a selected canonical metric definition automatically, even if the user did not repeat it; '
             'these filters define the metric and are not invented. Do not add filters absent from both the request and selected metric definition.'
-        )
-    from core.agents.sql.sql_ranking import resolve_ranking_intent
-    ranking_question = (original_question.strip()
-                        if isinstance(original_question, str) and original_question.strip() else question)
-    ranking_intent = resolve_ranking_intent(ranking_question)
-    if (ranking_intent and ranking_intent.entity == 'customer' and ranking_intent.measure
-            and ranking_intent.measure.source == 'commerce.payments'):
-        prompt_rules.append(
-            '\nFor this customer-spend ranking, sum commerce.payments.payment_value and join payments to '
-            'commerce.orders on order_id, grouping by orders.customer_id. Do not substitute invoice totals or '
-            'the unlinked free-text invoices.buyer field; this payment calculation remains unverified.'
         )
     if 'commerce.products' in tables:
         prompt_rules.append(

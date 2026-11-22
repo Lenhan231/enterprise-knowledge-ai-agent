@@ -95,19 +95,17 @@ class QueryContractTest(unittest.TestCase):
         result = self.verify(sql=sql)
         self.assertTrue(any('ZIP join' in issue for issue in result.issues))
 
-    def test_sales_revenue_substitution_fails_canonical_formula(self):
-        sql = ('SELECT g.region, SUM(s.revenue) AS revenue FROM commerce.sales AS s '
-               'JOIN commerce.geography AS g ON g.zip = s.zip GROUP BY g.region LIMIT 200')
-        result = self.verify(sql=sql, parameters=())
-        self.assertEqual(result.status, 'incomplete')
-        self.assertTrue(any('Canonical metric validation failed' in issue for issue in result.issues))
+    def test_wrong_metric_formula_does_not_fail_scope_contract(self):
+        sql = REGIONAL_SQL.replace(
+            'SUM(oi.quantity * oi.unit_price - oi.discount_amount)', 'SUM(oi.quantity)')
+        self.assertEqual(self.verify(sql=sql).status, 'verified')
 
     def test_missing_ontology_delivered_filter_fails(self):
         sql = REGIONAL_SQL.replace('o.order_status = $1 AND ', '').replace(
             'o.order_date >= $2', 'o.order_date >= $1').replace('o.order_date < $3', 'o.order_date < $2')
         result = self.verify(sql=sql, parameters=('2026-05-01', '2026-06-01'))
         self.assertEqual(result.status, 'incomplete')
-        self.assertTrue(any('Canonical metric validation failed' in issue for issue in result.issues))
+        self.assertTrue(any('Requested filter is missing or changed' in issue for issue in result.issues))
 
     def test_ranking_direction_and_limit_are_preserved(self):
         intent = regional_intent(ranking={'metric': 'regional_revenue', 'direction': 'desc', 'limit': 5})
@@ -117,18 +115,17 @@ class QueryContractTest(unittest.TestCase):
         self.assertIn('Requested ranking direction changed', result.issues)
         self.assertIn('Requested ranking limit changed', result.issues)
 
-    def test_ranking_alias_must_resolve_to_the_requested_metric(self):
+    def test_ranking_alias_keeps_requested_direction_and_limit(self):
         intent = regional_intent(ranking={'metric': 'regional_revenue', 'direction': 'desc', 'limit': 5})
         sql = REGIONAL_SQL.replace('GROUP BY g.region LIMIT 200',
                                    'GROUP BY g.region ORDER BY revenue DESC LIMIT 5')
         self.assertEqual(self.verify(intent, sql).status, 'verified')
 
-    def test_ranking_by_a_different_aggregate_is_incomplete(self):
+    def test_ranking_by_an_unapproved_metric_does_not_fail_scope_contract(self):
         intent = regional_intent(ranking={'metric': 'regional_revenue', 'direction': 'desc', 'limit': 5})
         sql = REGIONAL_SQL.replace('GROUP BY g.region LIMIT 200',
                                    'GROUP BY g.region ORDER BY COUNT(DISTINCT o.order_id) DESC LIMIT 5')
-        result = self.verify(intent, sql)
-        self.assertTrue(any('Ranking metric validation failed' in issue for issue in result.issues))
+        self.assertEqual(self.verify(intent, sql).status, 'verified')
 
     def test_product_filter_must_be_present_with_bound_value(self):
         intent = regional_intent(filters=[

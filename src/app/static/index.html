@@ -375,6 +375,11 @@
             <small id="upload-elapsed" class="upload-elapsed" aria-live="off" hidden></small>
           </div>
         </form>
+        <div id="pdf-jobs" class="upload-status-wrap" hidden>
+          <h3>PDF processing</h3>
+          <p id="pdf-jobs-status" class="corpus-note" role="status"></p>
+          <ul id="pdf-job-list"></ul>
+        </div>
       </section>
     </section>
 
@@ -571,7 +576,7 @@
   <script src="/static/sales-report.js?v=20261222-merge" defer></script>
   <script src="/static/dashboard-format.js?v=20261119-overview" defer></script>
   <script src="/static/business-overview.js?v=20261222-refresh" defer></script>
-  <script src="/static/app.js?v=20261223-toast2" defer></script>
+  <script src="/static/app.js?v=pdf-checkpoints-1" defer></script>
   <script src="/static/report-workspace.js?v=20261223-enter" defer></script>
   <script src="/static/dashboard.js?v=20261222-refresh" defer></script>
   <script src="/static/sonar-grid.js?v=20261216-sonar" defer></script>

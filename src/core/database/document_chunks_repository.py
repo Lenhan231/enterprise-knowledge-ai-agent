@@ -25,7 +25,12 @@ EXTRA_SEARCH_CONNECTIONS = 2
 class DocumentChunkRepository:
     _search_lock = None  # no extra search connections unless __init__ opened the real database
 
-    def __init__(self):
+    def __init__(self, connection=None):
+        self._owns_connection = connection is None
+        if connection is not None:
+            self.conn = connection
+            register_vector(connection)
+            return
         DATABASE_URL = os.getenv("DATABASE_URL")
         if DATABASE_URL is None:
             raise ValueError("DATABASE_URL is not set")
@@ -127,6 +132,8 @@ class DocumentChunkRepository:
                     for row in cursor.fetchall()]
 
     def close(self) -> None:
+        if not getattr(self, "_owns_connection", True):
+            return
         if self._search_lock is None:
             close_database_connection(self.conn)
             return

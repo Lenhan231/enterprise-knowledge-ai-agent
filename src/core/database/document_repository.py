@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from psycopg.rows import dict_row
 
 from core.database.connection_limit import close_database_connection, connect_database
+from core.database.pdf_job_repository import PDF_LOCK_NAMESPACE
 from core.agents.sql.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
 from core.agents.sql.commerce_decision_support import COMMERCE_DECISION_PROFILES, COMMERCE_QUERY_TABLES
 
@@ -54,6 +55,10 @@ class DocumentRepository:
                                         SELECT 1 FROM public.document_parser_chunks parser_chunk
                                         WHERE parser_chunk.document_id = d.document_id
                                     ) AS has_parser_chunks,
+                                    EXISTS (
+                                        SELECT 1 FROM public.document_pdf_jobs j
+                                        WHERE j.document_id = d.document_id AND j.result IS NULL
+                                    ) AS has_pending_pdf_job,
                                     d.allowed_roles,
                                     count(c.id)::int AS chunk_count,
                                     max(c.metadata->>'source_publisher') AS source_publisher,
@@ -106,12 +111,14 @@ class DocumentRepository:
         """Permanently delete a user upload only after it was removed from retrieval."""
         with self.conn.transaction(), self.conn.cursor() as cursor:
             cursor.execute(
-                """SELECT storage_path FROM public.documents
-                   WHERE document_id = %s
-                     AND source_type = 'user_upload'
-                     AND knowledge_base_active IS FALSE
-                   FOR UPDATE""",
-                (document_id,),
+                """SELECT d.storage_path FROM public.documents d
+                   LEFT JOIN public.document_pdf_jobs j USING (document_id)
+                   WHERE d.document_id = %s
+                     AND d.source_type = 'user_upload'
+                     AND d.knowledge_base_active IS FALSE
+                     AND (j.lock_id IS NULL OR pg_try_advisory_xact_lock(%s, j.lock_id))
+                   FOR UPDATE OF d""",
+                (document_id, PDF_LOCK_NAMESPACE),
             )
             source = cursor.fetchone()
             if source is None:
@@ -502,7 +509,7 @@ class DocumentRepository:
             return row["snapshot_date"] if row else None
 
     def update_processing_status(self, document_id: str, status: str) -> None:
-        if status not in {"uploaded", "processing", "ready", "failed"}:
+        if status not in {"uploaded", "processing", "parsed", "ready", "failed"}:
             raise ValueError("Invalid processing status")
         with self.conn.cursor() as cursor:
             cursor.execute(

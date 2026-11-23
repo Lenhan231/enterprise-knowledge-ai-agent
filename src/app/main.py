@@ -34,6 +34,8 @@ from app.agents import router as agents_router
 from app.dashboards import router as dashboards_router
 from app.reports import router as reports_router
 from app.retrieval import router as retrieval_router
+from app.pdf_processing import PDF_BATCH_SIZE, pdf_page_count, process_pdf_job
+from core.database.pdf_job_repository import PdfJobRepository, pdf_jobs
 from app.upload_test import (
     create_upload_test, get_upload_test_preview, inspect_upload_test,
     list_upload_tests, router as upload_test_router,
@@ -440,7 +442,7 @@ def delete_removed_knowledge_document(
     try:
         storage_path = repository.delete_removed_upload(document_id)
         if storage_path is None:
-            raise HTTPException(409, "Only uploaded sources removed from AI retrieval can be deleted")
+            raise HTTPException(409, "Only removed uploads with no active PDF processing can be deleted")
     except HTTPException:
         raise
     except Exception as error:
@@ -485,7 +487,7 @@ def set_knowledge_document_access(
 
 
 def _document_page_count(parsed: dict, extension: str) -> int | None:
-    if extension in IMAGE_FORMATS and parsed.get("page_sizes"):
+    if (extension == ".pdf" or extension in IMAGE_FORMATS) and parsed.get("page_sizes"):
         return len(parsed["page_sizes"])
     page_numbers = (
         item.get("metadata", {}).get("page_number")
@@ -495,6 +497,106 @@ def _document_page_count(parsed: dict, extension: str) -> int | None:
         (number for number in page_numbers if isinstance(number, int)),
         default=1 if extension in IMAGE_FORMATS else None,
     )
+
+
+def _finish_document_upload(
+    document_id, filename, title, allowed_roles, storage_path, source_hash,
+    parser_handoff, parser_config, parsed, on_stage, connection=None,
+):
+    from core.database.document_processing_output_repository import DocumentProcessingOutputRepository
+
+    database = {"connection": connection} if connection is not None else {}
+    extension = Path(filename).suffix.lower()
+    on_stage("save_parser_output")
+    outputs_repository = DocumentProcessingOutputRepository(**database)
+    try:
+        outputs_repository.replace_document(document_id, parsed)
+    finally:
+        outputs_repository.close()
+
+    if parser_handoff:
+        page_count = _document_page_count(parsed, extension)
+        return {
+            "document_id": document_id,
+            "storage_path": storage_path,
+            "processing_status": "parsed",
+            "searchable": False,
+            "sha256": source_hash,
+            "page_count": page_count,
+            "element_count": len(parsed.get("elements", [])),
+            "table_count": len(parsed.get("tables", [])),
+            "indexed_chunk_count": 0,
+        }
+
+    on_stage("chunk_document")
+    from core.chunking.processor import ChunkingProcessor
+    processed = ChunkingProcessor(parser_config).process(parsed)
+    parser_chunks = processed["chunks"]
+    chunks = parser_chunks
+    on_stage("prepare_passages")
+    if not chunks:
+        raise ValueError("No text could be extracted; check OCR availability or the source file")
+    page_count = next((
+        int(chunk["metadata"]["page_count"])
+        for chunk in parser_chunks
+        if chunk.get("metadata", {}).get("page_count") is not None
+    ), _document_page_count(parsed, extension))
+    ocr_chunk_count = sum(
+        bool(chunk.get("metadata", {}).get("ocr"))
+        or bool(chunk.get("metadata", {}).get("ocr_model"))
+        or chunk.get("metadata", {}).get("text_extraction_method") in {"tesseract", "pymupdf+tesseract"}
+        for chunk in parser_chunks
+    )
+    for chunk in chunks:
+        chunk["metadata"].pop("title", None)
+        chunk["metadata"].pop("author", None)
+    from core.database.parser_chunks_repository import ParserChunksRepository
+    from core.database.structured_store import StructuredDataStore
+
+    on_stage("save_parser_chunks")
+    parsed_repository = ParserChunksRepository(**database)
+    try:
+        parsed_repository.replace_document(document_id, chunks)
+        structured_store = StructuredDataStore(**database)
+        try:
+            structured_store.save_document_tables(document_id, title.strip(), processed["tables"])
+        finally:
+            structured_store.close()
+    finally:
+        parsed_repository.close()
+
+    from core.embeddings.embedding_service import EmbeddingService
+    from core.database.document_chunks_repository import DocumentChunkRepository
+    on_stage("create_embeddings")
+    embedding_service = EmbeddingService()
+    from core.tokenization.token_counter import TokenCounter
+    from core.tokenization.embedding_chunker import build_embedding_chunks
+
+    token_counter = TokenCounter(embedding_service.model_name)
+    chunks = build_embedding_chunks(
+        chunks,
+        token_counter,
+        embedding_service.max_sequence_length,
+        embedding_service.model_name,
+    )
+    vectors = embedding_service.embed_documents([chunk["text"] for chunk in chunks])
+    on_stage("index_document")
+    chunk_repository = DocumentChunkRepository(**database)
+    try:
+        chunk_repository.replace_document(document_id, [
+            (filename, index, chunk["text"],
+             {**chunk["metadata"], "document_id": document_id, "allowed_roles": allowed_roles}, vector)
+            for index, (chunk, vector) in enumerate(zip(chunks, vectors, strict=True))
+        ])
+    finally:
+        chunk_repository.close()
+    return {
+        "document_id": document_id, "storage_path": storage_path,
+        "processing_status": "ready", "searchable": True, "sha256": source_hash,
+        "page_count": page_count, "parser_chunk_count": len(parser_chunks),
+        "indexed_chunk_count": len(chunks), "ocr_chunk_count": ocr_chunk_count,
+        "table_count": len(processed.get("tables", [])),
+    }
 
 
 @app.post("/api/documents/parser-handoff")
@@ -514,6 +616,7 @@ async def upload_document(
     synthetic_company_policy: Annotated[bool, Form()] = False,
     allowed_roles: list[str] = Form(default=[]),
     ocr_language: str = Form(default="vie+eng"),
+    background_tasks: BackgroundTasks = None,
     user: dict = Depends(require_permission("upload_documents")),
 ):
     """Keep original bytes in private Storage; persist parsed evidence in PostgreSQL."""
@@ -535,7 +638,6 @@ async def upload_document(
         knowledge_domains, source_publisher, reference_type, reference_applicability,
         synthetic_company_policy,
     )
-    is_commerce_reference = bool(reference_metadata["knowledge_domains"])
     if not isinstance(source_url, str):
         source_url = None
     if source_url:
@@ -574,6 +676,11 @@ async def upload_document(
     repository = None
     registered = False
     stage = "register_document"
+
+    def set_stage(value):
+        nonlocal stage
+        stage = value
+
     try:
         repository = DocumentRepository()
         repository.register_upload({
@@ -602,8 +709,6 @@ async def upload_document(
             {"content-type": content_type, "upsert": "false"},
         )
 
-        stage = "mark_processing"
-        repository.update_processing_status(document_id, "processing")
         metadata = {
             "document_id": document_id,
             "company": CORPUS_COMPANY,
@@ -619,13 +724,6 @@ async def upload_document(
         if synthetic_company_policy:
             metadata["source_type"] = "synthetic_demo_policy"
         try:
-            from core.database.document_processing_output_repository import (
-                DocumentProcessingOutputRepository,
-            )
-
-            processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
-            if not processing_url:
-                raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
             parser_config = {
                 "parser_engine": "docling",
                 "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
@@ -639,6 +737,27 @@ async def upload_document(
                 "vision_captioning": os.getenv("DOCUMENT_VISION_CAPTIONS", "false").strip().lower() == "true",
                 "ocr_language": ocr_language,
             }
+            if extension == ".pdf" and background_tasks is not None:
+                stage = "queue_pdf"
+                page_count = pdf_page_count(content)
+                if page_count > PDF_BATCH_SIZE:
+                    PdfJobRepository(repository.conn).enqueue(
+                        document_id, filename, source_hash, parser_config, metadata,
+                        parser_handoff, page_count, PDF_BATCH_SIZE,
+                    )
+                    background_tasks.add_task(
+                        process_pdf_job, document_id, 1, _stored_pdf, _finish_pdf_upload,
+                    )
+                    return JSONResponse(status_code=202, content={
+                        "document_id": document_id, "processing_status": "processing",
+                        "page_count": page_count, "pages_processed": 0,
+                    })
+
+            stage = "mark_processing"
+            repository.update_processing_status(document_id, "processing")
+            processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
+            if not processing_url:
+                raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
             stage = "parse_document"
             parsed = post_internal_service(processing_url, "/parse", {
                 "filename": filename,
@@ -646,100 +765,17 @@ async def upload_document(
                 "metadata": metadata,
                 "config": parser_config,
             }, timeout=int(os.getenv("DOCUMENT_PROCESSING_TIMEOUT_SECONDS", "600")))
-            outputs_repository = DocumentProcessingOutputRepository()
-            try:
-                stage = "save_parser_output"
-                outputs_repository.replace_document(document_id, parsed)
-            finally:
-                outputs_repository.close()
-
-            if parser_handoff:
-                page_count = _document_page_count(parsed, extension)
-                repository.update_processing_status(document_id, "parsed")
-                return {
-                    "document_id": document_id,
-                    "storage_path": storage_path,
-                    "processing_status": "parsed",
-                    "searchable": False,
-                    "sha256": source_hash,
-                    "page_count": page_count,
-                    "element_count": len(parsed.get("elements", [])),
-                    "table_count": len(parsed.get("tables", [])),
-                    "indexed_chunk_count": 0,
-                }
-
-            stage = "chunk_document"
-            from core.chunking.processor import ChunkingProcessor
-            processed = ChunkingProcessor(parser_config).process(parsed)
+            result = _finish_document_upload(
+                document_id, filename, title, allowed_roles, storage_path, source_hash,
+                parser_handoff, parser_config, parsed, set_stage,
+            )
         except ValueError as error:
-            raise HTTPException(422, str(error)) from error
-        parser_chunks = processed["chunks"]
-        chunks = parser_chunks
-        if not chunks:
-            raise ValueError("No text could be extracted; check OCR availability or the source file")
-        page_count = next((
-            int(chunk["metadata"]["page_count"])
-            for chunk in parser_chunks
-            if chunk.get("metadata", {}).get("page_count") is not None
-        ), _document_page_count(parsed, extension))
-        ocr_chunk_count = sum(
-            bool(chunk.get("metadata", {}).get("ocr"))
-            or bool(chunk.get("metadata", {}).get("ocr_model"))
-            or chunk.get("metadata", {}).get("text_extraction_method") in {"tesseract", "pymupdf+tesseract"}
-            for chunk in parser_chunks
-        )
-        for chunk in chunks:
-            chunk["metadata"].pop("title", None)
-            chunk["metadata"].pop("author", None)
-        from core.database.parser_chunks_repository import ParserChunksRepository
-        from core.database.structured_store import StructuredDataStore
-
-        stage = "save_parser_chunks"
-        parsed_repository = ParserChunksRepository()
-        try:
-            parsed_repository.replace_document(document_id, chunks)
-            structured_store = StructuredDataStore()
-            try:
-                structured_store.save_document_tables(document_id, title.strip(), processed["tables"])
-            finally:
-                structured_store.close()
-        finally:
-            parsed_repository.close()
-
-        from core.embeddings.embedding_service import EmbeddingService
-        from core.database.document_chunks_repository import DocumentChunkRepository
-        stage = "create_embeddings"
-        embedding_service = EmbeddingService()
-        from core.tokenization.token_counter import TokenCounter
-        from core.tokenization.embedding_chunker import build_embedding_chunks
-
-        token_counter = TokenCounter(embedding_service.model_name)
-        chunks = build_embedding_chunks(
-            chunks,
-            token_counter,
-            embedding_service.max_sequence_length,
-            embedding_service.model_name,
-        )
-        vectors = embedding_service.embed_documents([chunk["text"] for chunk in chunks])
-        stage = "index_document"
-        chunk_repository = DocumentChunkRepository()
-        try:
-            chunk_repository.replace_document(document_id, [
-                (filename, index, chunk["text"],
-                 {**chunk["metadata"], "document_id": document_id, "allowed_roles": allowed_roles}, vector)
-                for index, (chunk, vector) in enumerate(zip(chunks, vectors, strict=True))
-            ])
-        finally:
-            chunk_repository.close()
-        stage = "mark_ready"
-        repository.update_processing_status(document_id, "ready")
-        return {
-            "document_id": document_id, "storage_path": storage_path,
-            "processing_status": "ready", "searchable": True, "sha256": source_hash,
-            "page_count": page_count, "parser_chunk_count": len(parser_chunks),
-            "indexed_chunk_count": len(chunks), "ocr_chunk_count": ocr_chunk_count,
-            "table_count": len(processed.get("tables", [])),
-        }
+            if stage in {"parse_document", "save_parser_output", "chunk_document"}:
+                raise HTTPException(422, str(error)) from error
+            raise
+        stage = "mark_parsed" if parser_handoff else "mark_ready"
+        repository.update_processing_status(document_id, result["processing_status"])
+        return result
     except HTTPException as error:
         if registered and repository is not None:
             try:
@@ -768,9 +804,11 @@ async def upload_document(
             "register_document": "registering the document",
             "store_source_file": "saving the original file",
             "mark_processing": "starting document processing",
+            "queue_pdf": "queuing PDF processing",
             "parse_document": "extracting text and tables",
             "save_parser_output": "saving extracted content",
             "chunk_document": "splitting the document into passages",
+            "prepare_passages": "preparing document passages",
             "save_parser_chunks": "saving document passages",
             "create_embeddings": "creating search embeddings",
             "index_document": "indexing the document for search",
@@ -784,6 +822,72 @@ async def upload_document(
     finally:
         if repository is not None:
             repository.close()
+
+
+def _stored_pdf(storage_path):
+    storage, bucket = _storage_client()
+    return storage.storage.from_(bucket).download(storage_path)
+
+
+def _finish_pdf_upload(job, parsed, connection):
+    stage = "save_parser_output"
+
+    def set_stage(value):
+        nonlocal stage
+        stage = value
+
+    try:
+        return _finish_document_upload(
+            job["document_id"], job["filename"], job["title"],
+            job["document_metadata"]["allowed_roles"], job["storage_path"], job["source_sha256"],
+            job["parser_handoff"], job["parser_config"], parsed, set_stage, connection,
+        )
+    except Exception:
+        logger.error("PDF finalization failed for %s at %s", job["document_id"], stage)
+        raise
+
+
+@app.get("/api/documents/pdf-jobs")
+def list_pdf_jobs(user: dict = Depends(require_permission("upload_documents"))):
+    with pdf_jobs() as jobs:
+        return {"documents": jobs.list_pending(user["sub"], user["role"] == "admin")}
+
+
+@app.get("/api/documents/pdf-jobs/{document_id}")
+def get_pdf_job(document_id: str, user: dict = Depends(require_permission("upload_documents"))):
+    with pdf_jobs() as jobs:
+        job = jobs.get(document_id, user["sub"], user["role"] == "admin")
+    if job is None:
+        raise HTTPException(404, "PDF job not found")
+    return {
+        **(job["result"] or {}),
+        "document_id": document_id,
+        "processing_status": (job["result"] or {}).get("processing_status", job["processing_status"]),
+        "page_count": job["page_count"],
+        "pages_processed": job["pages_processed"],
+        "failed_page": job["failed_page"],
+    }
+
+
+@app.post("/api/documents/pdf-jobs/{document_id}/retry", status_code=202)
+def retry_pdf_job(
+    document_id: str,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    _require_same_origin(request)
+    is_admin = user["role"] == "admin"
+    with pdf_jobs() as jobs:
+        job = jobs.get(document_id, user["sub"], is_admin)
+        if job is None:
+            raise HTTPException(404, "PDF job not found")
+        attempt = jobs.retry(document_id, user["sub"], is_admin)
+        if attempt is None:
+            raise HTTPException(409, "This PDF cannot be retried in its current state. Refresh its status.")
+    background_tasks.add_task(process_pdf_job, document_id, attempt, _stored_pdf, _finish_pdf_upload)
+    return {"document_id": document_id, "processing_status": "processing",
+            "page_count": job["page_count"], "pages_processed": job["pages_processed"]}
 
 
 def _process_invoice_upload(
@@ -1273,6 +1377,8 @@ def retry_document_embedding(
             raise HTTPException(404, "Knowledge document not found")
         if document.get("source_type") != "user_upload" or document.get("processing_status") != "failed":
             raise HTTPException(409, "Only failed user uploads can retry embedding")
+        if document.get("has_pending_pdf_job"):
+            raise HTTPException(409, "Resume this PDF from the Upload page to continue processing")
 
         parsed_repository = ParserChunksRepository()
         parsed_chunks = parsed_repository.get_document(document_id, company=CORPUS_COMPANY)

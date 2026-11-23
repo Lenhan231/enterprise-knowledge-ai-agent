@@ -208,7 +208,8 @@ class DoclingProcessor:
                 component_type=error.component_type, error_code=getattr(error, "category", None),
                 page_number=getattr(error, "page_no", None),
             )
-        if "FAILURE" in str(result.status).upper():
+        require_complete = source_format == "pdf" and self.config.get("require_complete_pdf", False)
+        if "FAILURE" in str(result.status).upper() or (require_complete and docling_status != "success"):
             if not errors:
                 log_component_error(
                     logger, "docling_convert", **log_context,

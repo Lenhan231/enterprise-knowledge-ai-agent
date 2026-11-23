@@ -20,6 +20,8 @@ let generalConversationId = crypto.randomUUID();
 let generalTurns = [];
 let sessionGeneration = 0;
 let sessionSubject = null;
+let pdfJobsTimer;
+let pdfJobsRequest = 0;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[char]));
@@ -73,6 +75,7 @@ function selectWorkspaceTab(name) {
   }
   if (name === "dashboard") window.dashboardWorkspace?.show();
   if (name === "knowledge") window.reportWorkspace?.show();
+  if (name === "upload") void refreshPdfJobs();
   $("#workspace-main").classList.toggle("invoice-review-active", name === "invoice-review");
   const isKnowledgeTab = name === "knowledge";
   $(".intro").hidden = !isKnowledgeTab;
@@ -267,8 +270,8 @@ function renderKnowledgeDocuments() {
         ? `<a href="${escapeHtml(uploadedSource)}" target="_blank" rel="noopener noreferrer">Open uploaded file</a>`
         : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open source</a>` : "";
     const isFailedUpload = doc.source_type === "user_upload" && doc.processing_status === "failed";
-    const canRetryEmbedding = isFailedUpload && doc.has_parser_chunks === true;
-    const needsReuploadForProcessing = isFailedUpload && doc.has_parser_chunks !== true;
+    const canRetryEmbedding = isFailedUpload && !doc.has_pending_pdf_job && doc.has_parser_chunks === true;
+    const needsReuploadForProcessing = isFailedUpload && !doc.has_pending_pdf_job && doc.has_parser_chunks !== true;
     const reviewOpen = activeKnowledgeReview?.document_id === doc.document_id;
     return `<div class="knowledge-document-entry"><article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
       <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
@@ -285,6 +288,7 @@ function renderKnowledgeDocuments() {
       </div>
       <div class="knowledge-document-actions">
         ${doc.has_processing_output ? `<button class="secondary-button" type="button" data-review-elements="${escapeHtml(doc.document_id)}" aria-expanded="${reviewOpen ? "true" : "false"}">${reviewOpen ? "Hide element review" : "Review elements"}</button>` : ""}
+        ${doc.has_pending_pdf_job ? '<button class="secondary-button" type="button" data-open-pdf-jobs>View PDF progress</button>' : ""}
         ${canRetryEmbedding ? `<button class="secondary-button" type="button" data-retry-embedding="${escapeHtml(doc.document_id)}">Retry embedding</button>` : ""}
         ${needsReuploadForProcessing ? `<small class="knowledge-retry-note" role="note">No saved parser passages. Re-upload to process this file.</small>` : ""}
         ${doc.knowledge_base_active === false && doc.source_type === "user_upload" ? `<button class="danger-button" type="button" data-knowledge-delete="${escapeHtml(doc.document_id)}" data-title="${escapeHtml(doc.title)}">Delete permanently</button>` : ""}
@@ -2362,6 +2366,10 @@ function clearExpiredSession() {
   sessionGeneration += 1;
   sessionSubject = null;
   currentUser = null;
+  window.clearTimeout(pdfJobsTimer);
+  $("#pdf-jobs").hidden = true;
+  $("#pdf-job-list").replaceChildren();
+  $("#pdf-jobs-status").textContent = "";
   clearInvoiceReviewCaches();
   resetConversationState();
   $("#login-view").hidden = false;
@@ -3268,6 +3276,87 @@ $("#upload-title").addEventListener("input", (event) => {
   event.currentTarget.dataset.userEdited = "true";
 });
 
+function pdfJobProgress(job) {
+  const progress = `${formatNumber(job.pages_processed)} of ${formatNumber(job.page_count)} pages saved`;
+  if (job.processing_status === "failed") {
+    return job.pages_processed === job.page_count
+      ? `${progress} · Finalizing failed`
+      : `${progress} · Stopped in the batch starting at page ${formatNumber(job.failed_page ?? job.pages_processed + 1)}`;
+  }
+  return job.pages_processed === job.page_count ? `${progress} · Finalizing` : progress;
+}
+
+async function refreshPdfJobs() {
+  window.clearTimeout(pdfJobsTimer);
+  const request = ++pdfJobsRequest;
+  const generation = sessionGeneration;
+  const list = $("#pdf-job-list");
+  const section = $("#pdf-jobs");
+  const active = () => generation === sessionGeneration && request === pdfJobsRequest;
+  try {
+    const { documents } = await api("/api/documents/pdf-jobs");
+    if (!active()) return;
+    section.hidden = documents.length === 0 && !$("#pdf-jobs-status").textContent;
+    list.innerHTML = documents.map((job) => `<li>
+      <strong>${escapeHtml(job.title)}</strong> · ${pdfJobProgress(job)}
+      ${job.processing_status === "failed"
+        ? `<button class="secondary-button" type="button" data-retry-pdf="${escapeHtml(job.document_id)}">Retry processing</button>`
+        : ""}
+    </li>`).join("");
+    if (documents.some((job) => job.processing_status === "processing")) {
+      pdfJobsTimer = window.setTimeout(() => {
+        if (active()) void refreshPdfJobs();
+      }, 3000);
+    }
+  } catch (error) {
+    if (!active()) return;
+    section.hidden = false;
+    $("#pdf-jobs-status").textContent = `Could not load PDF progress: ${error.message}`;
+  }
+}
+
+async function waitForPdfJob(job, onProgress = () => {}) {
+  const url = `/api/documents/pdf-jobs/${encodeURIComponent(job.document_id)}`;
+  while (job.processing_status === "processing") {
+    onProgress(job);
+    await new Promise((resolve) => window.setTimeout(resolve, 3000));
+    job = await api(url);
+  }
+  return job;
+}
+
+$("#pdf-job-list").addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-retry-pdf]");
+  if (!button) return;
+  button.disabled = true;
+  const status = $("#pdf-jobs-status");
+  const generation = sessionGeneration;
+  try {
+    const job = await api(`/api/documents/pdf-jobs/${encodeURIComponent(button.dataset.retryPdf)}/retry`, { method: "POST" });
+    if (generation !== sessionGeneration) return;
+    void refreshPdfJobs();
+    const result = await waitForPdfJob(job);
+    if (generation !== sessionGeneration) return;
+    status.textContent = result.processing_status === "failed"
+      ? `PDF ${result.document_id} · ${pdfJobProgress(result)}`
+      : `PDF ${result.document_id} · ${result.searchable ? "Indexed for document Q&A" : "Parser output saved"}`;
+    await refreshPdfJobs();
+    if (result.processing_status !== "failed" && ["admin", "document_processing_owner"].includes(currentUser?.role)) {
+      void refreshKnowledgeDocuments().catch(() => {});
+    }
+  } catch (error) {
+    if (generation !== sessionGeneration) return;
+    status.textContent = error.message;
+    void refreshPdfJobs();
+  }
+});
+
+$("#knowledge-documents-list").addEventListener("click", (event) => {
+  if (!event.target.closest("[data-open-pdf-jobs]")) return;
+  selectWorkspaceTab("upload");
+  $("#pdf-jobs").scrollIntoView({ block: "nearest" });
+});
+
 $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
@@ -3352,6 +3441,15 @@ $("#upload-form").addEventListener("submit", async (event) => {
       }
       return;
     }
+    if (result.processing_status === "processing") {
+      void refreshPdfJobs();
+      result = await waitForPdfJob(result, (job) => {
+        status.textContent = `PDF ${job.document_id} · ${pdfJobProgress(job)}. You can return to Upload to check progress.`;
+      });
+      if (result.processing_status === "failed") {
+        throw new Error(`PDF ${result.document_id} · ${pdfJobProgress(result)}. Use Retry processing to continue from the saved pages.`);
+      }
+    }
     const referenceStatus = parserHandoff
       ? " Parser output is saved in public for the chunking worker; this document is not searchable yet."
       : " Indexed for document Q&A.";
@@ -3403,7 +3501,11 @@ $("#upload-form").addEventListener("submit", async (event) => {
         : error.message;
     } else {
       status.dataset.state = result ? "warning" : "error";
-      status.textContent = result
+      status.textContent = result?.processing_status === "failed"
+        ? error.message
+        : result?.processing_status === "processing"
+        ? `The PDF was saved as ${result.document_id}. Check PDF processing for its current status.`
+        : result
         ? `The file was processed successfully as ${result.document_id}, but the workspace could not refresh: ${error.message}`
         : error.message;
     }

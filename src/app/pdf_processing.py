@@ -2,8 +2,10 @@
 
 import base64
 import hashlib
+import json
 import logging
 import os
+import time
 
 import fitz
 
@@ -103,6 +105,8 @@ def process_pdf_job(document_id, attempt, read_source, finish_upload):
             if job is None:
                 return
             first_page = None
+            last_page = None
+            batch_started = None
             try:
                 page_count, batch_size = job["page_count"], job["batch_size"]
                 if job["pages_processed"] < page_count:
@@ -114,14 +118,43 @@ def process_pdf_job(document_id, attempt, read_source, finish_upload):
                     with fitz.open(stream=content, filetype="pdf") as source:
                         for first_page in range(first_page, page_count + 1, batch_size):
                             last_page = min(first_page + batch_size - 1, page_count)
+                            batch_started = time.perf_counter()
+                            batch_context = {
+                                "document_id": document_id,
+                                "attempt": attempt,
+                                "first_page": first_page,
+                                "last_page": last_page,
+                            }
+                            logger.info("PDF_BATCH_STARTED %s", json.dumps(
+                                batch_context, separators=(",", ":"),
+                            ))
                             result = _parse_range(source, job, first_page, last_page, url)
+                            parsed_at = time.perf_counter()
                             jobs.save_checkpoint(document_id, first_page, last_page, result)
+                            saved_at = time.perf_counter()
+                            logger.info("PDF_BATCH_SAVED %s", json.dumps({
+                                **batch_context,
+                                "pages": last_page - first_page + 1,
+                                "parse_elapsed_ms": round((parsed_at - batch_started) * 1000, 2),
+                                "checkpoint_elapsed_ms": round((saved_at - parsed_at) * 1000, 2),
+                                "elapsed_ms": round((saved_at - batch_started) * 1000, 2),
+                                "pages_processed": last_page,
+                            }, separators=(",", ":")))
+                            batch_started = None
                 first_page = None
+                last_page = None
                 parsed = merge_checkpoints(jobs.checkpoints(document_id), page_count, batch_size)
                 result = finish_upload(job, parsed, jobs.connection)
                 jobs.complete(document_id, result)
             except Exception:
-                logger.exception("PDF processing failed for %s at range start %s", document_id, first_page)
+                logger.exception("PDF_JOB_FAILED %s", json.dumps({
+                    "document_id": document_id,
+                    "attempt": attempt,
+                    "first_page": first_page,
+                    "last_page": last_page,
+                    "elapsed_ms": round((time.perf_counter() - batch_started) * 1000, 2)
+                    if batch_started is not None else None,
+                }, separators=(",", ":")))
                 jobs.fail(document_id, first_page)
     except Exception:
         logger.exception("Could not start or update PDF processing job %s", document_id)

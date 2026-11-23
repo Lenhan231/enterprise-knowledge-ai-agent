@@ -65,6 +65,12 @@ should be mounted to persist downloads between local container runs.
 4. For local invoice extraction, check the selected provider and the isolated
    worker logs when Qwen runs outside Modal.
 
+For large PDFs, filter application logs for `PDF_BATCH_STARTED`,
+`PDF_BATCH_SAVED`, or `PDF_JOB_FAILED`; events include the document ID, attempt,
+and page range. Saved events include `parse_elapsed_ms`,
+`checkpoint_elapsed_ms`, and total `elapsed_ms`; failed events include elapsed
+time when a batch was active.
+
 Filter for `DOCUMENT_PROCESS_COMPONENT_ERROR` to see the failing component,
 error type, and available request identifiers. Docling can report a page and
 stage even when other pages completed. Page and frame limit errors include

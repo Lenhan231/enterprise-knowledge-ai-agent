@@ -4,12 +4,16 @@ from __future__ import annotations
 import asyncio
 import contextvars
 import inspect
+import logging
 import os
+import re
 import shutil
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
+from urllib.error import HTTPError
 
+logger = logging.getLogger(__name__)
 deadline = contextvars.ContextVar('agent_deadline', default=None)
 _slots = threading.BoundedSemaphore(8)
 _workers = ThreadPoolExecutor(max_workers=8, thread_name_prefix='agent')
@@ -48,7 +52,27 @@ async def run_sync(function, *args, _timeout=60.0, **kwargs):
     return await asyncio.wait_for(asyncio.shield(task), remaining(_timeout))
 
 
-async def generate(provider, prompt, *, timeout=15, max_output_tokens=None):
+def _log_generation_failure(stage, provider, model, prompt, error):
+    http_status = getattr(error, 'status_code', None)
+    for cause in (error, error.__cause__):
+        if isinstance(cause, HTTPError):
+            http_status = cause.code
+            break
+    context_limit_hint = bool(re.search(
+        r'context_(?:length|window)_exceeded|maximum context length|context window (?:limit|exceeded)'
+        r'|maximum (?:input|prompt) (?:length|tokens)|(?:input(?: text| sequence)?|prompt) is too long'
+        r'|too many input tokens',
+        f'{getattr(error, "code", None)} {error}', re.I,
+    ))
+    logger.warning(
+        'LLM request failed stage=%s provider=%s model=%s prompt_chars=%d '
+        'error_type=%s http_status=%s context_limit_hint=%s',
+        stage, provider, model, len(prompt), type(error).__name__,
+        http_status if type(http_status) is int else None, context_limit_hint,
+    )
+
+
+async def generate(provider, prompt, *, timeout=15, max_output_tokens=None, log_stage=None):
     token = deadline.set(time.monotonic() + remaining(timeout))
     try:
         kwargs = {}
@@ -66,6 +90,11 @@ async def generate(provider, prompt, *, timeout=15, max_output_tokens=None):
         if inspect.isawaitable(result):
             return await asyncio.wait_for(result, remaining(timeout))
         return result
+    except Exception as error:
+        if log_stage:
+            _log_generation_failure(log_stage, type(provider).__name__,
+                                    getattr(provider, 'model_name', None), prompt, error)
+        raise
     finally:
         deadline.reset(token)
 
@@ -116,8 +145,13 @@ class CodexCLIProvider:
         return await generate_with_codex_cli(prompt, timeout=self.timeout)
 
 
-async def generate_with_local_codex(prompt, provider_error):
+async def generate_with_local_codex(prompt, provider_error, *, log_stage=None):
     # SQL's local fallback is opt-in; production should use a configured API provider.
     if os.getenv('CODEX_CLI_SQL_FALLBACK', 'false').casefold() != 'true':
         raise provider_error
-    return await generate_with_codex_cli(prompt)
+    try:
+        return await generate_with_codex_cli(prompt)
+    except Exception as error:
+        if log_stage:
+            _log_generation_failure(log_stage, 'CodexCLIProvider', None, prompt, error)
+        raise

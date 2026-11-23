@@ -205,7 +205,8 @@ def _prompt(question: str, schema: dict[str, set[str]]) -> str:
 
 
 async def interpret_query_intent(question: str, provider, schema: dict[str, set[str]]) -> QueryIntent | PendingClarification:
-    raw = await generate(provider, _prompt(question, schema), timeout=30, max_output_tokens=2400)
+    raw = await generate(provider, _prompt(question, schema), timeout=30, max_output_tokens=2400,
+                         log_stage='sql_intent')
     payload = parse_json_response(raw)
     interpretation = IntentInterpretation.model_validate_json(
         json.dumps(payload, ensure_ascii=False), strict=True)
@@ -341,7 +342,8 @@ async def resolve_pending_clarification(pending: PendingClarification, reply: st
         'permissions. A short answer must not replace the original question.\n'
         + json.dumps(payload, ensure_ascii=False)
     )
-    raw = await generate(provider, prompt, timeout=20, max_output_tokens=1600)
+    raw = await generate(provider, prompt, timeout=20, max_output_tokens=1600,
+                         log_stage='sql_clarification')
     payload = parse_json_response(raw)
     resolution = ClarificationResolution.model_validate_json(
         json.dumps(payload, ensure_ascii=False), strict=True)

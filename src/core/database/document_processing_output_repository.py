@@ -99,6 +99,21 @@ class DocumentProcessingOutputRepository:
             "tables": row["tables"] or [],
         }
 
+    def get_docx_review_source(self, document_id: str, *, company: str) -> dict[str, Any] | None:
+        with self.connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(
+                """SELECT d.title, d.format, d.storage_path
+                   FROM public.document_processing_outputs o
+                   JOIN public.documents d USING (document_id)
+                   WHERE o.document_id = %s
+                     AND o.document_metadata->>'company' = %s
+                     AND d.source_type = 'user_upload'
+                     AND lower(d.format) = 'docx'
+                     AND d.storage_path IS NOT NULL""",
+                (document_id, company),
+            )
+            return cursor.fetchone()
+
     @staticmethod
     def _normalize_elements(elements: list[dict[str, Any]]) -> list[dict[str, Any]]:
         normalized = []

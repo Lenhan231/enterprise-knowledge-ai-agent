@@ -1,4 +1,4 @@
-"""Convert legacy Microsoft Office files to the formats Docling consumes."""
+"""Convert Office documents with an isolated LibreOffice profile."""
 
 import os
 from pathlib import Path
@@ -32,12 +32,24 @@ _PROFILE_SETTINGS = """<?xml version="1.0" encoding="UTF-8"?>
 def convert_legacy_office(content: bytes, suffix: str) -> tuple[bytes, str]:
     if not matches_signature(content, suffix):
         raise ValueError(f"File content does not match {suffix}")
+    target_suffix = LEGACY_OFFICE_FORMATS[suffix]
+    return _convert_office(content, suffix, target_suffix), target_suffix
+
+
+def render_docx_preview(content: bytes) -> bytes:
+    if not content.startswith(b"PK\x03\x04"):
+        raise ValueError("Invalid DOCX container")
+    # The preview travels as base64 through the internal service's 64 MiB response limit.
+    return _convert_office(content, ".docx", ".pdf", max_output_bytes=32 * 1024 * 1024)
+
+
+def _convert_office(content: bytes, suffix: str, target_suffix: str, *,
+                    max_output_bytes: int = _MAX_OUTPUT_BYTES) -> bytes:
     executable = shutil.which("soffice")
     if executable is None:
-        raise RuntimeError("LibreOffice (soffice) is required for legacy Office files")
+        raise RuntimeError("LibreOffice (soffice) is required for Office conversion")
 
-    target_suffix = LEGACY_OFFICE_FORMATS[suffix]
-    with TemporaryDirectory(prefix="legacy-office-") as directory:
+    with TemporaryDirectory(prefix="office-conversion-") as directory:
         root = Path(directory)
         profile = root / "profile"
         (profile / "user").mkdir(parents=True)
@@ -45,10 +57,10 @@ def convert_legacy_office(content: bytes, suffix: str) -> tuple[bytes, str]:
         source = root / f"document{suffix}"
         source.write_bytes(content)
         target = root / f"document{target_suffix}"
-        command = [
-            executable, f"-env:UserInstallation={profile.as_uri()}", "--headless", "--norestore",
-            "--convert-to", target_suffix[1:], "--outdir", str(root), str(source),
-        ]
+        command = [executable, f"-env:UserInstallation={profile.as_uri()}", "--headless", "--norestore"]
+        if suffix == ".docx":
+            command.append("--infilter=Office Open XML Text")
+        command.extend(["--convert-to", target_suffix[1:], "--outdir", str(root), str(source)])
         with subprocess.Popen(
             command, cwd=root, env={"HOME": directory, "TMPDIR": directory, "LANG": "C.UTF-8"},
             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -62,9 +74,9 @@ def convert_legacy_office(content: bytes, suffix: str) -> tuple[bytes, str]:
                 except ProcessLookupError:
                     pass
                 process.wait()
-                raise ValueError("Legacy Office conversion timed out") from error
+                raise ValueError("Office conversion timed out") from error
         if exit_code != 0 or not target.is_file() or target.stat().st_size == 0:
             raise ValueError(f"Could not convert the {suffix} file with LibreOffice")
-        if target.stat().st_size > _MAX_OUTPUT_BYTES:
+        if target.stat().st_size > max_output_bytes:
             raise ValueError("Converted Office document is too large")
-        return target.read_bytes(), target_suffix
+        return target.read_bytes()

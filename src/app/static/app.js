@@ -179,17 +179,25 @@ function renderKnowledgeProcessingReview(doc) {
 
   const output = activeKnowledgeReview?.output;
   if (!output) return "";
+  const format = String(doc.format || "").toLowerCase();
   const sourceUrl = doc.source_type === "user_upload"
-    ? uploadedSourcePageUrl(doc.document_id)
+    ? format === "docx"
+      ? `/api/admin/knowledge-documents/${encodeURIComponent(doc.document_id)}/source`
+      : uploadedSourcePageUrl(doc.document_id)
     : doc.synthetic_company_policy
       ? `/api/admin/knowledge-documents/${encodeURIComponent(doc.document_id)}/source`
       : "";
-  const format = String(doc.format || "").toLowerCase();
+  const originalLink = sourceUrl
+    ? ` <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open original file</a>`
+    : "";
   const sourcePreview = format === "pdf"
     ? `<iframe class="knowledge-output-source" title="${escapeHtml(doc.title)} source" data-api-src="${escapeHtml(sourceUrl)}"></iframe>`
-    : ["png", "jpg", "jpeg", "tif", "tiff"].includes(format)
-      ? `<img class="knowledge-output-image" src="${escapeHtml(sourceUrl)}" alt="Source file: ${escapeHtml(doc.title)}">`
-      : `<p class="corpus-note">Inline preview is unavailable for ${escapeHtml(format.toUpperCase() || "this format")} files. <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open original file</a></p>`;
+    : format === "docx" && sourceUrl
+      ? `<p class="corpus-note"><span role="status" data-docx-preview-status>Preparing DOCX preview…</span>${originalLink}</p>
+        <iframe class="knowledge-output-source" title="${escapeHtml(doc.title)} DOCX preview" data-api-src="${escapeHtml(sourceUrl)}?preview=pdf" data-docx-preview hidden></iframe>`
+      : ["png", "jpg", "jpeg", "tif", "tiff"].includes(format)
+        ? `<img class="knowledge-output-image" src="${escapeHtml(sourceUrl)}" alt="Source file: ${escapeHtml(doc.title)}">`
+        : `<p class="corpus-note">Inline preview is unavailable for ${escapeHtml(format.toUpperCase() || "this format")} files.${originalLink}</p>`;
   const elements = Array.isArray(output.elements) ? output.elements : [];
   const tables = Array.isArray(output.tables) ? output.tables : [];
   const elementList = elements.map((element) => {
@@ -1928,8 +1936,23 @@ new MutationObserver((records) => records.forEach((record) => record.addedNodes.
   const frames = node.nodeType === 1 ? [...(node.matches("iframe[data-api-src]") ? [node] : []), ...node.querySelectorAll("iframe[data-api-src]")] : [];
   frames.forEach((frame) => {
     const path = frame.dataset.apiSrc;
+    const docxStatus = frame.hasAttribute("data-docx-preview")
+      ? frame.parentElement?.querySelector("[data-docx-preview-status]")
+      : null;
     frame.removeAttribute("data-api-src");
-    if (path) loadApiFile(path).then((url) => { frame.src = url; }).catch(() => {});
+    if (path) loadApiFile(path).then((url) => {
+      if (!frame.isConnected) {
+        URL.revokeObjectURL(url.split("#")[0]);
+        return;
+      }
+      frame.src = url;
+      if (docxStatus) {
+        frame.hidden = false;
+        docxStatus.textContent = "";
+      }
+    }).catch(() => {
+      if (docxStatus) docxStatus.textContent = "Could not load the DOCX preview.";
+    });
   });
 }))).observe(document.documentElement, { childList: true, subtree: true });
 

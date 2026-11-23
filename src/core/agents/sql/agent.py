@@ -73,7 +73,8 @@ from core.agents.sql.text_to_sql import (
     relevant_schema_tables,
 )
 from core.agents.sql.intent_resolution import adapt_inventory_intent, interpret_query_intent
-from core.agents.sql.query_intent import PendingClarification, QueryIntent
+from core.agents.sql.query_intent import MonthChange, PendingClarification, QueryIntent
+from core.agents.sql.sql_validation import shift_monthly_count
 from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
 from core.models.agents import AgentResult, Evidence, VerifiedIdentity
@@ -333,9 +334,12 @@ class SQLAnalyticsAgent(BaseAgent):
                 ))
         elif (not fixed_selection.matched and direct is None and not inventory_candidate
               and not dashboard_request and options.get('_report_planned_task') is not True):
+            previous = options.get('_previous_sql_query')
+            prior = json.loads(previous) if isinstance(previous, str) and question == original_question else {}
             try:
                 interpreted = await interpret_query_intent(
-                    question, self._provider(), table_columns, conversation_context=conversation_context)
+                    question, self._provider(), table_columns, conversation_context=conversation_context,
+                    previous_month=prior.get('month'))
             except Exception as error:
                 # If intent extraction fails, try SQL generation from the original
                 # question. The generated query still passes SQL and schema validation.
@@ -345,6 +349,21 @@ class SQLAnalyticsAgent(BaseAgent):
                 context_info['query_intent_fallback'] = type(error).__name__
             if isinstance(interpreted, PendingClarification):
                 return self._pending_intent_payload(interpreted)
+            if isinstance(interpreted, MonthChange):
+                shifted = shift_monthly_count(prior['sql'], prior['parameters'], interpreted.month)
+                if shifted is not None:
+                    definitions = {name: get_metric_definition(name) for name in prior['metrics']}
+                    # Recheck the reused query against the live schema and approved sources.
+                    payload = await self._execute_plan(
+                        shifted, definitions, table_columns, approved_joins, primary_keys, date_columns)
+                    if payload.get('query_status') == 'executed':
+                        payload['metadata']['month_followup_reused_sql'] = True
+                        if prior['metric_validation']:
+                            payload['metadata']['metric_validation'] = prior['metric_validation']
+                        return payload
+                    if payload.get('query_status') == 'error':
+                        return payload
+                interpreted = None
             query_intent = interpreted
         if query_intent is not None:
             metric_names = set(query_intent.metrics)

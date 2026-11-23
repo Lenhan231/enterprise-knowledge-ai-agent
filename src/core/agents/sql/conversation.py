@@ -3,6 +3,7 @@ import json
 
 from core.agents.sql.metric_mapping import SQLConversationState
 from core.agents.sql.query_intent import PendingClarification
+from core.agents.sql.sql_validation import monthly_count_bounds
 
 
 def context_from_history(history):
@@ -37,6 +38,26 @@ def context_after_execution(execution, history):
         if result and result.data.get('query_status') == 'executed':
             context = serialize_context(result.metadata.get('semantic_interpretation'))
     return context
+
+
+def previous_query_after_execution(execution):
+    tasks = execution.plan.tasks if execution.plan else ()
+    if len(tasks) != 1 or tasks[0].agent != 'sql' or tasks[0].inputs:
+        return None
+    outcome = execution.outcomes.get(tasks[0].id)
+    result = outcome.result if outcome and outcome.status == 'complete' else None
+    if not result or result.data.get('query_status') != 'executed' or not isinstance(result.data.get('sql'), str):
+        return None
+    sql, parameters = result.data['sql'], result.data.get('parameters', [])
+    bounds = monthly_count_bounds(sql, parameters)
+    if bounds is None:
+        return None
+    payload = json.dumps({
+        'sql': sql, 'parameters': parameters, 'month': bounds[2].isoformat(),
+        'metrics': list(result.metadata.get('metrics') or {}),
+        'metric_validation': result.metadata.get('metric_validation'),
+    }, default=str, ensure_ascii=False)
+    return payload if len(payload) <= 4000 else None
 
 
 def pending_from_history(history):

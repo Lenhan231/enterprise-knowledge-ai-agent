@@ -151,6 +151,48 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_two_month_followups_reuse_the_last_executed_count(self):
+        from core.agents.decision_support.orchestrator import AgentOrchestrator
+
+        sql = ('SELECT COUNT(*) AS delivered_orders FROM commerce.orders AS o '
+               'JOIN commerce.shipments AS s ON s.order_id = o.order_id '
+               'WHERE o.order_status = $1 AND s.delivery_date >= $2 AND s.delivery_date < $3 LIMIT 1')
+        provider = Mock()
+        provider.generate.side_effect = [
+            '{}',  # The first intent falls back to SQL generation and still yields reusable scope.
+            json.dumps({'sql': sql, 'parameters': ['delivered', '2026-07-01', '2026-08-01']}),
+            '{"month": 5}',
+            '{"month": 3}',
+        ]
+        repository = FakeRepository()
+        repository.execute_approved_query.side_effect = [
+            [{'delivered_orders': value}] for value in (74, 82, 81)
+        ]
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        orchestrator = AgentOrchestrator(None, None, agent, llm=provider)
+        identity = VerifiedIdentity(subject='analyst', permissions={'analytics:read'})
+        sources = {'commerce.orders', 'commerce.shipments'}
+        with (
+            patch('core.agents.decision_support.orchestrator.classify_jev_route',
+                  return_value={'route': 'sql', 'selected_tools': ['sql'], 'confidence': 0.99}),
+            patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': sources, 'required_tables': sources, 'candidate_tables': sources,
+            }),
+        ):
+            for month, question in ((7, 'Có bao nhiêu đơn hàng đã giao tháng 7/2026 tính theo ngày giao hàng?'),
+                                    (5, 'còn tháng 5'), (3, 'tháng 3 thì sao?')):
+                result = await orchestrator.run(AgentRequest(
+                    question=question, identity=identity, conversation_id='monthly-orders'))
+                self.assertEqual(result.metadata['status'], 'complete', result.answer)
+                self.assertEqual(repository.execute_approved_query.await_args.args,
+                                 (sql, 'delivered', date(2026, month, 1), date(2026, month + 1, 1)))
+        self.assertEqual(provider.generate.call_count, 4)
+        prompt = provider.generate.call_args_list[-1].args[0]
+        request = json.loads(prompt[prompt.index('\n{') + 1:])
+        self.assertEqual(request['question'], 'tháng 3 thì sao?')
+        self.assertEqual(request['previous_executed_count_month'], '2026-05-01')
+        self.assertEqual(repository.execute_approved_query.await_count, 3)
+
     async def test_month_followup_passes_conversation_to_structured_sql_intent(self):
         question = 'còn tháng 8'
         history = [{'question': 'số lượng khách hàng trong tháng 7 mua hàng'}]

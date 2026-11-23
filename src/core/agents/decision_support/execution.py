@@ -124,6 +124,9 @@ class Execution:
                 ]
             if task.agent == 'sql':
                 metadata['_original_question'] = self.request.question
+                if (self.conversation_context and self.plan is not None and len(self.plan.tasks) == 1
+                        and not inputs and self.conversation_context[-1].get('previous_sql_query')):
+                    metadata['_previous_sql_query'] = self.conversation_context[-1]['previous_sql_query']
                 if inputs:
                     metadata['_predecessor_evidence'] = inputs
                 if self.auto_mode:

@@ -9,7 +9,7 @@ from core.agents.sql.intent_resolution import (
     adapt_inventory_intent, interpret_query_intent, resolve_pending_clarification,
 )
 from core.agents.sql.query_intent import (
-    ClarificationChoice, PendingClarification, QueryIntent,
+    ClarificationChoice, MonthChange, PendingClarification, QueryIntent,
 )
 from core.agents.sql.text_to_sql import APPROVED_COLUMNS
 
@@ -48,6 +48,18 @@ class JSONProvider:
 
 
 class StructuredIntentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_only_valid_month_changes_with_previous_scope_are_accepted(self):
+        question = 'tháng 3 thì sao?'
+        result = await interpret_query_intent(
+            question, JSONProvider({'month': 3}), APPROVED_COLUMNS, previous_month='2026-05-01')
+        self.assertEqual(result, MonthChange(month=3))
+        for payload in ({'month': 0}, {'month': 13}, {'month': '3'}, {'month': 3, 'year': 2025}):
+            with self.subTest(payload=payload), self.assertRaises(ValueError):
+                await interpret_query_intent(question, JSONProvider(payload), APPROVED_COLUMNS,
+                                             previous_month='2026-05-01')
+        with self.assertRaises(ValueError):
+            await interpret_query_intent(question, JSONProvider({'month': 3}), APPROVED_COLUMNS)
+
     async def test_simple_annual_revenue_becomes_canonical_typed_intent(self):
         provider = JSONProvider(intent_payload('Total revenue in 2025'))
         result = await interpret_query_intent('Total revenue in 2025', provider, APPROVED_COLUMNS)

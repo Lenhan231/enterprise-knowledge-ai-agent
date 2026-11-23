@@ -138,6 +138,10 @@ class IntentInterpretation(_StrictModel):
         return self
 
 
+class MonthChange(_StrictModel):
+    month: int = Field(ge=1, le=12)
+
+
 class PendingClarification(_StrictModel):
     original_question: str = Field(min_length=1, max_length=2000)
     intent: QueryIntent

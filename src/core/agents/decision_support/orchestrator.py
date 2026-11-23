@@ -24,6 +24,7 @@ from core.agents.sql.conversation import (
     context_from_history,
     pending_after_execution,
     pending_from_history,
+    previous_query_after_execution,
     record_pending_reply,
     without_pending_metadata,
 )
@@ -116,7 +117,11 @@ class AgentOrchestrator:
                             execution.auto_mode = True
                         # Reports build their own section questions, so only chat turns get the user's wording.
                         execution.standalone = not history and report_headings is None and forced_plan is None
-                        graph_input = {'request': request, 'history': list(history),
+                        planning_history = [
+                            {key: value for key, value in turn.items() if key != 'previous_sql_query'}
+                            for turn in history
+                        ]
+                        graph_input = {'request': request, 'history': planning_history,
                             'execution': execution, 'revisions': 0, 'report_headings': report_headings}
                         if forced_plan is not None:
                             graph_input['forced_plan'] = forced_plan
@@ -152,6 +157,9 @@ class AgentOrchestrator:
                                     ).model_dump_json()
                             if report_headings is None:
                                 turn['sql_context'] = context_after_execution(execution, history)
+                                previous_query = previous_query_after_execution(execution)
+                                if previous_query:
+                                    turn['previous_sql_query'] = previous_query
                                 metrics = next((outcome.result.metadata.get('metrics')
                                     for outcome in execution.outcomes.values()
                                     if outcome.result and outcome.result.data.get('query_status') == 'executed'

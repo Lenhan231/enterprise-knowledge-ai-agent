@@ -728,6 +728,67 @@ def _rolling_date_parameter_bounds(sql: str, date_columns=None):
     return bounds
 
 
+def monthly_count_bounds(sql: str, parameters: list) -> tuple[int, int, date] | None:
+    """Find the bound dates of an already executed scalar count on one calendar month."""
+    try:
+        tree = validate_sql_security(sql)
+        if (len(tree.selects) != 1 or not isinstance(tree.selects[0].unalias(), exp.Count)
+                or any(tree.args.get(key) for key in ('with_', 'group', 'having', 'qualify', 'offset'))
+                or len(list(tree.find_all(exp.Select))) != 1 or tree.find(exp.Or) is not None
+                or tree.find(exp.Where) is None):
+            return None
+        tables = {table.alias_or_name: _source_name(table) for table in tree.find_all(exp.Table)}
+        if 'commerce.inventory' in tables.values():
+            return None
+        dates = [column for column in tree.find_all(exp.Column)
+                 if (tables.get(column.table), _column_name(column)) in APPROVED_DATE_COLUMNS]
+        if len(dates) != 2 or dates[0] != dates[1]:
+            return None
+        where = tree.args['where']
+        if any(column.find_ancestor(exp.Where) is not where for column in dates):
+            return None
+        bounds = {}
+        for column in dates:
+            predicate = column.parent
+            if (not isinstance(predicate, (exp.GTE, exp.LT)) or predicate.this is not column
+                    or not isinstance(predicate.expression, exp.Parameter)):
+                return None
+            parent = predicate.parent
+            while isinstance(parent, (exp.And, exp.Paren)):
+                parent = parent.parent
+            if parent is not where:
+                return None
+            bounds[type(predicate)] = int(predicate.expression.this.this) - 1
+        if set(bounds) != {exp.GTE, exp.LT}:
+            return None
+        lower, upper = bounds[exp.GTE], bounds[exp.LT]
+        if lower == upper or not all(0 <= index < len(parameters) for index in (lower, upper)):
+            return None
+        for index in (lower, upper):
+            if sum(int(p.this.this) == index + 1 for p in tree.find_all(exp.Parameter)) != 1:
+                return None
+        start, end = (date.fromisoformat(str(parameters[index])) for index in (lower, upper))
+        if start.day != 1 or end != date(start.year + (start.month == 12), start.month % 12 + 1, 1):
+            return None
+    except (ValueError, TypeError):
+        return None
+    return lower, upper, start
+
+
+def shift_monthly_count(sql: str, parameters: list, month: int) -> QueryPlan | None:
+    bounds = monthly_count_bounds(sql, parameters)
+    if bounds is None:
+        return None
+    lower, upper, start = bounds
+    params = list(parameters)
+    try:
+        params[lower] = date(start.year, month, 1)
+        params[upper] = date(start.year + (month == 12), month % 12 + 1, 1)
+    except ValueError:
+        return None
+    return QueryPlan(sql=sql, parameters=tuple(params))
+
+
 def resolve_rolling_days_parameters(sql: str, parameters: tuple, question: str,
                                     date_columns=None, today: date | None = None) -> tuple:
     expected = rolling_days_range(question, today)

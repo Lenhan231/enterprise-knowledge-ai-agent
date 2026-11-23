@@ -101,6 +101,12 @@ def build_sql_prompt(
         'referenced by SQL placeholders, in placeholder order; the parameter list must have exactly one value per '
         'placeholder and contain no more than 32 values.'
     ]
+    if 'product_revenue' in definitions and 'segment' in prompt_columns.get('commerce.products', set()):
+        prompt_rules.append(
+            '\nFor product revenue grouped by product segment, select and group by '
+            'commerce.products.segment using the products table alias. '
+            'Join products to order_items on product_id.'
+        )
     from core.agents.sql.metric_validation import requested_population_filters
 
     population_filters = requested_population_filters(scope_question)

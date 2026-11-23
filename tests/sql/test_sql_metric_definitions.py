@@ -36,6 +36,18 @@ class MetricPlanningTest(unittest.TestCase):
         self.assertIn("commerce.order_items", prompt)
         self.assertIn("orders.order_status = 'delivered'", prompt)
 
+    def test_segment_revenue_respects_the_requested_dimension(self):
+        for question, expected in (
+            ('top 4 segment có doanh thu tốt nhất tháng 3', 'product_revenue'),
+            ('doanh thu theo phân khúc tháng 3', 'product_revenue'),
+            ('doanh thu tháng 3', 'revenue'),
+            ('doanh thu theo phân khúc khách hàng', 'revenue'),
+        ):
+            with self.subTest(question=question):
+                self.assertEqual(resolve_metric_names(question), {expected})
+        prompt = build_sql_prompt('top 4 segment có doanh thu tốt nhất tháng 3')
+        self.assertIn('commerce.products.segment using the products table alias', prompt)
+
     def test_shared_period_applies_to_each_measure_source_date(self):
         question = ('Trong năm 2026, so sánh doanh thu sau chiết khấu theo nhóm điểm đánh giá trung bình '
                     'và số lượt đánh giá.')

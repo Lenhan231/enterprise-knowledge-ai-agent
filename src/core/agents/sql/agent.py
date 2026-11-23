@@ -664,21 +664,21 @@ class SQLAnalyticsAgent(BaseAgent):
                             'fact grain, and return SQL marked unverified if the relationship is not approved. '
                             'Ask only when a requested source column is absent or the business scope is ambiguous.'
                         )
-                    resolved_parameters = resolve_current_year_month_parameters(
-                        plan.sql or '', plan.parameters, original_question, date_columns=date_columns)
-                    resolved_parameters = resolve_rolling_days_parameters(
-                        plan.sql or '', resolved_parameters, original_question, date_columns=date_columns)
-                    if resolved_parameters != plan.parameters:
-                        plan = QueryPlan(sql=plan.sql, parameters=resolved_parameters,
-                                         explanation=plan.explanation, clarification=plan.clarification,
-                                         request_contract=plan.request_contract,
-                                         request_contract_warning=plan.request_contract_warning,
-                                         clarification_options=plan.clarification_options)
-                    validate_current_year_month_range(plan.sql or '', plan.parameters, original_question,
-                                                      date_columns=date_columns)
-                    validate_rolling_days_range(plan.sql or '', plan.parameters, original_question,
-                                                date_columns=date_columns)
                     if plan.sql:
+                        resolved_parameters = resolve_current_year_month_parameters(
+                            plan.sql, plan.parameters, original_question, date_columns=date_columns)
+                        resolved_parameters = resolve_rolling_days_parameters(
+                            plan.sql, resolved_parameters, original_question, date_columns=date_columns)
+                        if resolved_parameters != plan.parameters:
+                            plan = QueryPlan(sql=plan.sql, parameters=resolved_parameters,
+                                             explanation=plan.explanation, clarification=plan.clarification,
+                                             request_contract=plan.request_contract,
+                                             request_contract_warning=plan.request_contract_warning,
+                                             clarification_options=plan.clarification_options)
+                        validate_current_year_month_range(plan.sql, plan.parameters, original_question,
+                                                          date_columns=date_columns)
+                        validate_rolling_days_range(plan.sql, plan.parameters, original_question,
+                                                    date_columns=date_columns)
                         validate_current_month_total_query(plan.sql, original_question,
                                                            date_columns=date_columns)
                         validate_latest_month_query(plan.sql, question)

@@ -1,0 +1,430 @@
+{
+  "format_version": "sql-agent-additional-output-safety-decisions.v1",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "auditor_id": "Codex AI-assisted output safety reviewer",
+  "auditor_version": "Frozen v3.1 contracts and Commerce schema policy, v3.3 scorer",
+  "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+  "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+  "decisions": [
+    {
+      "case_id": "B40-002",
+      "column_name": "avg_delivery_time",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-003",
+      "column_name": "return_records",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-013",
+      "column_name": "snapshot_date",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": true,
+          "evidence": "The frozen scorer did verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": true,
+          "evidence": "Matching required-field rows establish cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-020",
+      "column_name": "non_null_count",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-021",
+      "column_name": "snapshot_date",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-021",
+      "column_name": "observed_product_count",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-022",
+      "column_name": "count_with",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-022",
+      "column_name": "count_without",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-023",
+      "column_name": "snapshot_date",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-023",
+      "column_name": "stock_on_hand",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-025",
+      "column_name": "null_count",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    },
+    {
+      "case_id": "B40-025",
+      "column_name": "non_null_count",
+      "decision": "REVIEW_REQUIRED",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The frozen scorer did not verify the required-field rows."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "Required-field row equivalence is unresolved."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "No separate approval establishes that the extra projection preserves the required grain and population."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "No separate approval establishes how to interpret the extra projection relative to the required metric."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "The frozen case contract does not recognize this output as a requested field or approved alias."
+        },
+        "no_sensitive_data": {
+          "passed": false,
+          "evidence": "A security-validated projection still requires a separate column-level sensitivity review."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The raw run contains a successful security-validated repository event."
+        }
+      }
+    }
+  ]
+}

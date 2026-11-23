@@ -1,0 +1,9 @@
+{"utc": "2026-11-23T02:58:44.369279+00:00", "http_status": 429, "retry_after_seconds": 16.0, "reset_requests": "7m12s", "reset_tokens": "53.572s"}
+{"utc": "2026-11-23T02:59:21.801955+00:00", "http_status": 429, "retry_after_seconds": 20.0, "reset_requests": "10m4.8s", "reset_tokens": "50.887s"}
+{"utc": "2026-11-23T03:00:09.777876+00:00", "http_status": 429, "retry_after_seconds": 19.0, "reset_requests": "12m57.599s", "reset_tokens": "55.305s"}
+{"utc": "2026-11-23T03:00:50.885611+00:00", "http_status": 429, "retry_after_seconds": 19.0, "reset_requests": "18m43.2s", "reset_tokens": "53.055s"}
+{"utc": "2026-11-23T03:01:30.245075+00:00", "http_status": 429, "retry_after_seconds": 24.0, "reset_requests": "18m43.2s", "reset_tokens": "56.707s"}
+{"utc": "2026-11-23T03:02:53.839509+00:00", "http_status": 429, "retry_after_seconds": 35.0, "reset_requests": "23m2.4s", "reset_tokens": "58.852s"}
+{"utc": "2026-11-23T03:04:38.119331+00:00", "http_status": 429, "retry_after_seconds": 11.0, "reset_requests": "27m21.6s", "reset_tokens": "44.212s"}
+{"utc": "2026-11-23T03:05:09.337568+00:00", "http_status": 429, "retry_after_seconds": 18.0, "reset_requests": "33m7.2s", "reset_tokens": "52.312s"}
+{"utc": "2026-11-23T03:05:45.939125+00:00", "http_status": 429, "retry_after_seconds": 11.0, "reset_requests": "31m40.8s", "reset_tokens": "43.8s"}

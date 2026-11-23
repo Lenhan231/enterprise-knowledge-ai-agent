@@ -1,16 +1,16 @@
 # SQL Agent comparison with restored follow-up context
 
-The original application at `37b5fed5` and the updated application at `8649a7eb` each attempted the same 40 frozen cases. Both runners supplied the five frozen prior turns. The database fingerprint, case set, reference answers, selected provider chain, case pacing, and v3.3 scorer matched.
+The original application at `37b5fed5` and the updated application at `8649a7eb` each attempted the same 40 frozen cases with all five prior turns supplied. They used the same database fingerprint, case set, reference answers, schema selector model, and v3.3 scorer.
 
-Cloudflare failed on 39 recorded submissions in the original-agent rerun. Its telemetry recorded 31 Groq fallback submissions and eight local Codex fallback calls. The updated-agent run recorded zero SQL-provider and local Codex fallback calls. A subsequent Cloudflare probe returned HTTP 429. The observed score difference is therefore confounded by provider availability.
+The original agent used Groq `openai/gpt-oss-20b`. The updated agent used Cloudflare `@cf/openai/gpt-oss-20b`. Both completed with zero model fallbacks. They used different deployments of GPT-OSS 20B, so the comparison does not isolate the agent revision from provider effects. The original run resumed from its fifth completed case after an HTTP 429 and recorded nine further same-model backoffs. Elapsed times are not directly comparable.
 
 | Metric | Original v3.3 | Updated v3.3 | Original offline v3.4 | Updated offline v3.4 |
 |---|---:|---:|---:|---:|
-| Business end-to-end | 7/30 (23.3%) | 14/30 (46.7%) | 11/30 (36.7%) | 19/30 (63.3%) |
-| Business result among executed supported cases | 9/15 (60.0%) | 16/26 (61.5%) | 13/15 (86.7%) | 22/26 (84.6%) |
-| SQL semantic accuracy | 11/30 (36.7%) | 22/30 (73.3%) | 11/30 (36.7%) | 22/30 (73.3%) |
-| Valid clarification or abstention | 9/10 (90.0%) | 6/10 (60.0%) | 9/10 (90.0%) | 6/10 (60.0%) |
-| Overall task success | 16/40 (40.0%) | 20/40 (50.0%) | 20/40 (50.0%) | 25/40 (62.5%) |
+| Business end-to-end | 9/30 (30.0%) | 14/30 (46.7%) | 15/30 (50.0%) | 19/30 (63.3%) |
+| Business result among executed supported cases | 10/19 (52.6%) | 16/26 (61.5%) | 16/19 (84.2%) | 22/26 (84.6%) |
+| SQL semantic accuracy | 15/30 (50.0%) | 22/30 (73.3%) | 15/30 (50.0%) | 22/30 (73.3%) |
+| Valid clarification or abstention | 8/10 (80.0%) | 6/10 (60.0%) | 8/10 (80.0%) | 6/10 (60.0%) |
+| Overall task success | 17/40 (42.5%) | 20/40 (50.0%) | 23/40 (57.5%) | 25/40 (62.5%) |
 | Unsafe executions | 0 | 0 | 0 | 0 |
 
 Offline v3.4 accepts exact UTC midnight month starts where the reference uses month-start dates. It accepts reviewed aliases only for the exact saved SQL and parameters with a passing linked semantic audit. The rescore takes no provider or database calls. The v3.3 source, scores, and saved observations remain intact.
@@ -25,4 +25,6 @@ Offline v3.4 accepts exact UTC midnight month starts where the reference uses mo
 
 The five regression checks reused questions already seen during development. Their results are evidence for these fixes and do not change the 40-case scores above.
 
-[Original-agent report](context-fixed-original-37b5fed5/report.md) · [Updated-agent report](context-fixed-main-8649a7eb/report.md) · [Original offline scores](context-fixed-original-37b5fed5/scores-v3.4.json) · [Updated offline scores](context-fixed-main-8649a7eb/scores-v3.4.json)
+[Original-agent Groq report](context-fixed-original-37b5fed5-groq-oss20b/report.md) · [Updated-agent Cloudflare report](context-fixed-main-8649a7eb/report.md) · [Original offline scores](context-fixed-original-37b5fed5-groq-oss20b/scores-v3.4.json) · [Updated offline scores](context-fixed-main-8649a7eb/scores-v3.4.json)
+
+The [earlier original-agent run](context-fixed-original-37b5fed5/report.md) mixed providers after Cloudflare rejected its requests. Its scores are excluded from the table.

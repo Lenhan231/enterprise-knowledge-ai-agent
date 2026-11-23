@@ -487,3 +487,14 @@ html #home-overview-preview { height: 1000px; }
 @keyframes toastNudge { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
 @keyframes toastTimer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 @media (prefers-reduced-motion: reduce) { .toast, .toast-error, .toast::after { animation: none; } }
+/* Empty chat on short screens: the welcome scrolls instead of being cut off by the composer, and gets compact first */
+:root .general-chat-welcome{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;align-content:safe center}
+@media(max-height:1000px){
+  :root .general-chat-welcome{align-content:start;padding:8px 12px 20px}
+  :root .general-chat-welcome h3{font-size:30px;margin:4px 0 2px}
+  :root .general-chat-welcome>p{display:none}
+  :root .general-chat .chat-library{margin-top:14px}
+  :root .chat-library-en{display:none}
+  :root .chat-library-list li>button{min-height:0;padding:34px 16px 14px}
+}
+@media(max-height:620px){:root .chat-library-list{grid-template-columns:1fr}}

@@ -9,6 +9,20 @@ jobs:
     runs-on: ubuntu-latest
     env:
       INTERNAL_SERVICE_TOKEN: ci-internal-service-token-not-a-production-secret
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ekai_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-test-db-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ekai_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     permissions:
       contents: read
     steps:
@@ -49,7 +63,20 @@ jobs:
           cp .env.example .env
           sed -i \
             -e 's|^AUTH_SECRET_KEY=.*|AUTH_SECRET_KEY=ci-test-secret-key-with-at-least-32-characters|' \
+            -e 's|^DATABASE_URL=.*|DATABASE_URL=postgresql://postgres:ci-test-db-password@host.docker.internal:5432/ekai_ci|' \
             -e 's|^DEMO_VIEWER_PASSWORD=.*|DEMO_VIEWER_PASSWORD=ci-test-viewer-password|' .env
+          DATABASE_URL=postgresql://postgres:ci-test-db-password@127.0.0.1:5432/ekai_ci uv run python - <<'PY'
+          import os
+          from pathlib import Path
+          import psycopg
+
+          with psycopg.connect(os.environ["DATABASE_URL"]) as connection:
+              connection.execute("CREATE ROLE anon")
+              connection.execute("CREATE ROLE authenticated")
+              connection.execute("CREATE ROLE service_role")
+              migration = Path("supabase/migrations/20261123084522_role_permission_grants.sql").read_text()
+              connection.execute(migration, prepare=False)
+          PY
           cleanup() {
             status=$?
             if [ "$status" -ne 0 ]; then

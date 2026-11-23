@@ -32,6 +32,7 @@ services:
       DOCUMENT_PROCESSING_URL: http://document-processing:8000
       DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS: ${DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS:-1200}
     ports: ["127.0.0.1:8000:8000"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
     volumes:
       - embedding_model_cache:/models
       - ./artifacts/local/knowledge-latency:/benchmarks

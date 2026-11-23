@@ -45,6 +45,14 @@ class PopulationFilterContractTest(unittest.TestCase):
         with self.assertRaisesRegex(MetricDefinitionError, 'requires the include order-status population'):
             validate_population_contract(missing, self.question, ('2025-01-01', '2026-01-01'), {'order_count'})
 
+    def test_successful_delivery_and_a_status_button_require_the_same_population(self):
+        for question in ('Thời gian giao hàng của các đơn hàng được giao thành công trong năm 2025?',
+                         'Average delivery time? User clarification: order_status = \'delivered\''):
+            with self.subTest(question=question):
+                requirement, = requested_population_filters(question)
+                self.assertEqual(requirement.values, ('delivered',))
+                validate_population_contract(self.sql, question, ('delivered', '2025-01-01', '2026-01-01'))
+
     def test_unrequested_status_filter_is_rejected_but_unfiltered_population_passes(self):
         question = 'Which customers placed the most orders in 2025?'
         unfiltered = self.sql.replace('o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3',

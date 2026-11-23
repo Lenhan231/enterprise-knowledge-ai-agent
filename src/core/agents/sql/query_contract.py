@@ -1,6 +1,7 @@
 """AST checks that generated SQL covers the supported parts of a typed request."""
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import date
 
@@ -43,6 +44,16 @@ def _column_key(column, aliases, schema_sources):
 
 
 def _parameter_value(node, parameters):
+    if isinstance(node, exp.Cast) and node.to.this == exp.DataType.Type.DATE:
+        value = _parameter_value(node.this, parameters)
+        if isinstance(value, date):
+            return value
+        if isinstance(value, str):
+            try:
+                return date.fromisoformat(value)
+            except ValueError:
+                return _MISSING
+        return _MISSING
     if isinstance(node, exp.Parameter):
         index = node.this.this if isinstance(node.this, exp.Literal) else None
         try:
@@ -131,12 +142,19 @@ def _filter_present(item, tree, aliases, schema_sources, parameters):
 
 
 def _projection_and_groups(tree, field, aliases, schema_sources):
-    projected = any(isinstance(node, exp.Column)
-                    and _field_matches(node, field, aliases, schema_sources)
-                    for select in tree.find_all(exp.Select) for node in select.expressions)
-    grouped = any(isinstance(node, exp.Column)
-                  and _field_matches(node, field, aliases, schema_sources)
-                  for group in tree.find_all(exp.Group) for node in group.expressions)
+    projected = grouped = False
+    for select in tree.find_all(exp.Select):
+        selections = [node.this if isinstance(node, exp.Alias) else node for node in select.expressions]
+        matches = [isinstance(node, exp.Column) and _field_matches(node, field, aliases, schema_sources)
+                   for node in selections]
+        projected |= any(matches)
+        group = select.args.get('group')
+        for node in group.expressions if group else ():
+            if isinstance(node, exp.Literal) and node.is_int:
+                index = int(node.this) - 1
+                grouped |= 0 <= index < len(matches) and matches[index]
+            elif isinstance(node, exp.Column):
+                grouped |= _field_matches(node, field, aliases, schema_sources)
     return projected, grouped
 
 
@@ -172,6 +190,13 @@ def _time_grain_present(tree, grain, intent, aliases, schema_sources):
 
 
 def _date_columns(intent):
+    if re.search(r'\border_date\b|\borders?\s+(?:placed|created)\s+(?:in|from|between|during|on)\b|ngày đặt(?: đơn| hàng)?',
+                 intent.original_question, re.I):
+        return {('commerce.orders', 'order_date')}
+    if 'delivery_time' in intent.metrics and re.search(
+            r'\bdelivered\s+(?:in|during|between|on)\b|giao thành công\s+(?:trong|vào|từ|giữa)\b|\bdelivery_date\b',
+            intent.original_question, re.I):
+        return {('commerce.shipments', 'delivery_date')}
     columns = set()
     for metric in intent.metrics:
         dimensions = set(get_metric_definition(metric).get('dimensions', ()))

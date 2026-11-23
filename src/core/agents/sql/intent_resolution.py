@@ -7,9 +7,10 @@ from datetime import date, timedelta
 
 from core.agents.runtime import generate
 from core.agents.sql.metric_ontology import METRIC_ONTOLOGY, get_metric_definition, resolve_metric_names
-from core.agents.sql.metric_validation import MetricDefinitionError
+from core.agents.sql.metric_validation import MetricDefinitionError, requested_population_filters
 from core.agents.sql.text_to_sql import parse_json_response
 from core.agents.sql.query_intent import (
+    ClarificationChoice,
     ClarificationResolution,
     IntentInterpretation,
     MonthChange,
@@ -19,6 +20,12 @@ from core.agents.sql.query_intent import (
 
 
 _SOURCE_RE = re.compile(r"commerce\.[a-z][a-z0-9_]*")
+_SLOT_FOR_FIELD = {
+    'operation': 'operation', 'metrics': 'metric', 'dimensions': 'dimension',
+    'filters': 'filters', 'time_scope': 'time_scope', 'requested_sources': 'source_scope',
+    'explicit_source_restriction': 'source_scope', 'geographic_basis': 'geographic_basis',
+    'geographic_coverage': 'geographic_coverage', 'ranking': 'ranking',
+}
 
 
 def _metric_sources(intent: QueryIntent) -> set[str]:
@@ -29,7 +36,7 @@ def _metric_sources(intent: QueryIntent) -> set[str]:
 
 def _required_sources(intent: QueryIntent) -> set[str]:
     required = _metric_sources(intent)
-    if any(item.rsplit('.', 1)[-1] == 'region' for item in intent.dimensions):
+    if any(item.rsplit('.', 1)[-1] in {'region', 'city'} for item in intent.dimensions):
         if intent.geographic_basis == 'order_destination':
             required.update({'commerce.orders', 'commerce.geography'})
         elif intent.geographic_basis == 'customer_profile':
@@ -96,6 +103,31 @@ def _intent_issues(intent: QueryIntent, schema: dict[str, set[str]]) -> list[str
 
 
 def _normalise_intent(intent: QueryIntent, schema: dict[str, set[str]]) -> QueryIntent:
+    filters = []
+    for item in intent.filters:
+        if item.field.count('.') == 1:
+            table, column = item.field.split('.')
+            source = 'commerce.' + table
+            if column in schema.get(source, ()):
+                item = item.model_copy(update={'field': f'{source}.{column}'})
+        filters.append(item)
+    intent = intent.model_copy(update={'filters': filters})
+    if ('geographic_basis' in intent.unresolved_slots
+            and 'city' in schema.get('commerce.geography', ())
+            and re.search(r'\b(?:city|cities|thành phố)\b', intent.original_question, re.I)
+            and not re.search(r'\bcustomers\.city\b', intent.original_question, re.I)
+            and all(dimension.rsplit('.', 1)[-1] in {'city', 'cities'} for dimension in intent.dimensions)):
+        time_grain = intent.time_grain
+        if time_grain and not re.search(
+                r'\b(?:daily|weekly|monthly|quarterly|yearly|annual(?:ly)?)\b|'
+                r'\b(?:by|per|each|every)\s+(?:day|week|month|quarter|year)\b|'
+                r'\b(?:theo|mỗi|từng|hằng)\s+(?:ngày|tuần|tháng|quý|năm)\b', intent.original_question, re.I):
+            time_grain = None
+        intent = intent.model_copy(update={
+            'dimensions': ['commerce.geography.city'],
+            'time_grain': time_grain,
+            'unresolved_slots': [slot for slot in intent.unresolved_slots if slot != 'dimension'],
+        })
     sources = list(intent.requested_sources)
     current = {item.name for item in sources}
     required = _required_sources(intent)
@@ -125,6 +157,15 @@ def _clarification(intent: QueryIntent) -> tuple[str, list[dict]]:
             {'number': 2, 'label': 'A specific region', 'slot': 'geographic_coverage', 'value': 'filtered'},
         ])
     if 'geographic_basis' in slots:
+        if 'commerce.geography.city' in intent.dimensions:
+            question = ('Bạn muốn nhóm theo thành phố giao hàng hay thành phố trong hồ sơ khách hàng?' if vietnamese
+                        else 'Which city should the query use?')
+            labels = (('Thành phố giao hàng', 'Thành phố trong hồ sơ khách hàng') if vietnamese
+                      else ('Delivery destination city', 'Customer profile city'))
+            return question, [
+                {'number': 1, 'label': labels[0], 'slot': 'geographic_basis', 'value': 'order_destination'},
+                {'number': 2, 'label': labels[1], 'slot': 'geographic_basis', 'value': 'customer_profile'},
+            ]
         if vietnamese:
             return ('Bạn muốn phân vùng theo địa chỉ giao hàng hay địa chỉ hồ sơ khách hàng?', [
                 {'number': 1, 'label': 'Địa chỉ giao hàng', 'slot': 'geographic_basis', 'value': 'order_destination'},
@@ -164,16 +205,112 @@ def _clarification(intent: QueryIntent) -> tuple[str, list[dict]]:
              else 'Please clarify the analytical request.'), [])
 
 
-def _pending(intent: QueryIntent) -> PendingClarification:
-    question, choices = _clarification(intent)
-    from core.agents.sql.query_intent import ClarificationChoice
+def _choice_resolution(intent, choice, schema):
+    """Validate an offered choice against its slot and the current schema."""
+    if choice.slot not in intent.unresolved_slots or not choice.label.strip():
+        return None
+    value = choice.value
+    if choice.slot == 'source_scope' and value == 'keep_restriction':
+        return 'keep_restriction'
+    if isinstance(value, dict):
+        updates = value
+    elif choice.slot in {'geographic_basis', 'geographic_coverage', 'operation'}:
+        updates = {choice.slot: value}
+    elif choice.slot == 'dimension':
+        updates = {'dimensions': [value]}
+    elif choice.slot == 'metric':
+        updates = {'metrics': [value]}
+    elif choice.slot == 'source_scope' and value == 'allow_required_sources':
+        updates = {'explicit_source_restriction': False}
+    else:
+        return None
+    if not updates or any(_SLOT_FOR_FIELD.get(field) != choice.slot for field in updates):
+        return None
+    if choice.slot == 'source_scope' and value != 'allow_required_sources':
+        return None
+    try:
+        resolution = ClarificationResolution.model_validate_json(json.dumps({
+            'action': 'answer', 'updates': updates, 'clarified_slots': [choice.slot],
+        }), strict=True)
+        candidate = QueryIntent.model_validate_json(json.dumps({
+            **intent.model_dump(mode='json'), **updates,
+            'unresolved_slots': [slot for slot in intent.unresolved_slots if slot != choice.slot],
+        }), strict=True)
+    except (TypeError, ValueError):
+        return None
+    if choice.slot == 'dimension':
+        sources = {source.name for source in intent.requested_sources}
+        for dimension in candidate.dimensions:
+            table, _, column = dimension.rpartition('.')
+            if '.' not in table:
+                table = 'commerce.' + table
+            if column not in schema.get(table, ()) or (intent.explicit_source_restriction and table not in sources):
+                return None
+    if choice.slot in _intent_issues(candidate, schema):
+        return None
+    return resolution
+
+
+def _pending(intent: QueryIntent, schema, *, question=None, choices=()) -> PendingClarification:
+    default_question, defaults = _clarification(intent)
+    selected = []
+    for prompt, candidates in ((default_question, map(ClarificationChoice.model_validate, defaults)),
+                               (question or default_question, choices)):
+        usable = {}
+        for choice in candidates:
+            if _choice_resolution(intent, choice, schema) is not None:
+                usable.setdefault(choice.label.strip().casefold(), choice)
+        if 2 <= len(usable) <= 3:
+            question, selected = prompt, list(usable.values())
+            break
     return PendingClarification(
         original_question=intent.original_question,
         intent=intent,
         unresolved_slots=intent.unresolved_slots,
-        clarification_question=question,
-        allowed_choices=[ClarificationChoice.model_validate(choice) for choice in choices],
+        clarification_question=question or default_question,
+        allowed_choices=[choice.model_copy(update={'number': number})
+                         for number, choice in enumerate(selected, start=1)],
     )
+
+
+def _model_choices(raw):
+    if not isinstance(raw, list) or not 2 <= len(raw) <= 3:
+        return []
+    choices = []
+    for number, item in enumerate(raw, start=1):
+        if isinstance(item, dict):
+            try:
+                choices.append(ClarificationChoice.model_validate({**item, 'number': number}))
+            except ValueError:
+                continue
+    return choices
+
+
+async def _fill_clarification_choices(pending: PendingClarification, provider, schema) -> PendingClarification:
+    if pending.allowed_choices:
+        return pending
+    payload = {'intent': pending.intent.model_dump(mode='json'),
+               'schema': {table: sorted(columns) for table, columns in schema.items()}}
+    prompt = (
+        'Offer clickable choices for one unresolved SQL intent slot. Return a JSON object with '
+        'clarification_question in the user language and allowed_choices, an array of two or three distinct '
+        'objects with number, label, slot and value. Value is an intent field patch such as '
+        '{"dimensions":["commerce.geography.city"]} or {"time_scope":{"mode":"range","ranges":[...]}}. '
+        'Only change the selected unresolved slot, use available schema fields, and preserve the original request. '
+        'Do not invent fields, permissions, or options. Return an empty list if fewer than two supported choices exist.\n'
+        + json.dumps(payload, ensure_ascii=False)
+    )
+    try:
+        raw = await generate(provider, prompt, timeout=12, max_output_tokens=800,
+                             log_stage='sql_clarification_options')
+        response = parse_json_response(raw)
+        question = response.get('clarification_question')
+        if not isinstance(question, str) or not question.strip() or len(question) > 1000:
+            question = pending.clarification_question
+        choices = _model_choices(response.get('allowed_choices'))
+    except Exception:
+        return pending
+    return _pending(pending.intent, schema, question=question, choices=choices)
 
 
 def _prompt(question: str, schema: dict[str, set[str]], *, conversation_context=None, previous_month=None) -> str:
@@ -186,11 +323,17 @@ def _prompt(question: str, schema: dict[str, set[str]], *, conversation_context=
         'current_date': date.today().isoformat(),
         'schema': {table: sorted(columns) for table, columns in schema.items()},
         'approved_metric_contracts': metrics,
+        'response_schema': IntentInterpretation.model_json_schema(),
     }
     context_rules = ''
+    population = requested_population_filters(question)
+    if population:
+        payload['requested_order_status'] = [
+            {'field': f'{item.source}.{item.column}', 'operator': item.operator, 'values': list(item.values)}
+            for item in population
+        ]
     if conversation_context:
         payload['conversation_context'] = conversation_context
-        payload['response_schema'] = IntentInterpretation.model_json_schema()
         context_rules = (
             'For a full intent, return JSON that conforms exactly to response_schema, including the nested field types. '
             'Omit allowed_choices when no choice is needed. If present, it must be a JSON array, never null. '
@@ -217,12 +360,17 @@ def _prompt(question: str, schema: dict[str, set[str]], *, conversation_context=
         'invent metrics, columns, sources or formulas.\n'
         + month_rule +
         'For requests that need a full intent, return one JSON object with an "intent" object '
-        'matching the supplied typed fields, plus optional clarification_question and allowed_choices. '
+        'matching response_schema, plus a targeted clarification_question and two or three allowed_choices '
+        'when a choice is needed. Omit allowed_choices or return an empty array if there are no valid choices. '
         'Use canonical metric IDs from approved_metric_contracts. If the user explicitly states a calculation '
         'that has no canonical metric, preserve its short plain-language description in unverified_metric_request '
         'and do not claim it is verified; otherwise mark the metric slot unresolved. Preserve every metric, dimension, filter, '
         'time boundary, source mention, ranking and exclusion. Revenue by product segment uses product_revenue '
         'with commerce.products.segment. The daily totals in commerce.sales have no segment. '
+        'Use geography.city for city-level grouping by ZIP. If the user asks to choose between order destination '
+        'and customer profile before querying, keep geographic_basis unresolved and offer those two choices. '
+        'ranking.metric must be the canonical metric ID from intent.metrics. '
+        'Use requested_order_status when present; the user has already supplied that population. '
         'Use ISO dates and exclusive range ends. '
         'Set time_scope.mode="all" when no date restriction is requested; use "unknown" when a requested '
         'period cannot be resolved. Set time_grain to day, week, month, quarter or year when the request groups '
@@ -244,6 +392,17 @@ async def interpret_query_intent(
     payload = parse_json_response(raw)
     if previous_month is not None and isinstance(payload, dict) and 'month' in payload:
         return MonthChange.model_validate(payload)
+    choices = []
+    if isinstance(payload, dict):
+        choices = _model_choices(payload.pop('allowed_choices', None))
+        draft = payload.get('intent')
+        if isinstance(draft, dict):
+            draft['original_question'] = question
+            metrics, ranking = draft.get('metrics'), draft.get('ranking')
+            if (isinstance(metrics, list) and len(metrics) == 1 and isinstance(metrics[0], str)
+                    and metrics[0] in METRIC_ONTOLOGY and isinstance(ranking, dict)
+                    and isinstance(ranking.get('metric'), str) and ranking['metric'] not in METRIC_ONTOLOGY):
+                ranking['metric'] = metrics[0]
     interpretation = IntentInterpretation.model_validate_json(
         json.dumps(payload, ensure_ascii=False), strict=True)
     intent = interpretation.intent
@@ -265,9 +424,12 @@ async def interpret_query_intent(
             'requested_sources': [source for source in intent.requested_sources if source.name != 'commerce.sales'],
             'ranking': ranking,
         })
-    intent = _normalise_intent(intent, _schema_columns(schema))
+    schema = _schema_columns(schema)
+    intent = _normalise_intent(intent, schema)
     if intent.unresolved_slots:
-        return _pending(intent)
+        pending = _pending(intent, schema, question=interpretation.clarification_question,
+                           choices=choices)
+        return await _fill_clarification_choices(pending, provider, schema)
     return intent
 
 
@@ -344,16 +506,10 @@ def _merge_pending(pending: PendingClarification, resolution: ClarificationResol
         return None
     intent = pending.intent
     updates = resolution.updates
-    slot_for_field = {
-        'operation': 'operation', 'metrics': 'metric', 'dimensions': 'dimension',
-        'filters': 'filters', 'time_scope': 'time_scope', 'requested_sources': 'source_scope',
-        'explicit_source_restriction': 'source_scope', 'geographic_basis': 'geographic_basis',
-        'geographic_coverage': 'geographic_coverage', 'ranking': 'ranking',
-    }
     authorized_slots = set(resolution.clarified_slots) | set(resolution.explicitly_corrected_slots)
     changes = {}
     for field in updates.model_fields_set:
-        slot = slot_for_field[field]
+        slot = _SLOT_FOR_FIELD[field]
         if slot not in authorized_slots:
             raise ValueError('Intent resolver updated a slot it did not identify as clarified or corrected.')
         changes[field] = getattr(updates, field)
@@ -367,18 +523,30 @@ def _merge_pending(pending: PendingClarification, resolution: ClarificationResol
         intent = intent.model_copy(update={'unresolved_slots': sorted(set(intent.unresolved_slots) | remaining)})
     if not intent.unresolved_slots:
         return intent
-    if resolution.action == 'clarify' and resolution.clarification_question:
-        return PendingClarification(
-            original_question=pending.original_question, intent=intent,
-            unresolved_slots=intent.unresolved_slots,
-            clarification_question=resolution.clarification_question,
-            allowed_choices=resolution.allowed_choices,
-        )
-    return _pending(intent)
+    return _pending(intent, schema, question=resolution.clarification_question, choices=resolution.allowed_choices)
 
 
 async def resolve_pending_clarification(pending: PendingClarification, reply: str, provider,
-                                        schema: dict[str, set[str]]) -> QueryIntent | PendingClarification | None:
+                                        schema: dict[str, set[str]], *, selection=None) -> QueryIntent | PendingClarification | None:
+    schema = _schema_columns(schema)
+    if selection is not None:
+        index = selection.get('index') if isinstance(selection, dict) else None
+        if (type(index) is not int or not 0 <= index < len(pending.allowed_choices)
+                or selection.get('question') != pending.original_question):
+            return pending
+        choice = pending.allowed_choices[index]
+        if reply.strip() != choice.label.strip():
+            return pending
+        resolution = _choice_resolution(pending.intent, choice, schema)
+        if resolution == 'keep_restriction':
+            raise MetricDefinitionError('The analysis needs sources outside the selected tables.',
+                                        code='clarification_source_declined')
+        if resolution is None:
+            return pending
+        result = _merge_pending(pending, resolution, schema)
+        if isinstance(result, PendingClarification):
+            return await _fill_clarification_choices(result, provider, schema)
+        return result
     payload = {
         'original_question': pending.original_question,
         'current_intent': pending.intent.model_dump(mode='json'),
@@ -402,4 +570,7 @@ async def resolve_pending_clarification(pending: PendingClarification, reply: st
     payload = parse_json_response(raw)
     resolution = ClarificationResolution.model_validate_json(
         json.dumps(payload, ensure_ascii=False), strict=True)
-    return _merge_pending(pending, resolution, _schema_columns(schema))
+    result = _merge_pending(pending, resolution, schema)
+    if isinstance(result, PendingClarification):
+        return await _fill_clarification_choices(result, provider, schema)
+    return result

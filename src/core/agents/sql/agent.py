@@ -41,6 +41,7 @@ from core.agents.sql.metric_validation import (
     inventory_time_scope,
     monthly_year_anchor,
     monthly_year_comparison,
+    requested_population_filters,
     requested_snapshot_labels,
     unspecified_comparison_period,
     validate_independent_query_period,
@@ -232,6 +233,23 @@ class SQLAnalyticsAgent(BaseAgent):
             ))
         schema_scope_question = (question if original_question.strip() == question.strip()
                                  else question + '\n' + original_question.strip())
+        requested_status = requested_population_filters(schema_scope_question)
+        clarification_resolution = options.get('_resolved_clarification')
+        previous_clarification = ''
+        if isinstance(clarification_resolution, dict):
+            previous_clarification = clarification_resolution.get('clarification_question') or ''
+            reply = clarification_resolution.get('answer')
+            scope = clarification_resolution.get('original_question')
+            chosen = requested_population_filters(reply) if isinstance(reply, str) else ()
+            initial = requested_population_filters(scope) if isinstance(scope, str) else ()
+            if (len(initial) == len(chosen) == 1 and initial[0].operator == chosen[0].operator == 'include'
+                    and set(initial[0].values).isdisjoint(chosen[0].values)):
+                vietnamese = any(ord(char) > 127 for char in original_question)
+                message = ('Trạng thái đã chọn khác với trạng thái ghi rõ trong câu hỏi gốc.' if vietnamese
+                           else 'The selected order status conflicts with the status stated in the original question.')
+                return {'ok': False, 'operation': 'text_to_sql', 'rows': [], 'answer': message,
+                        'query_status': 'unsupported', 'metadata': {'status': 'unsupported',
+                                                                  'failure_code': 'conflicting_order_status'}}
         context = options.get('_sql_context')
         predecessor_evidence = options.get('_predecessor_evidence')
         if not isinstance(predecessor_evidence, str):
@@ -636,6 +654,16 @@ class SQLAnalyticsAgent(BaseAgent):
                     plan = decode_query_plan(raw, table_columns, allowed_sources=set(table_columns),
                         approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns,
                         allow_unverified=True)
+                    if plan.clarification:
+                        same_prompt = (isinstance(previous_clarification, str)
+                                       and previous_clarification.casefold().strip(' .?!…')
+                                       == plan.clarification.casefold().strip(' .?!…'))
+                        status_prompt = (re.search(r'order.status|trạng thái', plan.clarification, re.I)
+                                         or any(requested_population_filters(label) for label in plan.clarification_options))
+                        if ((clarification_resolution and (query_intent is not None or same_prompt))
+                                or (len(requested_status) == 1 and status_prompt)):
+                            raise SQLValidationError('The request already resolves this clarification. Generate SQL '
+                                                     'using the original scope and selected order status when provided.')
                     if plan.clarification and explicit_separate_criteria and attempt == 0:
                         repair_reason = (
                             'The requested product entity, date scope, formulas, snapshot and separate criteria '
@@ -884,6 +912,12 @@ class SQLAnalyticsAgent(BaseAgent):
                                            primary_keys, date_columns, interpretation,
                                            allowed_sources=set(table_columns),
                                            allow_unverified=unverified_sql)
+        if payload.get('query_status') == 'executed' and selected_compiler in {
+                'product_return_rate_for_order_cohort', 'product_category_gross_profit'}:
+            unverified_metric = {
+                'status': 'unverified', 'code': 'derived_breakdown', 'reason': plan.explanation,
+            }
+            payload.setdefault('limitations', []).append(plan.explanation)
         if plan.request_contract_warning:
             payload.setdefault('metadata', {}).update(
                 request_contract_status='ignored',
@@ -1166,6 +1200,14 @@ class SQLAnalyticsAgent(BaseAgent):
 
     @staticmethod
     def _pending_intent_payload(pending: PendingClarification) -> dict[str, Any]:
+        if not pending.allowed_choices:
+            vietnamese = any(ord(char) > 127 for char in pending.original_question)
+            return {
+                'ok': False, 'operation': 'text_to_sql', 'rows': [], 'query_status': 'unsupported',
+                'answer': ('Không tìm được hai lựa chọn phù hợp với dữ liệu hỗ trợ cho yêu cầu này.' if vietnamese
+                           else 'There are fewer than two supported choices for this request.'),
+                'metadata': {'status': 'unsupported', 'failure_code': 'clarification_options_unavailable'},
+            }
         return {
             'ok': False, 'operation': 'text_to_sql', 'rows': [],
             'query_status': 'clarification_required',
@@ -1174,6 +1216,8 @@ class SQLAnalyticsAgent(BaseAgent):
             'metadata': {
                 'status': 'clarification_required',
                 'clarification_required': True,
+                'clarification_question': pending.original_question,
+                'clarification_options': [choice.label for choice in pending.allowed_choices],
                 'pending_clarification': pending.model_dump(mode='json'),
             },
         }

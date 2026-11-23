@@ -50,6 +50,11 @@ class QueryContractTest(unittest.TestCase):
     def test_all_supported_regional_obligations_pass(self):
         self.assertEqual(self.verify().status, 'verified')
 
+    def test_aliased_dimension_is_selected_and_grouped_by_position(self):
+        aliased = REGIONAL_SQL.replace('SELECT g.region,', 'SELECT g.region AS region_name,')
+        self.assertEqual(self.verify(sql=aliased).status, 'verified')
+        self.assertEqual(self.verify(sql=aliased.replace('GROUP BY g.region', 'GROUP BY 1')).status, 'verified')
+
     def test_missing_region_filter_is_incomplete(self):
         sql = REGIONAL_SQL.replace('GROUP BY g.region', "AND g.region = 'North' GROUP BY g.region")
         intent = regional_intent(geographic_coverage='filtered', filters=[
@@ -64,6 +69,22 @@ class QueryContractTest(unittest.TestCase):
         result = self.verify(sql=sql, parameters=('delivered',))
         self.assertEqual(result.status, 'incomplete')
         self.assertTrue(any('date range' in issue for issue in result.issues))
+
+    def test_return_rate_for_order_cohort_uses_order_date(self):
+        intent = regional_intent(original_question='Return rate for orders placed in May 2026', metrics=['return_rate'])
+        self.assertEqual(self.verify(intent).status, 'verified')
+
+    def test_delivery_time_accepts_bound_date_casts_on_the_delivery_event(self):
+        intent = regional_intent(original_question='Average delivery time for orders successfully delivered in May 2026',
+            metrics=['delivery_time'], dimensions=[], requested_sources=[], geographic_basis=None,
+            geographic_coverage=None)
+        sql = ('SELECT AVG(s.delivery_date - s.ship_date) AS delivery_time '
+               'FROM commerce.shipments AS s JOIN commerce.orders AS o ON s.order_id = o.order_id '
+               'WHERE o.order_status = $1 AND s.delivery_date >= CAST($2 AS DATE) '
+               'AND s.delivery_date < CAST($3 AS DATE) LIMIT 1')
+        self.assertEqual(self.verify(intent, sql).status, 'verified')
+        on_shipping_date = sql.replace('AND s.delivery_date', 'AND s.ship_date')
+        self.assertIn('Requested half-open date range is missing', '; '.join(self.verify(intent, on_shipping_date).issues))
 
     def test_missing_grouping_is_incomplete(self):
         result = self.verify(sql=REGIONAL_SQL.replace(' GROUP BY g.region', ''))

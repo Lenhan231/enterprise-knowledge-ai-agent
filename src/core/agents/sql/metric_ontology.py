@@ -170,7 +170,7 @@ METRIC_ONTOLOGY = {
         "grain": "order",
         "aggregation": "ratio",
         "unit": "currency_per_order",
-        "dimensions": ("order_date", "region"),
+        "dimensions": ("order_date", "region", "device_type"),
     },
     "return_rate": {
         "aliases": ("return rate", "refund rate", "tỷ lệ trả hàng", "tỷ lệ hoàn hàng", "tỉ lệ trả hàng", "tỉ lệ hoàn hàng"),
@@ -252,9 +252,11 @@ POPULATION_FILTER_ONTOLOGY = {
         ),
         "values": {
             "delivered": {
-                "aliases": ("delivered orders", "orders delivered", "đơn hàng đã giao", "đơn đã giao"),
+                "aliases": ("delivered orders", "orders delivered", "successfully delivered orders",
+                            "đơn hàng đã giao", "đơn đã giao", "đơn hàng được giao thành công", "đơn giao thành công"),
                 "stored_values": ("delivered",),
             },
+            "shipped": {"aliases": (), "stored_values": ("shipped",)},
             "cancelled": {
                 "aliases": (
                     "cancelled orders", "canceled orders", "orders cancelled", "orders canceled",

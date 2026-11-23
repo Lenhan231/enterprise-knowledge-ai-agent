@@ -374,6 +374,47 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(result['answer'], clarification)
                     repository.execute_approved_query.assert_not_awaited()
 
+    async def test_legacy_status_reply_repairs_a_repeated_prompt_and_keeps_the_delivery_year(self):
+        question = 'Thời gian giao hàng trung bình của các đơn hàng được giao thành công trong năm 2025 là bao nhiêu ngày?'
+        clarification = 'Bạn muốn tính thời gian giao hàng trung bình dựa trên trạng thái nào của đơn hàng?'
+        delivered = "order_status = 'delivered'"
+        shipped = "order_status = 'shipped'"
+        sql = ('SELECT AVG(s.delivery_date - s.ship_date) AS delivery_time '
+               'FROM commerce.shipments AS s JOIN commerce.orders AS o ON o.order_id = s.order_id '
+               'WHERE o.order_status = $1 AND s.delivery_date >= CAST($2 AS DATE) '
+               'AND s.delivery_date < CAST($3 AS DATE) LIMIT 1')
+        provider = FakeProvider([
+            json.dumps({'clarification': clarification, 'clarification_options': [delivered, shipped]}),
+            json.dumps({'sql': sql, 'parameters': ['delivered', '2025-01-01', '2026-01-01']}),
+        ])
+        repository = FakeRepository()
+        repository.execute_approved_query.return_value = [{'delivery_time': 3}]
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with (
+            patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(return_value=None)),
+            patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': {'commerce.shipments', 'commerce.orders'}, 'required_tables': {'commerce.shipments'},
+                'candidate_tables': {'commerce.shipments', 'commerce.orders'},
+            }),
+        ):
+            for choice in (delivered, shipped):
+                result = await agent.run_payload(AgentRequest(
+                    question=f'{question}\n\nUser clarification: {choice}',
+                    identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+                    metadata={'_resolved_clarification': {'original_question': question,
+                                                          'clarification_question': clarification, 'answer': choice}},
+                ))
+                if choice == delivered:
+                    self.assertEqual(result.get('query_status'), 'executed', result)
+                    self.assertIn('already resolves this clarification', result['metadata']['sql_repair_reason'])
+                else:
+                    self.assertEqual(result.get('query_status'), 'unsupported')
+                    self.assertEqual(result['metadata']['failure_code'], 'conflicting_order_status')
+
+        self.assertEqual(provider.response_index, 2)
+        repository.execute_approved_query.assert_awaited_once_with(sql, 'delivered', date(2025, 1, 1), date(2026, 1, 1))
+
     async def test_malformed_clarification_is_corrected_once_and_valid_response_is_returned(self):
         question = 'Show revenue by month in 2025.'
         invalid = json.dumps({

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import date
 import re
-from typing import Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -123,7 +123,7 @@ class ClarificationChoice(_StrictModel):
     number: int = Field(ge=1, le=3)
     label: str = Field(min_length=1, max_length=200)
     slot: IntentSlot
-    value: str = Field(min_length=1, max_length=200)
+    value: Annotated[str, Field(min_length=1, max_length=200)] | dict[str, Any]
 
 
 class IntentInterpretation(_StrictModel):

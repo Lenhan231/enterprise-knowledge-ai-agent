@@ -499,7 +499,7 @@ class StructuredClarificationSQLIntegrationTest(unittest.IsolatedAsyncioTestCase
         return AgentRequest(question=question, conversation_id=conversation,
             identity=VerifiedIdentity(subject=subject, permissions={'analytics:read'}))
 
-    async def _complete_clarification(self, mode):
+    async def _complete_clarification(self, mode, *, via_buttons=False):
         if mode == 'auto':
             async def fixed_plan(request, *_args, **_kwargs):
                 return AgentPlan(objective=self.question, tasks=[
@@ -512,29 +512,37 @@ class StructuredClarificationSQLIntegrationTest(unittest.IsolatedAsyncioTestCase
                 'required_tables': {'commerce.orders', 'commerce.order_items'},
                 'candidate_tables': {'commerce.orders', 'commerce.order_items', 'commerce.customers', 'commerce.geography'},
         }) as selection:
-            async def run(question):
+            async def run(question, offered=None):
+                request = self.request(question)
+                if offered is not None and via_buttons:
+                    self.assertEqual(len(offered.metadata['clarification_options']), 2)
+                    request = self.request(offered.metadata['clarification_options'][0]).model_copy(update={
+                        'metadata': {'clarification_choice': {
+                            'question': offered.metadata['clarification_question'], 'index': 0,
+                        }},
+                    })
                 if mode == 'auto':
-                    return await self.router.run(self.request(question))
-                return await self.router.run_mode(self.request(question), 'sql')
+                    return await self.router.run(request)
+                return await self.router.run_mode(request, 'sql')
 
             first = await run(self.question)
             self.assertEqual(first.metadata['status'], 'clarification_required')
             self.assertIn('tất cả khu vực', first.answer.casefold())
             self.assertEqual(self.provider.sql_calls, 0)
 
-            coverage = await run('tất cả khu vực')
+            coverage = await run('tất cả khu vực', first)
             self.assertIn('địa chỉ giao hàng', coverage.answer.casefold())
             self.assertIn('địa chỉ hồ sơ khách hàng', coverage.answer.casefold())
             self.assertEqual(self.provider.sql_calls, 0)
 
-            basis = await run('theo địa chỉ giao hàng')
+            basis = await run('theo địa chỉ giao hàng', coverage)
             if mode == 'sql':
                 self.assertEqual(basis.data['query_status'], 'executed')
             else:
                 self.assertEqual(basis.metadata.get('status'), 'complete', basis.model_dump())
             self.repository.execute_approved_query.assert_awaited_once()
             self.assertEqual(self.provider.intent_calls, 1)
-            self.assertEqual(self.provider.resolve_calls, 2)
+            self.assertEqual(self.provider.resolve_calls, 0 if via_buttons else 2)
             self.assertEqual(self.provider.sql_calls, 1,
                 [prompt[prompt.find('The previous plan failed validation:'):
                         prompt.find('The previous plan failed validation:') + 500]
@@ -548,6 +556,7 @@ class StructuredClarificationSQLIntegrationTest(unittest.IsolatedAsyncioTestCase
                               if prompt.startswith('Generate one read-only PostgreSQL SELECT'))
             self.assertIn('2026-05-01', sql_prompt)
             self.assertIn('order_destination', sql_prompt)
+            self.assertIn('The user already answered the clarification', sql_prompt)
             self.assertIn('"geographic_coverage": "all"', sql_prompt)
             self.assertIn('commerce.customers', sql_prompt)
             self.assertIn('commerce.order_items', sql_prompt)
@@ -558,6 +567,12 @@ class StructuredClarificationSQLIntegrationTest(unittest.IsolatedAsyncioTestCase
 
     async def test_reported_two_turn_flow_continues_to_verified_sql_in_standalone_sql(self):
         await self._complete_clarification('sql')
+
+    async def test_clicking_two_choices_continues_sql_in_auto_without_reply_model_calls(self):
+        await self._complete_clarification('auto', via_buttons=True)
+
+    async def test_clicking_two_choices_continues_sql_in_standalone_sql_without_reply_model_calls(self):
+        await self._complete_clarification('sql', via_buttons=True)
 
 
 class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):

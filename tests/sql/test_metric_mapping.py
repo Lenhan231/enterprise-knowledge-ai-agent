@@ -81,7 +81,7 @@ class MetricMappingTest(unittest.TestCase):
             with self.assertRaises(MetricDefinitionError):self.decode({**MAPPING,extra:'DROP TABLE commerce.inventory'})
         from core.agents.sql.text_to_sql import SQLValidationError
         with self.assertRaises(SQLValidationError):
-            decode_query_plan(json.dumps({'sql':"SELECT i.product_id FROM commerce.inventory AS i WHERE i.product_id IN ($1,$2) LIMIT 200",'parameters':[1,2]}))
+            decode_query_plan(json.dumps({'sql':"SELECT i.product_id FROM commerce.inventory AS i WHERE i.product_id IN ($1,$2) LIMIT 200",'parameters':[1]}))
 
     def test_single_json_fence_does_not_bypass_validation(self):
         from core.agents.sql.text_to_sql import SQLValidationError

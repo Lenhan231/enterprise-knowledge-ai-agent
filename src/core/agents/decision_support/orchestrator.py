@@ -16,6 +16,7 @@ from core.agents.decision_support.planning import plan_request
 from core.agents.decision_support.workflow import AgentWorkflow
 from core.agents.runtime import deadline
 from core.agents.sql.intent_resolution import resolve_pending_clarification
+from core.agents.sql.metric_validation import MetricDefinitionError
 from core.agents.sql.query_intent import PendingClarification, QueryIntent
 from core.agents.sql.conversation import (
     append_debug_turn,
@@ -84,30 +85,14 @@ class AgentOrchestrator:
                         pending = pending_from_history(history)
                         pending_resumed = False
                         if pending is not None and report_headings is None and forced_plan is None:
-                            try:
-                                authorize(request, 'sql')
-                                resolved = await resolve_pending_clarification(
-                                    pending, request.question, self._intent_provider(), self._intent_schema())
-                            except Exception:
-                                resolved = pending
-                            if isinstance(resolved, PendingClarification):
-                                record_pending_reply(history, request.question, resolved)
-                                return AgentResult(
-                                    answer=resolved.clarification_question, agent='sql_analytics',
-                                    data={'query_status': 'clarification_required'},
-                                    metadata={'ok': False, 'status': 'clarification_required',
-                                              'clarification_required': True, 'selected_route': 'analytics'},
-                                )
-                            clear_pending_history(history)
-                            if isinstance(resolved, QueryIntent):
-                                request = request.model_copy(update={
-                                    'question': resolved.original_question,
-                                    'metadata': {**request.metadata,
-                                                 '_query_intent': resolved.model_dump(mode='json'),
-                                                 '_original_question': resolved.original_question},
-                                })
-                                forced_plan = AgentPlan(objective=resolved.original_question, tasks=[{
-                                    'id': 'sql', 'agent': 'sql', 'question': resolved.original_question,
+                            authorize(request, 'sql')
+                            resolved = await self._resume_sql_clarification(pending, request, history)
+                            if isinstance(resolved, AgentResult):
+                                return resolved
+                            if isinstance(resolved, AgentRequest):
+                                request = resolved
+                                forced_plan = AgentPlan(objective=request.question, tasks=[{
+                                    'id': 'sql', 'agent': 'sql', 'question': request.question,
                                 }])
                                 pending_resumed = True
                                 execution.request = request
@@ -231,27 +216,11 @@ class AgentOrchestrator:
                             }},
                         })
                 if pending is not None:
-                    try:
-                        resolved = await resolve_pending_clarification(
-                            pending, request.question, self._intent_provider(), self._intent_schema())
-                    except Exception:
-                        resolved = pending
-                    if isinstance(resolved, PendingClarification):
-                        record_pending_reply(history, request.question, resolved)
-                        return AgentResult(
-                            answer=resolved.clarification_question, agent='sql_analytics',
-                            data={'query_status': 'clarification_required'},
-                            metadata={'ok': False, 'status': 'clarification_required',
-                                      'clarification_required': True, 'selected_route': 'analytics'},
-                        )
-                    clear_pending_history(history)
-                    if isinstance(resolved, QueryIntent):
-                        request = request.model_copy(update={
-                            'question': resolved.original_question,
-                            'metadata': {**request.metadata,
-                                         '_query_intent': resolved.model_dump(mode='json'),
-                                         '_original_question': resolved.original_question},
-                        })
+                    resolved = await self._resume_sql_clarification(pending, request, history)
+                    if isinstance(resolved, AgentResult):
+                        return resolved
+                    if isinstance(resolved, AgentRequest):
+                        request = resolved
                 with measure('agent_workflow'):
                     result = agent.run(request)
                     if inspect.isawaitable(result):
@@ -271,11 +240,60 @@ class AgentOrchestrator:
         self.last_destination = route
         return result.model_copy(update={'metadata': {**result.metadata, 'selected_route': route}})
 
+    async def _resume_sql_clarification(self, pending, request, history):
+        try:
+            resolved = await resolve_pending_clarification(
+                pending, request.question, self._intent_provider(), await self._intent_schema(),
+                selection=request.metadata.get('clarification_choice'),
+            )
+        except MetricDefinitionError as error:
+            clear_pending_history(history)
+            return AgentResult(answer=str(error), agent='sql_analytics',
+                               data={'query_status': 'unsupported'},
+                               metadata={'ok': False, 'status': 'unsupported', 'selected_route': 'analytics'})
+        except Exception:
+            resolved = pending
+        if isinstance(resolved, PendingClarification):
+            from core.agents.sql.agent import SQLAnalyticsAgent, payload_to_agent_result
+            if resolved.allowed_choices:
+                record_pending_reply(history, request.question, resolved)
+            else:
+                clear_pending_history(history)
+            result = payload_to_agent_result(SQLAnalyticsAgent._pending_intent_payload(resolved), agent='sql_analytics')
+            result.metadata['selected_route'] = 'analytics'
+            return without_pending_metadata(result)
+        clear_pending_history(history)
+        if isinstance(resolved, QueryIntent):
+            return request.model_copy(update={
+                'question': resolved.original_question,
+                'metadata': {**request.metadata,
+                             '_query_intent': resolved.model_dump(mode='json'),
+                             '_original_question': resolved.original_question,
+                             '_resolved_clarification': {
+                                 'original_question': resolved.original_question,
+                                 'clarification_question': pending.clarification_question,
+                                 'answer': request.question,
+                             }},
+            })
+        return None
+
     def _intent_provider(self):
         provider_factory = getattr(self.analytics_agent, '_provider', None)
         return provider_factory() if provider_factory else self._provider()
 
-    def _intent_schema(self):
+    async def _intent_schema(self):
+        repository = getattr(self.analytics_agent, 'repository', None)
+        discover = getattr(repository, 'get_schema', None)
+        if discover is not None:
+            try:
+                discovered = await discover()
+            except Exception:
+                discovered = {}
+            tables = discovered.get('tables') if isinstance(discovered, dict) else None
+            if tables:
+                if getattr(self.analytics_agent, 'inventory_only', False):
+                    return {table: columns for table, columns in tables.items() if table in self.sql_schema}
+                return tables
         if self.sql_schema:
             return self.sql_schema
         from core.agents.sql.text_to_sql import APPROVED_COLUMNS

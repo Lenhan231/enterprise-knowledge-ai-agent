@@ -307,6 +307,8 @@ def _failure_answer(outcomes, question):
                 else 'The system could not create a suitable query plan for this request.')
     if len(failures) == 1 and failures[0].result:
         result = failures[0].result
+        if result.metadata.get('failure_code') == 'conflicting_order_status':
+            return result.answer
         query_status = result.data.get('query_status')
         if query_status == 'executed' and result.data.get('rows') == []:
             return ('Truy vấn đã chạy nhưng không tìm thấy dòng dữ liệu nào trong phạm vi đã chọn.' if vietnamese

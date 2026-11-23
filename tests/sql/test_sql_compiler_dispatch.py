@@ -43,6 +43,23 @@ def revenue_intent(question, *, start='2025-06-01', end='2026-01-01', dimensions
 
 
 class SQLCompilerDispatchTest(unittest.TestCase):
+    def test_explicit_commerce_breakdowns_compile_with_bounded_scope(self):
+        cases = (
+            ('Show the top 4 products by return rate for orders placed in 2024 with at least 15 units sold',
+             CompilerKind.PRODUCT_RETURN_RATE, (date(2024, 1, 1), date(2025, 1, 1), 15), 'LIMIT 4'),
+            ('Top 3 danh mục theo lợi nhuận gộp năm 2024', CompilerKind.CATEGORY_GROSS_PROFIT,
+             (date(2024, 1, 1), date(2025, 1, 1)), 'LIMIT 3'),
+            ('Average order value by mobile, desktop, and tablet in 2024', CompilerKind.DEVICE_AOV,
+             (date(2024, 1, 1), date(2025, 1, 1), 'mobile', 'desktop', 'tablet'), 'GROUP BY o.device_type'),
+        )
+        for question, compiler, parameters, clause in cases:
+            with self.subTest(compiler=compiler):
+                selection = compile_fixed_query(match_fixed_query(question))
+                self.assertEqual(selection.compiler, compiler)
+                self.assertEqual(selection.plan.parameters, parameters)
+                self.assertIn(clause, selection.plan.sql)
+                self.assertFalse(match_fixed_query(question + ', only orders from Hanoi').matched)
+
     def compile(self, question, **kwargs):
         dashboard_build = kwargs.pop("dashboard_build", False)
         return compile_fixed_query(
@@ -657,7 +674,7 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_unverified_query.assert_not_awaited()
         select_tables.assert_awaited_once()
 
-    async def test_unavailable_dealer_filter_clarifies_before_sql_generation(self):
+    async def test_unavailable_dealer_filter_tries_options_once_without_sql_generation(self):
         repository = type("Repository", (), {})()
         repository.get_schema = AsyncMock(return_value={
             "tables": APPROVED_COLUMNS,
@@ -688,16 +705,16 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
             }
         }
         with patch("core.agents.sql.intent_resolution.generate",
-                   new=AsyncMock(return_value=json.dumps(interpretation))) as interpret:
+                   new=AsyncMock(side_effect=[json.dumps(interpretation), '{"allowed_choices":[]}'])) as interpret:
             result = await agent.run_payload(AgentRequest(
                 question=question,
                 identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
             ))
 
-        self.assertEqual(result["query_status"], "clarification_required")
-        self.assertTrue(result["metadata"]["clarification_required"])
+        self.assertEqual(result["query_status"], "unsupported")
+        self.assertEqual(result["metadata"]["failure_code"], "clarification_options_unavailable")
         self.assertEqual(result["rows"], [])
-        interpret.assert_awaited_once()
+        self.assertEqual(interpret.await_count, 2)
         agent._generate_sql.assert_not_awaited()
         repository.execute_approved_query.assert_not_awaited()
         repository.get_schema.assert_awaited_once()

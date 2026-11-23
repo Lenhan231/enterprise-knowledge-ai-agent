@@ -421,9 +421,13 @@ def requested_population_filters(question: str) -> tuple[PopulationFilterRequire
     for field_ref, definition in POPULATION_FILTER_ONTOLOGY.items():
         source, column = field_ref.rsplit(".", 1)
         for vocabulary_id, value in definition["values"].items():
-            for alias in value["aliases"]:
-                phrase = _normalize(alias)
-                pattern = re.compile(r"(?<!\w)" + re.escape(phrase) + r"(?!\w)")
+            patterns = [r"(?<!\w)" + re.escape(_normalize(alias)) + r"(?!\w)" for alias in value["aliases"]]
+            patterns.extend(
+                rf"(?<!\w){re.escape(column)}\s*=\s*['\"]{re.escape(stored)}['\"]"
+                for stored in value["stored_values"]
+            )
+            for expression in patterns:
+                pattern = re.compile(expression)
                 for match in pattern.finditer(text):
                     prefix = text[max(0, match.start() - 56):match.start()]
                     excluded = any(re.search(

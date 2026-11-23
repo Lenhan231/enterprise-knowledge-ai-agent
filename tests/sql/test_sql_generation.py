@@ -23,6 +23,14 @@ from core.models.agents import AgentRequest, VerifiedIdentity
 ANALYST = VerifiedIdentity(subject="analyst-1", permissions={"analytics:read"})
 
 class SQLValidationTest(unittest.TestCase):
+    def test_adjacent_bind_parameters_are_spaced_before_postgres_validation(self):
+        plan = decode_query_plan(json.dumps({
+            'sql': 'SELECT o.device_type FROM commerce.orders AS o WHERE o.device_type IN ($1,$2,$3) LIMIT 3',
+            'parameters': ['mobile', 'desktop', 'tablet'],
+        }))
+        self.assertIn('IN ($1, $2, $3)', plan.sql)
+        self.assertEqual(plan.parameters, ('mobile', 'desktop', 'tablet'))
+
     def test_ranking_prompt_prioritizes_requested_measure_not_position(self):
         prompt = build_sql_prompt("Which customer paid the most money?")
         self.assertIn("order by the requested business measure first", prompt.casefold())

@@ -2,6 +2,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import AsyncMock, Mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
@@ -48,6 +49,64 @@ class JSONProvider:
 
 
 class StructuredIntentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_city_button_preserves_the_original_scope_and_bypasses_reply_model(self):
+        question = 'Which 5 cities had the most delivered orders in 2025?'
+        payload = intent_payload(question, operation='rank', metrics=['order_count'], requested_sources=[],
+            filters=[{'field': 'commerce.orders.order_status', 'operator': 'eq', 'value': 'delivered'}],
+            ranking={'metric': 'order_count', 'direction': 'desc', 'limit': 5}, unresolved_slots=['dimension'])
+        payload['clarification_question'] = 'Which city should the order count use?'
+        choices = [
+            {'number': 1, 'label': 'Delivery destination city', 'slot': 'dimension',
+             'value': {'dimensions': ['commerce.geography.city']}},
+            {'number': 2, 'label': 'Customer profile city', 'slot': 'dimension',
+             'value': {'dimensions': ['commerce.customers.city']}},
+        ]
+        fallback = {'clarification_question': payload['clarification_question'], 'allowed_choices': choices}
+        for use_initial_choices in (True, False):
+            with self.subTest(use_initial_choices=use_initial_choices):
+                initial = {**payload, 'allowed_choices': choices} if use_initial_choices else payload
+                provider = Mock(generate=AsyncMock(side_effect=[json.dumps(initial), json.dumps(fallback)]))
+                pending = await interpret_query_intent(question, provider, APPROVED_COLUMNS)
+                expected_calls = 1 if use_initial_choices else 2
+                self.assertEqual(provider.generate.await_count, expected_calls)
+                self.assertEqual([choice.label for choice in pending.allowed_choices],
+                                 ['Delivery destination city', 'Customer profile city'])
+
+                for selection in ({'question': 'An older request', 'index': 0}, {'question': question, 'index': 2}):
+                    self.assertEqual(await resolve_pending_clarification(
+                        pending, 'Delivery destination city', provider, APPROVED_COLUMNS, selection=selection), pending)
+                result = await resolve_pending_clarification(
+                    pending, 'Delivery destination city', provider, APPROVED_COLUMNS,
+                    selection={'question': question, 'index': 0})
+
+                self.assertEqual(provider.generate.await_count, expected_calls)
+                self.assertIsInstance(result, QueryIntent)
+                self.assertEqual(result.dimensions, ['commerce.geography.city'])
+                self.assertEqual(result.original_question, question)
+                self.assertEqual(result.filters[0].value, 'delivered')
+                self.assertEqual(result.ranking.limit, 5)
+                self.assertEqual(result.time_scope.ranges[0].start.isoformat(), '2025-01-01')
+
+    async def test_city_basis_resolves_column_and_drops_unsolicited_time_grain(self):
+        question = 'Which 5 cities had the most delivered orders in 2025?'
+        payload = intent_payload(question, operation='rank', metrics=['order_count'], requested_sources=[],
+            dimensions=['cities'], time_grain='day', geographic_basis='unknown',
+            filters=[{'field': 'orders.order_status', 'operator': 'eq', 'value': 'delivered'}],
+            ranking={'metric': 'COUNT(order_id)', 'direction': 'desc', 'limit': 5},
+            unresolved_slots=['dimension', 'geographic_basis'])
+        payload['clarification_question'] = 'Which city dimension should I use?'
+        provider = JSONProvider(payload)
+        pending = await interpret_query_intent(question, provider, APPROVED_COLUMNS)
+        result = await resolve_pending_clarification(pending, 'Delivery destination city', provider, APPROVED_COLUMNS,
+            selection={'question': question, 'index': 0})
+
+        self.assertEqual(provider.calls, 1)
+        self.assertEqual(result.dimensions, ['commerce.geography.city'])
+        self.assertEqual(result.geographic_basis, 'order_destination')
+        self.assertEqual(result.ranking.metric, 'order_count')
+        self.assertEqual(result.filters[0].field, 'commerce.orders.order_status')
+        self.assertIsNone(result.time_grain)
+
     async def test_segment_revenue_replaces_inferred_sales_without_changing_ranking_and_dates(self):
         question = 'top 4 segment có doanh thu tốt nhất tháng 3'
         payload = intent_payload(question, operation='rank', dimensions=['commerce.sales.segment'],

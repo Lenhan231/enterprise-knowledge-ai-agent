@@ -27,6 +27,9 @@ class CompilerKind(str, Enum):
     INVENTORY_MAPPING = "inventory_mapping"
     SNAPSHOT_STOCKOUT_COUNT = "snapshot_stockout_count"
     SNAPSHOT_DAYS_OF_SUPPLY = "snapshot_days_of_supply"
+    DEVICE_AOV = "device_average_order_value"
+    PRODUCT_RETURN_RATE = "product_return_rate_for_order_cohort"
+    CATEGORY_GROSS_PROFIT = "product_category_gross_profit"
 
 
 @dataclass(frozen=True)
@@ -337,6 +340,10 @@ def match_fixed_query(
         )
     metric_names = (frozenset() if direct is not None or promotion is not None or explicit_order_item_formula
                     else frozenset(resolve_metric_names(question)))
+    if direct is None and context is None:
+        breakdown = _commerce_breakdown_match(original_question)
+        if breakdown is not None:
+            return breakdown
     if direct is None and question.strip() == original_question.strip():
         snapshot_summary = _snapshot_summary_match(question)
         if snapshot_summary is not None:
@@ -387,8 +394,72 @@ def match_fixed_query(
                            explicit_order_item_formula=explicit_order_item_formula)
 
 
+def _commerce_breakdown_match(question: str) -> FixedQueryMatch | None:
+    """Compile only fully stated breakdowns with an unambiguous calendar year."""
+    text = ' '.join(question.casefold().strip().rstrip('?.').split())
+    match = re.fullmatch(
+        r'(?:which|show the top) (\d{1,3}) products (?:had the highest|by) return rates? '
+        r'(?:among|for) orders placed in (20\d{2}),? (?:considering|with) '
+        r'(?:products with )?at least (\d{1,8}) units sold', text)
+    if match:
+        limit, year, minimum = map(int, match.groups())
+        if 1 <= limit <= 200 and minimum >= 1:
+            return FixedQueryMatch(CompilerKind.PRODUCT_RETURN_RATE,
+                                   parameters=(date(year, 1, 1), date(year + 1, 1, 1), minimum), limit=limit)
+    match = re.fullmatch(
+        r'(?:top (\d{1,3}) danh mục(?: sản phẩm)? (?:mang lại|theo|có) lợi nhuận gộp(?: cao nhất)? '
+        r'(?:trong )?năm (20\d{2})(?: là những danh mục nào)?|'
+        r'(?:show the )?top (\d{1,3}) product categories by gross profit in (20\d{2}))', text)
+    if match:
+        limit, year = map(int, filter(None, match.groups()))
+        if 1 <= limit <= 200:
+            return FixedQueryMatch(CompilerKind.CATEGORY_GROSS_PROFIT,
+                                   parameters=(date(year, 1, 1), date(year + 1, 1, 1)), limit=limit)
+    match = re.fullmatch(
+        r'(?:giá trị đơn hàng trung bình (?:của khách hàng sử dụng|theo) điện thoại, máy tính và máy tính bảng '
+        r'(?:trong )?năm (20\d{2})(?: là bao nhiêu)?|average order value by mobile, desktop,? and tablet in (20\d{2}))', text)
+    if match:
+        year = int(next(filter(None, match.groups())))
+        return FixedQueryMatch(CompilerKind.DEVICE_AOV, frozenset({'average_order_value'}),
+                               parameters=(date(year, 1, 1), date(year + 1, 1, 1), 'mobile', 'desktop', 'tablet'))
+    return None
+
+
 def _compile_fixed_match(match: FixedQueryMatch) -> QueryPlan:
     parameters = match.parameters
+    if match.compiler == CompilerKind.DEVICE_AOV:
+        return QueryPlan(sql=(
+            'SELECT o.device_type, SUM(oi.quantity * oi.unit_price - oi.discount_amount) '
+            ' / COUNT(DISTINCT o.order_id) AS average_order_value '
+            'FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id '
+            'WHERE o.order_date >= $1 AND o.order_date < $2 AND o.device_type IN ($3, $4, $5) '
+            'GROUP BY o.device_type ORDER BY o.device_type LIMIT 3'
+        ), parameters=parameters, explanation='Average net order value grouped by the device on each order.')
+    if match.compiler == CompilerKind.CATEGORY_GROSS_PROFIT:
+        return QueryPlan(sql=(
+            'SELECT p.category, SUM(oi.quantity * oi.unit_price - oi.discount_amount '
+            '- oi.quantity * p.cogs) AS gross_profit '
+            'FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id '
+            'JOIN commerce.products AS p ON oi.product_id = p.product_id '
+            'WHERE o.order_date >= $1 AND o.order_date < $2 '
+            f'GROUP BY p.category ORDER BY gross_profit DESC NULLS LAST, p.category LIMIT {match.limit}'
+        ), parameters=parameters, explanation='Line revenue after discounts minus product unit cost times quantity.')
+    if match.compiler == CompilerKind.PRODUCT_RETURN_RATE:
+        return QueryPlan(sql=(
+            'WITH product_orders AS ('
+            'SELECT oi.product_id, oi.order_id, SUM(oi.quantity) AS units_sold '
+            'FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id '
+            'WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY oi.product_id, oi.order_id'
+            '), product_returns AS ('
+            'SELECT r.product_id, r.order_id FROM commerce.returns AS r GROUP BY r.product_id, r.order_id'
+            ') SELECT p.product_id, p.product_name, SUM(po.units_sold) AS units_sold, '
+            'COUNT(pr.order_id) AS returned_orders, COUNT(*) AS product_orders, '
+            'CAST(COUNT(pr.order_id) AS NUMERIC) / COUNT(*) AS return_rate '
+            'FROM product_orders AS po JOIN commerce.products AS p ON po.product_id = p.product_id '
+            'LEFT JOIN product_returns AS pr ON pr.product_id = po.product_id AND pr.order_id = po.order_id '
+            'GROUP BY p.product_id, p.product_name HAVING SUM(po.units_sold) >= $3 '
+            f'ORDER BY return_rate DESC, p.product_id LIMIT {match.limit}'
+        ), parameters=parameters, explanation='Share of orders containing the product with a recorded return for that product.')
     if match.compiler in {CompilerKind.SNAPSHOT_STOCKOUT_COUNT, CompilerKind.SNAPSHOT_DAYS_OF_SUPPLY}:
         snapshot, label = parameters
         projections = (

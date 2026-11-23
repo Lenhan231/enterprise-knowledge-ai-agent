@@ -507,6 +507,10 @@ def parse_json_response(raw: str):
 
 def _normalize_unambiguous_sql(sql, schema_columns=None):
     """Normalize syntax only; ambiguous names and unbounded detail still fail validation."""
+    # sqlglot can mistake adjacent PostgreSQL binds for a dollar-quote tag.
+    # Only adjust unquoted, uncommented text before running the normal checks.
+    if not re.search(r"['\"]|--|/\*|\$(?:[a-zA-Z_]\w*)?\$", sql):
+        sql = re.sub(r'(\$\d+,)(?=\$\d+)', r'\1 ', sql)
     try:
         statements = parse(sql, read='postgres')
     except (ParseError,TokenError):

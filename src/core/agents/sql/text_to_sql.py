@@ -107,6 +107,12 @@ def build_sql_prompt(
             'commerce.products.segment using the products table alias. '
             'Join products to order_items on product_id.'
         )
+    if 'delivery_time' in definitions:
+        prompt_rules.append(
+            '\nFor observed delivery duration, use AVG(shipments.delivery_date - shipments.ship_date). '
+            'When the time period refers to successful deliveries, bound shipments.delivery_date for the period '
+            'and preserve the requested order_status filter through the shipments-to-orders join.'
+        )
     from core.agents.sql.metric_validation import requested_population_filters
 
     population_filters = requested_population_filters(scope_question)
@@ -146,6 +152,10 @@ def build_sql_prompt(
             'approved ZIP relationship. If the intent conflicts with available schema or a requested source restriction, '
             'return clarification instead of substituting a formula, source or dimension.'
         )
+        if clarification_resolution:
+            prompt_rules.append('\nThe user already answered the clarification. The validated intent includes the '
+                                'selected option. Generate the SQL for that selection now, including when the original '
+                                'question asked you to confirm the choice before running it.')
     if re.search(r'\b(?:each|separately|individual criteria|separate criteria)\b|từng tiêu chí riêng|riêng từng tiêu chí', scope_question, re.I):
         prompt_rules.append(
             '\nFor an entity-candidate request with multiple criteria that must be shown separately, return one row '

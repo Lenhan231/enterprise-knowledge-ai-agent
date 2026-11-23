@@ -541,6 +541,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 metric_evidence=metric_evidence, relative_time_question=original_question,
                 original_question=original_question,
                 conversation_context=conversation_context,
+                clarification_resolution=options.get('_resolved_clarification'),
                 query_intent=query_intent.model_dump(mode='json') if query_intent else None,
                 dashboard_request=options.get('_dashboard_request') is True,
                 dashboard_allow_multiple=options.get('_dashboard_allow_multiple') is True,
@@ -607,6 +608,7 @@ class SQLAnalyticsAgent(BaseAgent):
                             approved_joins=approved_joins, primary_keys=primary_keys,
                             original_question=original_question,
                             conversation_context=conversation_context,
+                            clarification_resolution=options.get('_resolved_clarification'),
                             schema_tables=schema_tables,
                         )
                         continue
@@ -779,6 +781,7 @@ class SQLAnalyticsAgent(BaseAgent):
                         metric_evidence=metric_evidence, relative_time_question=original_question,
                         original_question=original_question,
                         conversation_context=conversation_context,
+                        clarification_resolution=options.get('_resolved_clarification'),
                         query_intent=query_intent.model_dump(mode='json') if query_intent else None,
                         dashboard_request=options.get('_dashboard_request') is True,
                         dashboard_allow_multiple=options.get('_dashboard_allow_multiple') is True,

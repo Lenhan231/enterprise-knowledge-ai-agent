@@ -79,8 +79,14 @@ class AgentWorkflow:
                     request.metadata.get('clarification_choice'), state['history'])
                 if choice:
                     scope, _, option, turn = choice
+                    clarification = turn.get('clarification')
                     request = request.model_copy(update={
-                        'question': f"{scope}\n\nUser clarification: {option}"
+                        'question': f"{scope}\n\nUser clarification: {option}",
+                        'metadata': {**request.metadata, '_resolved_clarification': {
+                            'original_question': scope,
+                            'clarification_question': clarification if isinstance(clarification, str) else '',
+                            'answer': option,
+                        }},
                     })
                     state['request'] = request
                     state['execution'].request = request

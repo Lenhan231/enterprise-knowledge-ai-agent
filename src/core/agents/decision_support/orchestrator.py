@@ -212,9 +212,15 @@ class AgentOrchestrator:
                     choice = _resolve_clarification_choice(
                         request.metadata.get('clarification_choice'), list(history))
                     if choice:
-                        scope, _, option, _ = choice
+                        scope, _, option, turn = choice
+                        clarification = turn.get('clarification')
                         request = request.model_copy(update={
-                            'question': f"{scope}\n\nUser clarification: {option}"
+                            'question': f"{scope}\n\nUser clarification: {option}",
+                            'metadata': {**request.metadata, '_resolved_clarification': {
+                                'original_question': scope,
+                                'clarification_question': clarification if isinstance(clarification, str) else '',
+                                'answer': option,
+                            }},
                         })
                 if pending is not None:
                     try:

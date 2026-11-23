@@ -151,6 +151,44 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_month_followup_passes_conversation_to_structured_sql_intent(self):
+        question = 'còn tháng 8'
+        history = [{'question': 'số lượng khách hàng trong tháng 7 mua hàng'}]
+        bounds = ['2026-08-01', '2026-09-01']
+        sql = ('SELECT COUNT(DISTINCT o.customer_id) AS customer_count FROM commerce.orders AS o '
+               'WHERE o.order_date >= $1 AND o.order_date < $2 LIMIT 1')
+        provider = Mock()
+        provider.generate.side_effect = [
+            json.dumps({'intent': {
+                'original_question': question, 'operation': 'aggregate', 'metrics': [],
+                'unverified_metric_request': 'Count distinct customers who placed an order',
+                'time_scope': {'mode': 'range', 'ranges': [{'start': bounds[0], 'end_exclusive': bounds[1]}]},
+                'requested_sources': [{'name': 'commerce.orders', 'provenance': 'inferred'}],
+            }}),
+            json.dumps({'sql': sql, 'parameters': bounds}),
+        ]
+        repository = FakeRepository()
+        repository.execute_approved_query.return_value = [{'customer_count': 42}]
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+            'tables': {'commerce.orders'}, 'required_tables': {'commerce.orders'},
+            'candidate_tables': {'commerce.orders'},
+        }):
+            result = await agent.run_payload(AgentRequest(
+                question=question, metadata={'_conversation_context': history},
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        intent_prompt = provider.generate.call_args_list[0].args[0]
+        intent_request = json.loads(intent_prompt[intent_prompt.index('\n{') + 1:])
+        self.assertEqual(intent_request['conversation_context'], history)
+        self.assertEqual(result.get('query_status'), 'executed', result)
+        self.assertNotIn('query_intent_fallback', result['metadata'])
+        self.assertEqual(result['rows'], [{'customer_count': 42}])
+        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
+        self.assertEqual(repository.execute_approved_query.await_args.args, (sql, date(2026, 8, 1), date(2026, 9, 1)))
+
     async def test_explicit_delivered_population_is_repaired_before_repository_execution(self):
         question = (
             'Khách hàng nào có nhiều đơn hàng đã giao nhất trong năm 2025? '

@@ -105,7 +105,7 @@ function syncWorkspaceTabs(user = currentUser) {
     "general-chat": hasPermission(user, "ask_documents"),
     upload: hasPermission(user, "upload_documents"),
     "invoice-review": hasPermission(user, "upload_documents"),
-    processing: hasPermission(user, "process_documents") || hasPermission(user, "list_processing_documents"),
+    processing: hasPermission(user, "process_documents"),
     "ocr-lab": hasPermission(user, "run_upload_tests") || hasPermission(user, "review_upload_tests"),
     "knowledge-management": hasPermission(user, "manage_knowledge"),
     access: hasPermission(user, "manage_access"),

@@ -324,6 +324,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_not_awaited()
         self.assertEqual(result['query_status'], 'rejected')
         self.assertIn('order-status population', result['metadata']['error_detail'].casefold())
+        self.assertIn('order-status population', result['metadata']['sql_repair_reason'].casefold())
 
     async def test_malformed_clarification_is_corrected_once_and_valid_response_is_returned(self):
         question = 'Show revenue by month in 2025.'

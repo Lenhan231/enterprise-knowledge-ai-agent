@@ -637,13 +637,15 @@ class SQLAnalyticsAgent(BaseAgent):
                         approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns,
                         allow_unverified=True)
                     if plan.clarification and explicit_separate_criteria and attempt == 0:
+                        repair_reason = (
+                            'The requested product entity, date scope, formulas, snapshot and separate criteria '
+                            'are explicit. Produce one row per product with one column for each requested '
+                            'criterion; use a stable product_id order and do not ask for clarification.'
+                        )
+                        context_info['sql_repair_reason'] = repair_reason
                         prompt = build_sql_prompt(
                             question,
-                            validation_error=(
-                                'The requested product entity, date scope, formulas, snapshot and separate criteria '
-                                'are explicit. Produce one row per product with one column for each requested '
-                                'criterion; use a stable product_id order and do not ask for clarification.'
-                            ),
+                            validation_error=repair_reason,
                             previous_response=str(raw), metric_names=metric_names,
                             allowed_sources=query_sources, schema_columns=table_columns,
                             approved_joins=approved_joins, primary_keys=primary_keys,
@@ -825,6 +827,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     }
                     break
                 if attempt == 0 and (direct is None or dashboard_build) and not (interpretation and interpretation.domain == 'inventory'):
+                    context_info['sql_repair_reason'] = str(error)[:800]
                     prompt = build_sql_prompt(
                         question, validation_error=str(error), previous_response=str(raw),
                         metric_names=metric_names, allowed_sources=query_sources, schema_columns=table_columns,
@@ -1184,6 +1187,15 @@ class SQLAnalyticsAgent(BaseAgent):
             "metadata": {"error_type": type(error).__name__},
         }
         result['query_status'] = "error"
+        sqlstate = getattr(error, 'sqlstate', None)
+        detail = {
+            '42703': 'The database could not resolve a column in the query.',
+            '42P01': 'The database could not resolve a table in the query.',
+            '42501': 'The database role lacks permission to read a source or column.',
+            '57014': 'The database canceled the query before it finished.',
+        }.get(sqlstate)
+        if detail:
+            result['metadata']['error_detail'] = detail
         if sql:
             result.update(attempted_sql=sql, parameters=list(parameters))
         return result

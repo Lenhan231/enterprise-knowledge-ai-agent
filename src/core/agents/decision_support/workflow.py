@@ -159,6 +159,10 @@ class AgentWorkflow:
         execution = state['execution']
         failed = [execution.outcomes[t.id] for t in state['plan'].tasks if t.id in execution.outcomes
                   and execution.outcomes[t.id].status in {'failed', 'empty'}]
+        failed = [outcome for outcome in failed if not (
+            outcome.task.agent == 'sql' and outcome.status == 'empty' and outcome.result
+            and outcome.result.data.get('query_status') == 'executed'
+        )]
         return {'revise': bool(failed and state['revisions'] < 1 and execution.invocations < 6
                                and remaining() > 5)}
 

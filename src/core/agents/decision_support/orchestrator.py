@@ -132,7 +132,7 @@ class AgentOrchestrator:
                         history_request = state.get('request') or request
                         if status == 'clarification_required':
                             result.metadata['clarification_question'] = history_request.question[:2000]
-                        record_context = (status in {'complete', 'partial', 'clarification_required'}
+                        record_context = (status in {'complete', 'partial', 'clarification_required', 'empty'}
                                           or (status is None and result.metadata.get('ok') is True)
                                           or pending_state is not None)
                         if record_context:

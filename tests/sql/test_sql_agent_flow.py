@@ -326,6 +326,54 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('order-status population', result['metadata']['error_detail'].casefold())
         self.assertIn('order-status population', result['metadata']['sql_repair_reason'].casefold())
 
+    async def test_segment_revenue_repair_can_execute_or_return_clarification(self):
+        question = 'top 4 segment có doanh thu tốt nhất tháng 3'
+        year = date.today().year
+        dates = [date(year, 3, 1), date(year, 4, 1)]
+        parameters = [value.isoformat() for value in dates]
+        invalid = json.dumps({'parameters': parameters, 'sql': (
+            'SELECT s.segment, SUM(s.revenue) AS revenue FROM commerce.sales AS s '
+            'WHERE s.date >= $1 AND s.date < $2 GROUP BY s.segment ORDER BY revenue DESC LIMIT 4'
+        )})
+        corrected_sql = (
+            'SELECT p.segment, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue '
+            'FROM commerce.order_items AS oi JOIN commerce.orders AS o ON oi.order_id = o.order_id '
+            'JOIN commerce.products AS p ON oi.product_id = p.product_id '
+            "WHERE o.order_date >= $1 AND o.order_date < $2 AND o.order_status = 'delivered' "
+            'GROUP BY p.segment ORDER BY revenue DESC, p.segment LIMIT 4'
+        )
+        clarification = 'Bạn muốn xem phân khúc nào?'
+        for repaired, executed in (
+            ({'sql': corrected_sql, 'parameters': parameters}, True),
+            ({'clarification': clarification}, False),
+        ):
+            with self.subTest(executed=executed):
+                repository = FakeRepository()
+                repository.execute_approved_query.return_value = [{'segment': 'Balanced', 'revenue': 100}]
+                provider = FakeProvider([invalid, json.dumps(repaired)])
+                agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+                with (
+                    patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(return_value=None)),
+                    patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                        'tables': {'commerce.sales'}, 'required_tables': {'commerce.sales'},
+                        'candidate_tables': {'commerce.sales'},
+                    }),
+                ):
+                    result = await agent.run_payload(AgentRequest(
+                        question=question,
+                        identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+                    ))
+                self.assertEqual(provider.response_index, 2)
+                self.assertIn('commerce.sales.segment', result['metadata']['sql_repair_reason'])
+                if executed:
+                    self.assertEqual(result['query_status'], 'executed', result['answer'])
+                    self.assertIn('product_revenue', result['metadata']['metrics'])
+                    repository.execute_approved_query.assert_awaited_once_with(corrected_sql, *dates)
+                else:
+                    self.assertEqual(result['metadata']['status'], 'clarification_required')
+                    self.assertEqual(result['answer'], clarification)
+                    repository.execute_approved_query.assert_not_awaited()
+
     async def test_malformed_clarification_is_corrected_once_and_valid_response_is_returned(self):
         question = 'Show revenue by month in 2025.'
         invalid = json.dumps({

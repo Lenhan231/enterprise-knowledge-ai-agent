@@ -48,6 +48,30 @@ class JSONProvider:
 
 
 class StructuredIntentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_segment_revenue_replaces_inferred_sales_without_changing_ranking_and_dates(self):
+        question = 'top 4 segment có doanh thu tốt nhất tháng 3'
+        payload = intent_payload(question, operation='rank', dimensions=['commerce.sales.segment'],
+            ranking={'metric': 'revenue', 'direction': 'desc', 'limit': 4},
+            requested_sources=[{'name': 'commerce.sales', 'provenance': 'inferred'}],
+            time_scope={'mode': 'range', 'ranges': [{'start': '2026-03-01', 'end_exclusive': '2026-04-01'}]})
+
+        result = await interpret_query_intent(question, JSONProvider(payload), APPROVED_COLUMNS)
+
+        self.assertIsInstance(result, QueryIntent)
+        self.assertEqual(result.metrics, ['product_revenue'])
+        self.assertEqual(result.dimensions, ['commerce.products.segment'])
+        self.assertEqual(result.ranking.model_dump(), {'metric': 'product_revenue', 'direction': 'desc', 'limit': 4})
+        self.assertEqual({source.name for source in result.requested_sources},
+                         {'commerce.orders', 'commerce.order_items', 'commerce.products'})
+        self.assertEqual(result.time_scope.model_dump(mode='json')['ranges'], payload['intent']['time_scope']['ranges'])
+
+        restricted_question = question + ', chỉ dùng commerce.sales'
+        payload['intent'].update(original_question=restricted_question, explicit_source_restriction=True,
+                                 requested_sources=[{'name': 'commerce.sales', 'provenance': 'user'}])
+        restricted = await interpret_query_intent(restricted_question, JSONProvider(payload), APPROVED_COLUMNS)
+        self.assertEqual(restricted.metrics, ['revenue'])
+        self.assertEqual([source.name for source in restricted.requested_sources], ['commerce.sales'])
+
     async def test_only_valid_month_changes_with_previous_scope_are_accepted(self):
         question = 'tháng 3 thì sao?'
         result = await interpret_query_intent(

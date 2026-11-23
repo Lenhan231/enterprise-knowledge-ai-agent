@@ -6,7 +6,7 @@ import re
 from datetime import date, timedelta
 
 from core.agents.runtime import generate
-from core.agents.sql.metric_ontology import METRIC_ONTOLOGY, get_metric_definition
+from core.agents.sql.metric_ontology import METRIC_ONTOLOGY, get_metric_definition, resolve_metric_names
 from core.agents.sql.metric_validation import MetricDefinitionError
 from core.agents.sql.text_to_sql import parse_json_response
 from core.agents.sql.query_intent import (
@@ -221,7 +221,9 @@ def _prompt(question: str, schema: dict[str, set[str]], *, conversation_context=
         'Use canonical metric IDs from approved_metric_contracts. If the user explicitly states a calculation '
         'that has no canonical metric, preserve its short plain-language description in unverified_metric_request '
         'and do not claim it is verified; otherwise mark the metric slot unresolved. Preserve every metric, dimension, filter, '
-        'time boundary, source mention, ranking and exclusion. Use ISO dates and exclusive range ends. '
+        'time boundary, source mention, ranking and exclusion. Revenue by product segment uses product_revenue '
+        'with commerce.products.segment. The daily totals in commerce.sales have no segment. '
+        'Use ISO dates and exclusive range ends. '
         'Set time_scope.mode="all" when no date restriction is requested; use "unknown" when a requested '
         'period cannot be resolved. Set time_grain to day, week, month, quarter or year when the request groups '
         'by a date period; otherwise use null. Source provenance is user or inferred; mark explicit_source_restriction '
@@ -244,7 +246,26 @@ async def interpret_query_intent(
         return MonthChange.model_validate(payload)
     interpretation = IntentInterpretation.model_validate_json(
         json.dumps(payload, ensure_ascii=False), strict=True)
-    intent = _normalise_intent(interpretation.intent, _schema_columns(schema))
+    intent = interpretation.intent
+    segment_dimensions = {'segment', 'products.segment', 'commerce.products.segment',
+                          'sales.segment', 'commerce.sales.segment'}
+    if (intent.metrics in (['revenue'], ['product_revenue']) and segment_dimensions.intersection(intent.dimensions)
+            and 'product_revenue' in resolve_metric_names(question)
+            and not intent.explicit_source_restriction
+            and not any(source.name == 'commerce.sales' and source.provenance == 'user'
+                        for source in intent.requested_sources)):
+        dimensions = dict.fromkeys('commerce.products.segment' if dimension in segment_dimensions else dimension
+                                   for dimension in intent.dimensions)
+        ranking = intent.ranking
+        if ranking and ranking.metric == 'revenue':
+            ranking = ranking.model_copy(update={'metric': 'product_revenue'})
+        intent = intent.model_copy(update={
+            'metrics': ['product_revenue'],
+            'dimensions': list(dimensions),
+            'requested_sources': [source for source in intent.requested_sources if source.name != 'commerce.sales'],
+            'ranking': ranking,
+        })
+    intent = _normalise_intent(intent, _schema_columns(schema))
     if intent.unresolved_slots:
         return _pending(intent)
     return intent

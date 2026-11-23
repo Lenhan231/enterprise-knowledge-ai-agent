@@ -329,7 +329,9 @@ def resolve_metric_names(text: str) -> set[str]:
             continue
         selected.append((start, end, metric_name))
     names = {metric_name for _, _, metric_name in selected}
-    if "revenue" in names and re.search(r"\bproducts?\b|sản phẩm|mặt hàng", normalized):
+    product_segment = (re.search(r"\bsegments?\b|\bphân khúc\b", normalized)
+                       and not re.search(r"\bcustomer segments?\b|\bphân khúc khách hàng\b", normalized))
+    if "revenue" in names and (product_segment or re.search(r"\bproducts?\b|sản phẩm|mặt hàng", normalized)):
         names.remove("revenue")
         names.add("product_revenue")
     if "stock_on_hand" in names and len(names) > 1 and not re.search(r"stock on hand|(?:inventory|stock) levels?|(?:lowest|highest) stock|l\u01b0\u1ee3ng t\u1ed3n kho", normalized):

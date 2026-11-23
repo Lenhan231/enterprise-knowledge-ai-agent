@@ -253,7 +253,10 @@ POPULATION_FILTER_ONTOLOGY = {
         "values": {
             "delivered": {
                 "aliases": ("delivered orders", "orders delivered", "successfully delivered orders",
-                            "đơn hàng đã giao", "đơn đã giao", "đơn hàng được giao thành công", "đơn giao thành công"),
+                            "completed orders", "orders completed",
+                            "đơn hàng đã giao", "đơn đã giao", "đơn hàng được giao thành công", "đơn giao thành công",
+                            "đơn hàng đã hoàn thành", "đơn đã hoàn thành", "đơn hàng hoàn thành", "đơn hoàn thành",
+                            "đơn hàng hoàn tất", "đơn đã hoàn tất", "đơn hoàn tất"),
                 "stored_values": ("delivered",),
             },
             "shipped": {"aliases": (), "stored_values": ("shipped",)},

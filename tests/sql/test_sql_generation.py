@@ -95,6 +95,27 @@ class SQLValidationTest(unittest.TestCase):
                 'clarification_options': ['One', 'Two', 'Three', 'Four'],
             }))
 
+    def test_a_fourth_clarification_option_is_dropped_before_the_strict_decoder(self):
+        from core.agents.sql.text_to_sql import tame_clarification_options
+        raw = json.dumps({'clarification': 'Which one?', 'clarification_options': ['One', 'Two', 'Three', 'Other']})
+        self.assertEqual(decode_query_plan(tame_clarification_options(raw)).clarification_options, ('One', 'Two', 'Three'))
+        for untouched in (
+            json.dumps({'clarification': 'Which one?', 'clarification_options': ['One', 'Two']}),
+            json.dumps({'clarification': 'Which one?', 'clarification_options': ['One', '', 'Three', 'Four']}),
+            json.dumps({'clarification': 'Which one?', 'clarification_options': ['One', {'label': 'Two'}, 'Three', 'Four']}),
+            json.dumps({'sql': 'SELECT 1', 'parameters': []}),
+            'not json',
+        ):
+            self.assertEqual(tame_clarification_options(untouched), untouched)
+
+    def test_completed_orders_are_the_delivered_population(self):
+        from core.agents.sql.metric_validation import requested_population_filters
+        for phrase in ('Chỉ đơn hàng đã hoàn thành', 'chỉ đơn đã hoàn tất', 'only completed orders'):
+            with self.subTest(phrase=phrase):
+                found = requested_population_filters(phrase)
+                self.assertEqual([(item.operator, item.values) for item in found], [('include', ('delivered',))])
+        self.assertEqual(requested_population_filters('Còn đơn đã hủy thì sao?')[0].operator, 'include')
+
     def test_population_contract_is_explicit_in_generation_and_repair_prompts(self):
         question = (
             'Khách hàng nào có nhiều đơn hàng đã giao nhất trong năm 2025? '

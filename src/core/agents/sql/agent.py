@@ -63,6 +63,7 @@ from core.agents.sql.text_to_sql import (
     build_sql_prompt,
     decode_query_plan,
     parse_json_response,
+    tame_clarification_options,
     validate_commerce_sql,
     validate_sql_security,
     validate_current_year_month_range,
@@ -651,7 +652,7 @@ class SQLAnalyticsAgent(BaseAgent):
                                 datasets.append({'question': data_question, 'payload': payload})
                             return {'ok': all(item['payload'].get('ok') for item in datasets),
                                     'operation': 'text_to_sql', 'datasets': datasets}
-                    plan = decode_query_plan(raw, table_columns, allowed_sources=set(table_columns),
+                    plan = decode_query_plan(tame_clarification_options(raw), table_columns, allowed_sources=set(table_columns),
                         approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns,
                         allow_unverified=True)
                     if plan.clarification:

@@ -444,6 +444,27 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.metadata['clarification_options'], [])
         repository.execute_approved_query.assert_not_awaited()
 
+    async def test_a_fourth_clarification_option_is_dropped_without_a_correction_round(self):
+        question = 'Show the numbers.'
+        four = json.dumps({'clarification': 'What do you want to see?',
+                           'clarification_options': ['Revenue', 'COGS', 'Units', 'Other']})
+        provider = FakeProvider([four])
+        agent = SQLAnalyticsAgent(FakeRepository(), llm=provider, inventory_only=False)
+        with (
+            patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(return_value=None)),
+            patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': {'commerce.sales'}, 'required_tables': {'commerce.sales'},
+                'candidate_tables': {'commerce.sales'},
+            }),
+        ):
+            result = await agent.run(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+        self.assertEqual(provider.response_index, 1)
+        self.assertEqual(result.metadata['status'], 'clarification_required')
+        self.assertEqual(result.metadata['clarification_options'], ['Revenue', 'COGS', 'Units'])
+
     async def test_exhausted_malformed_clarification_is_an_explicit_safe_failure(self):
         question = 'Show revenue by month in 2025.'
         invalid = json.dumps({

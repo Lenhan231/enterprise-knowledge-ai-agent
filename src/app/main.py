@@ -422,12 +422,23 @@ def _synthetic_policy_file_response(document_id: str) -> Response:
 
 
 @app.get("/api/admin/knowledge-documents/{document_id}/source")
-def open_synthetic_policy_source(
+def open_knowledge_review_source(
     document_id: str,
     user: dict = Depends(require_permission("manage_knowledge")),
+    preview: Literal["pdf"] | None = None,
 ):
-    """Open only synthetic policy PDFs explicitly registered by the local manifest."""
-    return _synthetic_policy_file_response(document_id)
+    if not document_id.startswith("UPLOAD-"):
+        return _synthetic_policy_file_response(document_id)
+    from core.database.document_processing_output_repository import DocumentProcessingOutputRepository
+
+    repository = DocumentProcessingOutputRepository()
+    try:
+        source = repository.get_docx_review_source(document_id, company=CORPUS_COMPANY)
+    finally:
+        repository.close()
+    if source is None:
+        raise HTTPException(404, "DOCX source not found for parser review")
+    return _stored_source_response(document_id, source, preview_pdf=preview == "pdf")
 
 
 @app.patch("/api/admin/knowledge-documents/{document_id}")
@@ -1573,7 +1584,11 @@ def _uploaded_source_response(document_id: str, user: dict) -> Response:
         return _synthetic_policy_file_response(document_id)
     if source is None:
         raise HTTPException(404, "Uploaded source not found in the active company corpus")
+    return _stored_source_response(document_id, source)
 
+
+def _stored_source_response(document_id: str, source: dict, *, preview_pdf: bool = False) -> Response:
+    extension = str(source["format"] or "").casefold()
     storage, bucket = _storage_client()
     try:
         content = storage.storage.from_(bucket).download(source["storage_path"])
@@ -1581,7 +1596,26 @@ def _uploaded_source_response(document_id: str, user: dict) -> Response:
         logger.exception("Could not open uploaded source %s", document_id)
         raise HTTPException(502, "The stored source file could not be opened") from error
 
-    extension = str(source["format"] or "").casefold()
+    if preview_pdf:
+        if len(content) > 50 * 1024 * 1024:
+            raise HTTPException(413, "Document exceeds 50 MiB")
+        try:
+            processing_url = os.getenv("DOCUMENT_PROCESSING_URL", "").strip()
+            if processing_url:
+                preview = post_internal_service(processing_url, "/docx-preview", {
+                    "filename": "document.docx",
+                    "content": base64.b64encode(content).decode("ascii"),
+                }, timeout=70)
+                content = base64.b64decode(preview["pdf"], validate=True)
+            else:
+                from document_processing.legacy_office import render_docx_preview
+
+                content = render_docx_preview(content)
+        except (RuntimeError, ValueError, TypeError, KeyError) as error:
+            logger.exception("Could not render DOCX preview for %s", document_id)
+            raise HTTPException(502, "The DOCX preview could not be rendered") from error
+        extension = "pdf"
+
     media_type = MEDIA_TYPES.get(f".{extension}", "application/octet-stream")
     disposition = "attachment" if extension == "svg" else "inline"
     title = re.sub(r"[\r\n/\\]+", " ", str(source["title"] or document_id)).strip()

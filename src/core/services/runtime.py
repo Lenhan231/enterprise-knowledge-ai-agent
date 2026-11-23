@@ -201,6 +201,22 @@ class Parse(BaseModel):
     config: dict = Field(default_factory=dict)
 
 
+@app.post("/docx-preview")
+def docx_preview(body: Parse):
+    if os.getenv("SERVICE_KIND") != "document-processing":
+        raise HTTPException(404)
+    from document_processing.legacy_office import render_docx_preview
+
+    try:
+        content = base64.b64decode(body.content, validate=True)
+        if len(content) > 50 * 1024 * 1024:
+            raise HTTPException(413, "Document exceeds 50 MiB")
+        pdf = render_docx_preview(content)
+    except ValueError as error:
+        raise HTTPException(422, "Could not render DOCX preview") from error
+    return {"pdf": base64.b64encode(pdf).decode("ascii")}
+
+
 @app.post("/parse")
 def parse(body: Parse):
     if os.getenv("SERVICE_KIND") != "document-processing":

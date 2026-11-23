@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+import logging
 import os
 import re
 from collections.abc import Mapping
@@ -72,6 +73,8 @@ from core.llm.llm_interface import LLMInterface
 from core.models.agents import AgentResult, Evidence, VerifiedIdentity
 from core.latency import measure
 from core.agents.runtime import generate, generate_with_local_codex
+
+logger = logging.getLogger(__name__)
 
 
 class AnalyticsPermissionDenied(PermissionError):
@@ -1056,6 +1059,12 @@ class SQLAnalyticsAgent(BaseAgent):
     @staticmethod
     def _generation_error(error: Exception, sql: str | None = None,
                           parameters: tuple[Any, ...] = (), *, question: str = "") -> dict[str, Any]:
+        if not isinstance(error, (SQLValidationError, MetricDefinitionError)):
+            logger.error(
+                "SQL agent failed unexpectedly (error_type=%s)",
+                type(error).__name__,
+                exc_info=(type(error), error, error.__traceback__),
+            )
         result = {
             "ok": False, "operation": "text_to_sql", "rows": [],
             "answer": f"I couldn't safely run the generated query: {error}",

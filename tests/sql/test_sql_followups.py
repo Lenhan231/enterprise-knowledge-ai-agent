@@ -15,7 +15,7 @@ from core.agents.decision_support.execution import Execution, TaskOutcome
 from core.agents.decision_support.response import (_failure_answer, _month_over_month_sql_finding, _null_sql_findings,
                                   _scalar_sql_finding, assemble_response)
 from core.agents.decision_support.router import AgentRouter
-from core.agents.sql.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
+from core.agents.sql.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied, payload_to_agent_result
 from core.models.agent_plan import AgentPlan, AgentTask
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity, validate_chat_metadata
 from core.agents.sql.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
@@ -40,6 +40,37 @@ class FailureMessageTest(unittest.TestCase):
         self.assertIn('JOIN does not match', validation)
         self.assertIn('an toàn SQL', _failure_answer([outcome('SQLSecurityError')], question))
         self.assertIn('hết thời gian', _failure_answer([outcome('TimeoutError')], question))
+
+    def test_database_missing_column_has_a_safe_reason(self):
+        error = type('UndefinedColumnError', (Exception,), {'sqlstate': '42703'})('private database detail')
+        result = payload_to_agent_result(SQLAnalyticsAgent._database_error(error, None, ()))
+        outcome = SimpleNamespace(status='failed', error_type='UndefinedColumnError', error_detail=None, result=result)
+        answer = _failure_answer([outcome], 'xem doanh thu')
+        self.assertIn('could not resolve a column', answer)
+        self.assertNotIn('private database detail', answer)
+
+
+class EmptySQLResultTest(unittest.IsolatedAsyncioTestCase):
+    async def test_auto_reports_an_executed_empty_query_without_replanning(self):
+        sql = 'SELECT o.order_id FROM commerce.orders AS o LIMIT 1'
+        sql_agent = Mock()
+        sql_agent.run = AsyncMock(return_value=AgentResult(
+            answer='No matching rows.', agent='sql_analytics',
+            data={'sql': sql, 'query_status': 'executed', 'rows': []},
+            metadata={'ok': False},
+        ))
+        router = AgentRouter(None, None, sql_agent, llm=Mock())
+        with (
+            patch('core.agents.decision_support.orchestrator.classify_jev_route',
+                  return_value={'route': 'sql', 'selected_tools': ['sql'], 'confidence': 0.99}),
+            patch('core.agents.decision_support.orchestrator.plan_request', new_callable=AsyncMock) as plan_request,
+        ):
+            result = await router.run(AgentRequest(question='Liệt kê đơn hàng tháng 3', identity=IDENTITY))
+        plan_request.assert_not_awaited()
+        self.assertEqual(result.metadata['status'], 'empty', result.answer)
+        self.assertEqual(result.metadata['task_trace'][0]['status'], 'empty')
+        self.assertEqual(result.data['sql']['rows'], [])
+        self.assertIn('Truy vấn đã chạy nhưng không tìm thấy', result.answer)
 
 
 class SQLPatchTest(unittest.TestCase):

@@ -38,6 +38,8 @@ def outcome_status(result):
         return metadata['status']
     if result.data.get('insufficient_context') or metadata.get('insufficient_context'):
         return 'partial' if result.evidence else 'empty'
+    if result.data.get('query_status') == 'executed' and result.data.get('rows') == []:
+        return 'empty'
     if not metadata.get('ok', True):
         return 'failed'
     if not result.evidence or ('rows' in result.data and not result.data['rows']):
@@ -225,10 +227,13 @@ class Execution:
 
     @staticmethod
     def trace_item(outcome):
-        return {'id': outcome.task.id, 'agent': outcome.task.agent, 'depends_on': outcome.task.depends_on,
+        trace = {'id': outcome.task.id, 'agent': outcome.task.agent, 'depends_on': outcome.task.depends_on,
                 'status': outcome.status, 'attempts': outcome.attempts,
                 'elapsed_ms': outcome.elapsed_ms, 'error_type': outcome.error_type,
                 'error_detail': outcome.error_detail}
+        if outcome.result and (reason := outcome.result.metadata.get('sql_repair_reason')):
+            trace['sql_repair_reason'] = reason
+        return trace
 
     def revision_context(self, plan):
         return {'plan': plan.model_dump(), 'outcomes': [

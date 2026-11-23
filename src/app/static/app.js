@@ -1433,7 +1433,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   const outcome = answerOutcome(data, citations);
   const responseTitle = data.failure_code === "sql_timeout" ? "The data query took too long"
     : outcome.title
-    || ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Could not complete"})[data.status]
+    || ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Could not complete", empty: "No matching data"})[data.status]
     || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence only" : "Answer");
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
@@ -2177,7 +2177,11 @@ function renderRunDetails(data) {
   const rows = [];
   if (data.selected_route) rows.push(`<p><strong>Route:</strong> ${escapeHtml(data.selected_route)}</p>`);
   if (Array.isArray(data.task_trace) && data.task_trace.length) {
-    rows.push(`<ul>${data.task_trace.map((task) => `<li>${escapeHtml(task.agent)} · ${escapeHtml(task.status)} · ${formatNumber(task.elapsed_ms)} ms${task.error_type ? ` · ${escapeHtml(task.error_type)}` : ""}</li>`).join("")}</ul>`);
+    rows.push(`<ul>${data.task_trace.map((task) => {
+      const error = task.error_detail ? `<br><small>${escapeHtml(task.error_detail)}</small>` : "";
+      const repair = task.sql_repair_reason ? `<br><small>SQL repair: ${escapeHtml(task.sql_repair_reason)}</small>` : "";
+      return `<li>${escapeHtml(task.agent)} · ${escapeHtml(task.status)} · ${formatNumber(task.elapsed_ms)} ms${task.error_type ? ` · ${escapeHtml(task.error_type)}` : ""}${error}${repair}</li>`;
+    }).join("")}</ul>`);
   }
   const search = data.search;
   if (search) {

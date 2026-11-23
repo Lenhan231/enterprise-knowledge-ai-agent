@@ -305,6 +305,17 @@ def _failure_answer(outcomes, question):
     if error_types & {'PlanningError', 'NoProgress'}:
         return ('Hệ thống chưa lập được kế hoạch truy vấn phù hợp cho yêu cầu này.' if vietnamese
                 else 'The system could not create a suitable query plan for this request.')
+    if len(failures) == 1 and failures[0].result:
+        result = failures[0].result
+        query_status = result.data.get('query_status')
+        if query_status == 'executed' and result.data.get('rows') == []:
+            return ('Truy vấn đã chạy nhưng không tìm thấy dòng dữ liệu nào trong phạm vi đã chọn.' if vietnamese
+                    else 'The query ran and found no matching rows in the selected scope.')
+        if query_status == 'error':
+            prefix = ('Database không hoàn tất được truy vấn.' if vietnamese
+                      else 'The database did not complete the query.')
+            detail = result.metadata.get('error_detail')
+            return f'{prefix} {detail}' if detail else prefix
     return ('Chưa thể hoàn tất yêu cầu do một tác vụ xử lý thất bại hoặc hết thời gian.' if vietnamese
             else 'The request could not be completed because a task failed or timed out.')
 
@@ -314,6 +325,9 @@ async def assemble_response(request, plan, execution, provider):
     usable = [o for o in active if o.result and o.result.evidence and o.status in {'complete', 'partial'}]
     missing = [o for o in active if o.status != 'complete']
     status = 'complete' if len(active) == len(plan.tasks) and not missing else ('partial' if usable else 'failed')
+    if (len(plan.tasks) == len(active) == 1 and active[0].task.agent == 'sql' and active[0].status == 'empty'
+            and active[0].result and active[0].result.data.get('query_status') == 'executed'):
+        status = 'empty'
     clarification_options = []
     if not usable and any(o.status == 'clarification_required' for o in active):
         status = 'clarification_required'
@@ -341,10 +355,13 @@ async def assemble_response(request, plan, execution, provider):
                 else:
                     limitations.append('The metric definition is unverified; results reflect the generated query and are not a canonical business metric.')
         if outcome.status != 'complete':
-            limitations.append(f'{outcome.task.agent} task {outcome.task.id}: {outcome.status}.')
+            if status != 'empty':
+                limitations.append(f'{outcome.task.agent} task {outcome.task.id}: {outcome.status}.')
             if outcome.result:
                 diagnostic = {key: value for key, value in outcome.result.data.items()
                               if key in {'sql', 'attempted_sql', 'parameters', 'query_status'}}
+                if outcome.status == 'empty' and diagnostic.get('query_status') == 'executed':
+                    diagnostic['rows'] = []
                 if diagnostic:
                     data[outcome.task.agent] = diagnostic
     for outcome in usable:

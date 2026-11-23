@@ -16,7 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.security import ACCESS_DENIED_MESSAGE, ROLE_PERMISSIONS, require_permission
+from app.security import ACCESS_DENIED_MESSAGE, require_permission
 from core.latency import latency_events, snapshot, stage_listener
 
 logger = logging.getLogger(__name__)
@@ -83,10 +83,11 @@ async def _get_runtime(application):
 def _agent_request(user: dict, question: str, **values):
     from core.models.agents import AgentRequest, VerifiedIdentity
 
-    permissions = {"analytics:read"} if "view_analytics" in ROLE_PERMISSIONS[user["role"]] else set()
-    if "ask_documents" in ROLE_PERMISSIONS[user["role"]]:
+    role_permissions = user["permissions"]
+    permissions = {"analytics:read"} if "view_analytics" in role_permissions else set()
+    if "ask_documents" in role_permissions:
         permissions.add("documents:read")
-    if "view_agent_monitoring" in ROLE_PERMISSIONS[user["role"]]:
+    if "view_agent_monitoring" in role_permissions:
         permissions.add("agents:diagnostics")  # e.g. the draft a claim check withheld
     identity = VerifiedIdentity(subject=user["sub"], permissions=frozenset(permissions),
                                 document_roles={user["role"]} if "documents:read" in permissions else set())

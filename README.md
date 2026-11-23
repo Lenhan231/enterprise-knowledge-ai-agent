@@ -209,6 +209,10 @@ browser. The demo has no user-registration or password-reset flow.
 - Tester: isolated Upload Test only; parser chunks and tables stay outside the corpus.
 - Admin: analyst access plus upload, source review, access control, and knowledge-file management.
 
+Admin role grants are editable in Access Control. The checked-in Supabase migrations seed the
+initial role permissions; apply them before using the app because API authorization reads the
+current grants from the private database table on each request.
+
 Configure `DEMO_TESTER_USERNAME` / `DEMO_TESTER_PASSWORD` to enable the Tester
 login. Tester can run Upload Tests and inspect saved runs, but cannot browse
 documents or use production upload. Upload Test runs Docling with configurable

@@ -26,9 +26,10 @@ from core.database.document_repository import DocumentRepository
 from core.agents.sql.commerce_decision_support import COMMERCE_DECISION_PROFILES
 from supabase import create_client
 from app.security import (
-    DOCUMENT_ROLES, ROLE_PERMISSIONS, _current_user, _is_trusted_frontend_origin,
+    DOCUMENT_ROLES, PERMISSION_CATALOG, ROLE_PERMISSIONS, _current_user, _is_trusted_frontend_origin,
     _require_same_origin,
-    _roles_with_permission, auth_scheme, require_permission, require_roles,
+    auth_scheme, get_role_permission_matrix, get_role_permissions,
+    require_permission, require_roles,
 )
 from app.agents import router as agents_router
 from app.dashboards import router as dashboards_router
@@ -223,6 +224,19 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=200)
 
 
+class RolePermissionAssignment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    role: str = Field(min_length=1, max_length=50)
+    permissions: set[str] = Field(max_length=len(PERMISSION_CATALOG))
+
+
+class AccessMatrixUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    roles: list[RolePermissionAssignment] = Field(
+        min_length=len(ROLE_PERMISSIONS), max_length=len(ROLE_PERMISSIONS),
+    )
+
+
 class KnowledgeBaseStatusRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     active: bool
@@ -263,7 +277,12 @@ def login(request: Request, payload: LoginRequest):
     account = accounts.get(payload.username)
     if account is None or not secrets.compare_digest(account[0], payload.password):
         raise HTTPException(401, "Invalid username or password")
-    response = JSONResponse({"username": payload.username, "role": account[1], "expires_in": 3600})
+    response = JSONResponse({
+        "username": payload.username,
+        "role": account[1],
+        "permissions": sorted(get_role_permissions(account[1])),
+        "expires_in": 3600,
+    })
     secure_cookie = os.getenv("AUTH_COOKIE_SECURE", "false").lower() == "true" \
         or _is_trusted_frontend_origin(request.headers.get("origin"))
     response.set_cookie("enterprise_session", _issue_token(payload.username, account[1]), httponly=True, secure=secure_cookie, samesite="lax", max_age=3600, path="/")
@@ -291,7 +310,11 @@ def database_health(user: dict = Depends(require_roles(*ROLE_PERMISSIONS.keys())
 
 @app.get("/api/auth/me")
 def who_am_i(user: dict = Depends(require_roles(*ROLE_PERMISSIONS.keys()))):
-    return {"username": user["sub"], "role": user["role"]}
+    return {
+        "username": user["sub"],
+        "role": user["role"],
+        "permissions": sorted(get_role_permissions(user["role"])),
+    }
 
 
 @app.post("/api/auth/logout")
@@ -322,7 +345,7 @@ def dashboard_data(user: dict = Depends(require_permission("view_corpus"))):
 
 @app.get("/api/documents/upload-capability")
 def upload_capability(user: dict = Depends(require_permission("view_corpus"))):
-    return {"can_upload": "upload_documents" in ROLE_PERMISSIONS[user["role"]]}
+    return {"can_upload": "upload_documents" in user["permissions"]}
 
 
 @app.get("/api/documents/roles")
@@ -622,6 +645,10 @@ async def upload_document(
     """Keep original bytes in private Storage; persist parsed evidence in PostgreSQL."""
     _require_same_origin(request)
     parser_handoff = request is not None and request.url.path == "/api/documents/parser-handoff"
+    if parser_handoff and "process_documents" not in user.get("permissions", ()):
+        raise HTTPException(403, "Document processing permission is required for parser handoff")
+    if not parser_handoff and "classify_documents" not in user.get("permissions", ()):
+        raise HTTPException(403, "Document classification permission is required for upload")
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     if not filename or extension not in SUPPORTED_FORMATS:
@@ -1590,11 +1617,65 @@ def open_uploaded_source(
 def access_matrix(user: dict = Depends(require_permission("manage_access"))):
     return {
         "current_user": user["sub"],
+        "permissions": sorted(PERMISSION_CATALOG),
         "roles": [
             {"role": role, "permissions": sorted(permissions)}
-            for role, permissions in ROLE_PERMISSIONS.items()
+            for role, permissions in get_role_permission_matrix().items()
         ],
     }
+
+
+@app.put("/api/admin/access-matrix")
+def update_access_matrix(
+    request: AccessMatrixUpdate,
+    http_request: Request,
+    user: dict = Depends(require_permission("manage_access")),
+):
+    _require_same_origin(http_request)
+    requested: dict[str, set[str]] = {}
+    for assignment in request.roles:
+        if assignment.role not in ROLE_PERMISSIONS or assignment.role in requested:
+            raise HTTPException(422, "Choose each known role exactly once")
+        if assignment.permissions - PERMISSION_CATALOG:
+            raise HTTPException(422, "Choose only supported workspace permissions")
+        requested[assignment.role] = assignment.permissions
+    if set(requested) != set(ROLE_PERMISSIONS):
+        raise HTTPException(422, "Include every workspace role exactly once")
+    if "manage_access" not in requested["admin"]:
+        raise HTTPException(422, "The admin role must retain access management")
+
+    from core.database.connection_limit import close_database_connection, connect_database
+
+    connection = None
+    try:
+        connection = connect_database()
+        rows = [
+            (role, permission)
+            for role, permissions in requested.items()
+            for permission in permissions
+        ]
+        with connection.transaction():
+            with connection.cursor() as cursor:
+                cursor.execute("DELETE FROM private.role_permission_grants")
+                cursor.executemany(
+                    "INSERT INTO private.role_permission_grants (role, permission) VALUES (%s, %s)",
+                    rows,
+                )
+        return {
+            "updated": True,
+            "roles": [
+                {"role": role, "permissions": sorted(permissions)}
+                for role, permissions in requested.items()
+            ],
+        }
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Could not update role permission grants for %s", user["sub"])
+        raise HTTPException(503, "Role permissions could not be saved") from error
+    finally:
+        if connection is not None:
+            close_database_connection(connection)
 
 
 @app.get("/api/admin/answer-feedback")

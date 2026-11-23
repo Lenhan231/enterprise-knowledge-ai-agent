@@ -79,9 +79,8 @@ function selectWorkspaceTab(name) {
   $("#workspace-main").classList.toggle("invoice-review-active", name === "invoice-review");
   const isKnowledgeTab = name === "knowledge";
   $(".intro").hidden = !isKnowledgeTab;
-  $(".agent-overview").hidden = !isKnowledgeTab
-    || ["document_processing_owner", "document_uploader"].includes(currentUser?.role);
-  $(".stats").hidden = !isKnowledgeTab || currentUser?.role === "document_processing_owner";
+  $(".agent-overview").hidden = !isKnowledgeTab || !hasPermission(currentUser, "ask_documents");
+  $(".stats").hidden = !isKnowledgeTab || !hasPermission(currentUser, "view_corpus");
   const firstTab = Array.from(document.querySelectorAll(".workspace-tab")).find(tab => !tab.hidden);
   document.querySelectorAll(".workspace-tab").forEach((tab) => {
     const selected = tab === button;
@@ -94,29 +93,29 @@ function selectWorkspaceTab(name) {
   });
 }
 
+function hasPermission(user, permission) {
+  return Array.isArray(user?.permissions) && user.permissions.includes(permission);
+}
+
 function syncWorkspaceTabs(user = currentUser) {
-  const isProcessingOwner = user?.role === "document_processing_owner";
-  const isAdmin = user?.role === "admin";
-  const canAskDocuments = !isProcessingOwner && user?.role !== "document_uploader";
-  const canUpload = ["document_uploader", "admin", "document_processing_owner"].includes(user?.role);
   const available = {
     // General Chat is the one chat (with Route to); the Reports tab (id "knowledge") keeps the report generator; its old chat box stays hidden.
-    dashboard: ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user?.role),
-    knowledge: canAskDocuments,
-    "general-chat": canAskDocuments,
-    upload: canUpload,
-    "invoice-review": canUpload,
-    processing: isProcessingOwner,
-    "ocr-lab": isProcessingOwner,
-    "knowledge-management": isAdmin,
-    access: isAdmin,
-    monitoring: isAdmin,
+    dashboard: hasPermission(user, "view_analytics"),
+    knowledge: hasPermission(user, "ask_documents"),
+    "general-chat": hasPermission(user, "ask_documents"),
+    upload: hasPermission(user, "upload_documents"),
+    "invoice-review": hasPermission(user, "upload_documents"),
+    processing: hasPermission(user, "process_documents") || hasPermission(user, "list_processing_documents"),
+    "ocr-lab": hasPermission(user, "run_upload_tests") || hasPermission(user, "review_upload_tests"),
+    "knowledge-management": hasPermission(user, "manage_knowledge"),
+    access: hasPermission(user, "manage_access"),
+    monitoring: hasPermission(user, "view_agent_monitoring"),
   };
   document.querySelectorAll(".workspace-tab").forEach((button) => {
     button.hidden = !available[button.dataset.tabTarget];
   });
   if (activeTab !== "home" && !available[activeTab]) {
-    activeTab = isProcessingOwner ? "processing" : available["general-chat"] ? "general-chat" : available.upload ? "upload" : "general-chat";
+    activeTab = available.processing ? "processing" : available["general-chat"] ? "general-chat" : available.upload ? "upload" : available["ocr-lab"] ? "ocr-lab" : "home";
   }
   selectWorkspaceTab(activeTab);
 }
@@ -808,8 +807,8 @@ async function refreshKnowledgeDocuments() {
   $("#knowledge-documents-status").textContent = "Loading indexed sources…";
   const result = await api("/api/admin/knowledge-documents");
   knowledgeDocuments = result.documents;
-  if (currentUser?.role === "admin") renderKnowledgeDocuments();
-  if (currentUser?.role === "document_processing_owner") renderParsedChunkInspector(knowledgeDocuments);
+  if (hasPermission(currentUser, "manage_knowledge") || hasPermission(currentUser, "list_processing_documents")) renderKnowledgeDocuments();
+  if (hasPermission(currentUser, "process_documents")) renderParsedChunkInspector(knowledgeDocuments);
 }
 
 function renderOcrDiagnostics(diagnostics) {
@@ -2400,29 +2399,34 @@ async function loadWorkspace(user) {
   delete $("#processing-upload-status").dataset.state;
   $("#admin-section").hidden = true;
   $("#monitoring-section").hidden = true;
+  $("[data-open-tab='knowledge-management']").hidden = !hasPermission(user, "manage_knowledge");
   syncWorkspaceTabs();
-  if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
+  if (hasPermission(user, "upload_documents")) {
     const roles = Object.keys(UPLOAD_ROLE_LABELS);
-    $("#upload-role-options").innerHTML = roles.map((role) => {
-      const [label, description] = UPLOAD_ROLE_LABELS[role];
-      return `<label class="upload-role-option"><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span></label>`;
-    }).join("");
-    $("#upload-role-options").querySelectorAll('input[name="allowed_roles"]').forEach((input) => {
-      input.addEventListener("change", updateUploadRoleSelection);
-    });
-    updateUploadRoleSelection();
+    const canClassify = hasPermission(user, "classify_documents");
+    $("#upload-access-step").hidden = !canClassify;
+    if (canClassify) {
+      $("#upload-role-options").innerHTML = roles.map((role) => {
+        const [label, description] = UPLOAD_ROLE_LABELS[role];
+        return `<label class="upload-role-option"><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span></label>`;
+      }).join("");
+      $("#upload-role-options").querySelectorAll('input[name="allowed_roles"]').forEach((input) => {
+        input.addEventListener("change", updateUploadRoleSelection);
+      });
+      updateUploadRoleSelection();
+    }
     $("#upload-section").hidden = false;
     $("#upload-button").disabled = false;
-    const canSaveParserOutput = user.role === "document_processing_owner";
+    const canSaveParserOutput = hasPermission(user, "process_documents");
     $("#parser-handoff-button").hidden = !canSaveParserOutput;
     $("#parser-handoff-button").disabled = !canSaveParserOutput;
   }
-  if (user.role === "admin") {
+  if (hasPermission(user, "manage_knowledge") || hasPermission(user, "list_processing_documents")) {
     void refreshKnowledgeDocuments().catch((error) => {
       $("#knowledge-documents-status").textContent = `Could not load knowledge-base files: ${error.message}`;
     });
   }
-  if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
+  if (hasPermission(user, "upload_documents")) {
     void refreshInvoiceReview().catch((error) => {
       $("#invoice-review-status").textContent = `Could not load invoices: ${error.message}`;
     });
@@ -2433,7 +2437,7 @@ async function loadWorkspace(user) {
   $("#account-initial").textContent = (user.username || "?").charAt(0).toUpperCase();
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
-  const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
+  const canUseAnalytics = hasPermission(user, "view_analytics");
   $("#reports-workspace").hidden = !canUseAnalytics;
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
@@ -2444,40 +2448,80 @@ async function loadWorkspace(user) {
   if (!canUseAnalytics && $("#agent-mode").value === "sql") {
     $("#agent-mode").value = "knowledge";
   }
-  if (user.role !== "document_processing_owner") {
+  if (hasPermission(user, "view_corpus")) {
     await loadCorpusStats();
   }
   if (generation !== sessionGeneration || currentUser !== user) return;
   try {
-    if (user.role === "admin") {
+    if (hasPermission(user, "manage_access")) {
       const access = await api("/api/admin/access-matrix");
       if (generation !== sessionGeneration || currentUser !== user) return;
-      const permissions = [...new Set(access.roles.flatMap((role) => role.permissions))];
-      const yes = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 12.5 4 4 8-9"/></svg>';
-      $("#access-matrix").innerHTML = `<div class="access-table-wrap"><table class="access-table">
-        <caption class="visually-hidden">Workspace permissions by role</caption>
-        <thead><tr><th scope="col">Role</th>${permissions.map((permission) => `<th scope="col">${escapeHtml(displayName(PERMISSION_NAMES, permission))}</th>`).join("")}</tr></thead>
-        <tbody>${access.roles.map((role) => `<tr><th scope="row">${escapeHtml(displayName(ROLE_NAMES, role.role))}</th>${permissions.map((permission) => role.permissions.includes(permission)
-          ? `<td class="is-allowed">${yes}<span class="visually-hidden">Allowed</span></td>`
-          : '<td class="is-denied"><span aria-hidden="true">–</span><span class="visually-hidden">Not allowed</span></td>').join("")}</tr>`).join("")}</tbody>
-      </table></div>`;
+      renderAccessMatrix(access);
       $("#admin-section").hidden = false;
+    }
+    if (hasPermission(user, "view_agent_monitoring")) {
       $("#monitoring-section").hidden = false;
       await refreshAgentMonitoring();
     }
-    if (user.role === "document_processing_owner") {
-      await refreshKnowledgeDocuments();
+    if (hasPermission(user, "review_upload_tests")) {
       await loadOcrTestRuns();
     }
     if (generation !== sessionGeneration || currentUser !== user) return;
+    syncWorkspaceTabs(user);
     $("#login-error").hidden = true;
   } catch (error) {
     if (generation !== sessionGeneration || currentUser !== user) return;
+    syncWorkspaceTabs(user);
     if (error.message !== "Sign in to continue") {
       $("#connection-status").textContent = `Workspace loaded with an error: ${error.message}`;
     }
   }
 }
+
+function renderAccessMatrix(access) {
+  const permissions = access.permissions || [...new Set(access.roles.flatMap((role) => role.permissions))];
+  $("#access-matrix").innerHTML = `<div class="access-table-wrap"><table class="access-table">
+    <caption class="visually-hidden">Workspace permissions by role</caption>
+    <thead><tr><th scope="col">Role</th>${permissions.map((permission) => `<th scope="col">${escapeHtml(displayName(PERMISSION_NAMES, permission))}</th>`).join("")}</tr></thead>
+    <tbody>${access.roles.map((role) => `<tr data-access-role="${escapeHtml(role.role)}"><th scope="row">${escapeHtml(displayName(ROLE_NAMES, role.role))}</th>${permissions.map((permission) => {
+      const checked = role.permissions.includes(permission);
+      const protectedGrant = role.role === "admin" && permission === "manage_access";
+      return `<td class="${checked ? "is-allowed" : "is-denied"}"><input type="checkbox" data-access-permission="${escapeHtml(permission)}" aria-label="${escapeHtml(displayName(ROLE_NAMES, role.role))}: ${escapeHtml(displayName(PERMISSION_NAMES, permission))}"${checked ? " checked" : ""}${protectedGrant ? ' disabled title="The admin role must retain access management"' : ""}></td>`;
+    }).join("")}</tr>`).join("")}</tbody>
+  </table></div>`;
+  $("#access-matrix-save").disabled = true;
+  $("#access-matrix-status").textContent = "No unsaved changes.";
+}
+
+$("#access-matrix").addEventListener("change", (event) => {
+  const input = event.target.closest("input[data-access-permission]");
+  if (!input) return;
+  const cell = input.closest("td");
+  cell.classList.toggle("is-allowed", input.checked);
+  cell.classList.toggle("is-denied", !input.checked);
+  $("#access-matrix-save").disabled = false;
+  $("#access-matrix-status").textContent = "Unsaved permission changes.";
+});
+
+$("#access-matrix-save").addEventListener("click", async () => {
+  const button = $("#access-matrix-save");
+  button.disabled = true;
+  $("#access-matrix-status").textContent = "Saving permissions…";
+  const roles = [...$("#access-matrix tbody").rows].map((row) => ({
+    role: row.dataset.accessRole,
+    permissions: [...row.querySelectorAll("input[data-access-permission]:checked")]
+      .map((input) => input.dataset.accessPermission),
+  }));
+  try {
+    await api("/api/admin/access-matrix", { method: "PUT", body: JSON.stringify({ roles }) });
+    const user = await api("/api/auth/me");
+    await loadWorkspace(user);
+    $("#access-matrix-status").textContent = "Permissions saved.";
+  } catch (error) {
+    button.disabled = false;
+    $("#access-matrix-status").textContent = `Could not save permissions: ${error.message}`;
+  }
+});
 
 $("#workspace-tabs").addEventListener("click", (event) => {
   const button = event.target.closest("[data-tab-target]");
@@ -3213,7 +3257,7 @@ function validateUploadFile(file, invoiceMode = false) {
 
 function updateUploadKind() {
   const invoiceMode = $("#upload-kind").value === "invoice";
-  $("#upload-access-step").hidden = invoiceMode;
+  $("#upload-access-step").hidden = invoiceMode || !hasPermission(currentUser, "classify_documents");
   $("#invoice-model-field").hidden = !invoiceMode;
   $("#upload-title").required = !invoiceMode;
   $("#upload-title").closest(".upload-field").hidden = invoiceMode;
@@ -3341,7 +3385,7 @@ $("#pdf-job-list").addEventListener("click", async (event) => {
       ? `PDF ${result.document_id} · ${pdfJobProgress(result)}`
       : `PDF ${result.document_id} · ${result.searchable ? "Indexed for document Q&A" : "Parser output saved"}`;
     await refreshPdfJobs();
-    if (result.processing_status !== "failed" && ["admin", "document_processing_owner"].includes(currentUser?.role)) {
+    if (result.processing_status !== "failed" && (hasPermission(currentUser, "manage_knowledge") || hasPermission(currentUser, "list_processing_documents"))) {
       void refreshKnowledgeDocuments().catch(() => {});
     }
   } catch (error) {
@@ -3365,12 +3409,15 @@ $("#upload-form").addEventListener("submit", async (event) => {
   const file = $("#upload-file").files[0];
   const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
   const fileError = validateUploadFile(file, invoiceMode);
-  if (fileError || (!invoiceMode && !roles.length)) {
+  const canClassify = hasPermission(currentUser, "classify_documents");
+  if (fileError || (!invoiceMode && (!canClassify || !roles.length))) {
     const status = $("#upload-status");
     $("#upload-status-wrap").hidden = false;
     $("#upload-progress").hidden = true;
     status.dataset.state = "error";
-    status.textContent = fileError || "Select at least one role authorized to retrieve this document.";
+    status.textContent = fileError || (!canClassify
+      ? "Document classification permission is required to assign access roles."
+      : "Select at least one role authorized to retrieve this document.");
     return;
   }
   const body = new FormData();
@@ -3468,13 +3515,13 @@ $("#upload-form").addEventListener("submit", async (event) => {
       $("#upload-file-info").textContent = "Choose one file. Scanned PDFs and images use OCR; Admins can review extracted text and tables in Document Processing.";
     $("#upload-file-info").setAttribute("role", "status");
     try {
-      if (currentUser?.role === "admin") await refreshKnowledgeDocuments();
+      if (hasPermission(currentUser, "manage_knowledge") || hasPermission(currentUser, "list_processing_documents")) await refreshKnowledgeDocuments();
     } catch (error) {
       status.dataset.state = "warning";
       status.textContent = `The file was processed successfully as ${result.document_id}, but the admin document list could not refresh: ${error.message}`;
     }
     const parsedDocument = $("#parsed-document");
-    if (currentUser?.role === "document_processing_owner") {
+    if (hasPermission(currentUser, "process_documents")) {
       const processingStatus = $("#processing-upload-status");
       processingStatus.dataset.state = status.dataset.state || "success";
       processingStatus.textContent = status.textContent;

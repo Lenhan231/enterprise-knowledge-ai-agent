@@ -306,7 +306,10 @@ class CommerceDashboardApiTest(unittest.TestCase):
             KnowledgeBaseStatusRequest(active=False, delete_source=True)
 
     def test_uploader_can_upload_without_analytics_or_admin_review(self):
-        self.assertTrue(upload_capability({"role": "document_uploader"})["can_upload"])
+        self.assertTrue(upload_capability({
+            "role": "document_uploader",
+            "permissions": ROLE_PERMISSIONS["document_uploader"],
+        })["can_upload"])
         self.assertNotIn("/api/business-metrics/parser-profiles", {
             route.path for route in app_main.app.routes
         })

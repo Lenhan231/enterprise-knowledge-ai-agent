@@ -16,7 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.security import ACCESS_DENIED_MESSAGE, require_permission
+from app.security import ACCESS_DENIED_MESSAGE, get_role_permissions, require_permission
 from core.latency import latency_events, snapshot, stage_listener
 
 logger = logging.getLogger(__name__)
@@ -83,7 +83,9 @@ async def _get_runtime(application):
 def _agent_request(user: dict, question: str, **values):
     from core.models.agents import AgentRequest, VerifiedIdentity
 
-    role_permissions = user["permissions"]
+    role_permissions = user.get("permissions")
+    if role_permissions is None:
+        role_permissions = get_role_permissions(user["role"])
     permissions = {"analytics:read"} if "view_analytics" in role_permissions else set()
     if "ask_documents" in role_permissions:
         permissions.add("documents:read")

@@ -27,7 +27,7 @@ from core.agents.sql.commerce_decision_support import COMMERCE_DECISION_PROFILES
 from supabase import create_client
 from app.security import (
     DOCUMENT_ROLES, PERMISSION_CATALOG, ROLE_PERMISSIONS, _current_user, _is_trusted_frontend_origin,
-    _require_same_origin,
+    _require_same_origin, _roles_with_permission,
     auth_scheme, get_role_permission_matrix, get_role_permissions,
     require_permission, require_roles,
 )
@@ -645,10 +645,12 @@ async def upload_document(
     """Keep original bytes in private Storage; persist parsed evidence in PostgreSQL."""
     _require_same_origin(request)
     parser_handoff = request is not None and request.url.path == "/api/documents/parser-handoff"
-    if parser_handoff and "process_documents" not in user.get("permissions", ()):
-        raise HTTPException(403, "Document processing permission is required for parser handoff")
-    if not parser_handoff and "classify_documents" not in user.get("permissions", ()):
-        raise HTTPException(403, "Document classification permission is required for upload")
+    permissions = user.get("permissions")
+    if permissions is not None:
+        if parser_handoff and "process_documents" not in permissions:
+            raise HTTPException(403, "Document processing permission is required for parser handoff")
+        if not parser_handoff and "classify_documents" not in permissions:
+            raise HTTPException(403, "Document classification permission is required for upload")
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     if not filename or extension not in SUPPORTED_FORMATS:

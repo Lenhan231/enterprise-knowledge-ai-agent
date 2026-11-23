@@ -4,13 +4,14 @@ function workspace(role='operations') {
   const nodes=new Map(),shows=[];
   const node=id=>{
     if(!nodes.has(id))nodes.set(id,{id,hidden:false,dataset:{},attrs:{},classList:{add(){},remove(){},toggle(){}},
-      setAttribute(k,v){this.attrs[k]=v;},getAttribute(k){return this.attrs[k];},querySelectorAll(){return [];},replaceChildren(){}});
+      setAttribute(k,v){this.attrs[k]=v;},getAttribute(k){return this.attrs[k];},querySelectorAll(){return [];},replaceChildren(){},addEventListener(){}});
     return nodes.get(id);
   };
   const tabs=['dashboard','knowledge','general-chat','upload','processing'];
   const buttons=tabs.map(name=>{const n=node('tab-button-'+name);n.dataset.tabTarget=name;n.attrs['aria-controls']='tab-'+name;return n;});
   const panels=tabs.map(name=>node('tab-'+name));
-  const context=vm.createContext({currentUser:{role},activeTab:'home',setTimeout:()=>1,clearTimeout(){},countUp(){},
+  const permissions={operations:['view_corpus','ask_documents','view_analytics'],employee:['view_corpus','ask_documents']}[role]||[];
+  const context=vm.createContext({currentUser:{role,permissions},activeTab:'home',setTimeout:()=>1,clearTimeout(){},countUp(){},
     $:selector=>selector.startsWith('[data-tab-target=') ? buttons.find(b=>b.dataset.tabTarget===selector.split('"')[1]) : node(selector.replace(/^#/,'')),
     document:{querySelectorAll:s=>s==='.workspace-tab'?buttons:panels},
     window:{businessOverview:{show:allowed=>shows.push(['home',allowed])},dashboardWorkspace:{show:()=>shows.push(['dashboard'])},reportWorkspace:{show:()=>shows.push(['reports'])}}});
@@ -42,7 +43,7 @@ test('slow login metadata does not reveal report headers or refresh home twice',
     loadCorpusStats:()=>new Promise(done=>{resolve=done;})});
   const start=source.indexOf('async function loadWorkspace('),end=source.indexOf('$("#workspace-tabs").addEventListener',start);
   vm.runInContext(source.slice(start,end),env.context);
-  const pending=env.context.loadWorkspace({username:'new-user',role:'operations'});
+  const pending=env.context.loadWorkspace({username:'new-user',role:'operations',permissions:['view_corpus','ask_documents','view_analytics']});
   assert.equal(env.node('.intro').hidden,true);
   assert.equal(env.node('.agent-overview').hidden,true);
   assert.equal(env.node('.stats').hidden,true);
@@ -61,11 +62,11 @@ test('home preserves role restrictions and refuses navigation when signed out',(
 });
 test('restored sessions and a different login start at home and home is outside dashboard markup',()=>{
   assert.match(source,/let activeTab = "home"/);
-  const start=source.indexOf('async function loadWorkspace('),end=source.indexOf('  if (["admin", "document_uploader"',start);
+  const start=source.indexOf('async function loadWorkspace('),end=source.indexOf('  if (hasPermission(user, "upload_documents"))',start);
   const env=workspace();Object.assign(env.context,{sessionSubject:'previous',sessionGeneration:1,activeTab:'dashboard',
     chooseBackend(){},backendTimer:1,clearInvoiceReviewCaches(){},resetConversationState(){},setInterval(){}});
   vm.runInContext(source.slice(start,end)+'}',env.context);
-  env.context.loadWorkspace({username:'new-user',role:'operations'});
+  env.context.loadWorkspace({username:'new-user',role:'operations',permissions:['view_corpus','ask_documents','view_analytics']});
   assert.equal(env.context.activeTab,'home');
   const html=fs.readFileSync('src/app/static/index.html','utf8');
   assert(!html.includes('data-tab-target="home"'));

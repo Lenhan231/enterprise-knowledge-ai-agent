@@ -2467,11 +2467,9 @@ async function loadWorkspace(user) {
       await loadOcrTestRuns();
     }
     if (generation !== sessionGeneration || currentUser !== user) return;
-    syncWorkspaceTabs(user);
     $("#login-error").hidden = true;
   } catch (error) {
     if (generation !== sessionGeneration || currentUser !== user) return;
-    syncWorkspaceTabs(user);
     if (error.message !== "Sign in to continue") {
       $("#connection-status").textContent = `Workspace loaded with an error: ${error.message}`;
     }

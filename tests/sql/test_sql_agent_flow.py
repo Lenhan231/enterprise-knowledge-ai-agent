@@ -907,6 +907,8 @@ ORDER BY m.sessions DESC LIMIT 20""",
         repository.execute_approved_query.assert_awaited_once_with(PRODUCT_GROWTH_SQL)
 
     async def test_cloudflare_request_error_falls_back_to_mock_groq_with_same_prompt(self):
+        from urllib.error import HTTPError
+
         from core.llm.Cloudflare_provider import CloudflareProvider
 
         prompt = "Generate a bounded SELECT using the supplied schema."
@@ -915,16 +917,26 @@ ORDER BY m.sessions DESC LIMIT 20""",
             "CLOUDFLARE_WORKERS_API": "test-token",
         }):
             cloudflare = CloudflareProvider()
-        cloudflare.generate = Mock(side_effect=RuntimeError("offline in test"))
+        error = RuntimeError("maximum context length exceeded; provider echoed private text")
+        error.__cause__ = HTTPError("https://example.test", 400, "Bad Request", None, None)
+        cloudflare.generate = Mock(side_effect=error)
         fallback_response = "{\"sql\":\"SELECT 1 LIMIT 1\",\"parameters\":[]}"
         fallback = FakeProvider([fallback_response])
         agent = SQLAnalyticsAgent(FakeRepository(), llm=cloudflare, inventory_only=False)
-        with patch("core.llm.groq_provider.GroqProvider", return_value=fallback):
+        with patch("core.llm.groq_provider.GroqProvider", return_value=fallback), \
+                self.assertLogs("core.agents.runtime", level="WARNING") as logs:
             result = await agent._generate_sql(prompt)
 
         self.assertEqual(result, fallback_response)
         cloudflare.generate.assert_called_once_with(prompt)
         self.assertEqual(fallback.prompts, [prompt])
+        self.assertEqual(len(logs.output), 1)
+        log = logs.output[0]
+        self.assertIn("stage=sql_generation_primary provider=CloudflareProvider", log)
+        self.assertIn(f"prompt_chars={len(prompt)}", log)
+        self.assertIn("http_status=400 context_limit_hint=True", log)
+        self.assertNotIn(prompt, log)
+        self.assertNotIn("provider echoed private text", log)
 
     async def test_groq_request_error_does_not_fall_back_to_cloudflare(self):
         from core.llm.groq_provider import GroqProvider

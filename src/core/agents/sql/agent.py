@@ -455,13 +455,15 @@ class SQLAnalyticsAgent(BaseAgent):
                         from core.prompts.sql import DASHBOARD_OUTPUT_INSTRUCTIONS
                         mapping_prompt += DASHBOARD_OUTPUT_INSTRUCTIONS + '\nFor this typed interpretation use query: 0 and the compiled output aliases from metrics/dimensions. Add outputs alongside the mapping fields; do not generate SQL. Clarify requests needing multiple datasets.'
                     try:
-                        mapped = await generate(self._provider(), mapping_prompt, timeout=30)
+                        mapped = await generate(self._provider(), mapping_prompt, timeout=30,
+                                                log_stage=None if dashboard_build else 'sql_metric_mapping')
                     except Exception as provider_error:
                         # DashboardSQLAgent uses this signal to transfer a typed count
                         # contract into its count compiler. It is not an LLM failure.
                         if getattr(provider_error, 'dashboard_count_response', False):
                             raise
-                        mapped = await generate_with_local_codex(mapping_prompt, provider_error)
+                        mapped = await generate_with_local_codex(
+                            mapping_prompt, provider_error, log_stage='sql_metric_mapping_codex_fallback')
                 if dashboard_build:
                     mapping_response = parse_json_response(mapped)
                     if isinstance(mapping_response, dict):
@@ -1019,7 +1021,7 @@ class SQLAnalyticsAgent(BaseAgent):
     async def _generate_sql(self, prompt: str) -> str:
         primary = self._provider()
         try:
-            return await generate(primary, prompt, timeout=75)
+            return await generate(primary, prompt, timeout=75, log_stage='sql_generation_primary')
         except Exception as primary_error:
             from core.agents.runtime import CodexCLIProvider
             if isinstance(primary, CodexCLIProvider):
@@ -1030,7 +1032,8 @@ class SQLAnalyticsAgent(BaseAgent):
                 fallback_type = GroqProvider
                 fallback_kwargs = {}
             else:
-                return await generate_with_local_codex(prompt, primary_error)
+                return await generate_with_local_codex(
+                    prompt, primary_error, log_stage='sql_generation_codex_fallback')
             try:
                 fallback = getattr(self, "_fallback_llm", None)
                 if fallback is None:
@@ -1039,9 +1042,10 @@ class SQLAnalyticsAgent(BaseAgent):
             except Exception:
                 raise primary_error
             try:
-                return await generate(fallback, prompt, timeout=75)
+                return await generate(fallback, prompt, timeout=75, log_stage='sql_generation_groq_fallback')
             except Exception as fallback_error:
-                return await generate_with_local_codex(prompt, fallback_error)
+                return await generate_with_local_codex(
+                    prompt, fallback_error, log_stage='sql_generation_codex_fallback')
 
     @staticmethod
     def _authorize(request: Any) -> None:

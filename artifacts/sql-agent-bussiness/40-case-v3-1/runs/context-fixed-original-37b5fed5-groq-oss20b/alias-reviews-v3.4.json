@@ -1,0 +1,38 @@
+{
+  "raw_observations_sha256": "3fcd1a55e93ec496ec5d345d3adc404ef9c38237d73e06e4bd30a9bba62f3411",
+  "reviews": [
+    {
+      "case_id": "B40-002",
+      "query_sha256": "f71fe8ddd71c4cacd5b74b270976dbfe8c4cc39f83a89556ab561b59c6face11",
+      "aliases": {
+        "avg_delivery_time": "average_delivery_days"
+      },
+      "evidence": "The AVG projection is delivery_date minus ship_date on each shipment, ignoring NULL delivery dates. Its unit is calendar days."
+    },
+    {
+      "case_id": "B40-003",
+      "query_sha256": "9c9dbb6aa446489deb156a372f36c13bbed52ef940a4370fe8bbccdf528f9142",
+      "aliases": {
+        "return_records": "return_count"
+      },
+      "evidence": "COUNT(*) is equivalent to counting distinct return IDs because returns has one row per return_id."
+    },
+    {
+      "case_id": "B40-020",
+      "query_sha256": "20ce60e7d7ec133c26882c968e6db5480c181cf9aa6e4e27b12e7f8bd16b4e4a",
+      "aliases": {
+        "non_null_count": "fee_observation_count"
+      },
+      "evidence": "The count filters shipping_fee IS NOT NULL, making it equivalent to COUNT(shipping_fee) on the same shipment rows."
+    },
+    {
+      "case_id": "B40-022",
+      "query_sha256": "9f4456987e9e5e135faffb755cc35d15b192e82a32cc5ba406162df861ebb2df",
+      "aliases": {
+        "count_with": "products_with_days_of_supply",
+        "count_without": "products_without_days_of_supply"
+      },
+      "evidence": "The inventory key is one product per snapshot. Counting distinct non-NULL and NULL groups on that key is equivalent to the two required per-snapshot counts."
+    }
+  ]
+}

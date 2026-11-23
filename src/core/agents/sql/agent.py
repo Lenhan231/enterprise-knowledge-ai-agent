@@ -334,7 +334,8 @@ class SQLAnalyticsAgent(BaseAgent):
         elif (not fixed_selection.matched and direct is None and not inventory_candidate
               and not dashboard_request and options.get('_report_planned_task') is not True):
             try:
-                interpreted = await interpret_query_intent(question, self._provider(), table_columns)
+                interpreted = await interpret_query_intent(
+                    question, self._provider(), table_columns, conversation_context=conversation_context)
             except Exception as error:
                 # If intent extraction fails, try SQL generation from the original
                 # question. The generated query still passes SQL and schema validation.

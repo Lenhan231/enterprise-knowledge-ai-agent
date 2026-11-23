@@ -13,7 +13,7 @@ from core.database.pdf_job_repository import pdf_jobs
 from core.services.client import post
 
 PDF_BATCH_SIZE = 20
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("uvicorn.error").getChild(__name__)
 
 
 def pdf_page_count(content: bytes) -> int:

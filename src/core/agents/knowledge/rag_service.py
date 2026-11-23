@@ -295,6 +295,9 @@ class RAGService:
         prompt_sha256 = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
         with measure("answer_generation"):
             answer = _normalize_source_citations(self.llm.generate(prompt).strip())
+        # The model sometimes ends a cited partial answer with the stock "not enough" sentence, contradicting it.
+        if answer != INSUFFICIENT_ANSWER and answer.endswith(INSUFFICIENT_ANSWER):
+            answer = answer[:-len(INSUFFICIENT_ANSWER)].rstrip()
 
         # A draft that only says "the supplied documents do not state this" (often citing every source) makes no
         # claim: auditing it either fails on evidence limits ("withheld") or stamps a seal on a retrieval miss.

@@ -42,6 +42,12 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result.insufficient_context)
         self.assertIn(INSUFFICIENT_ANSWER, self.rag.llm.generate.call_args.args[0])
 
+    def test_trailing_stock_insufficient_sentence_is_dropped_from_cited_answer(self):
+        self.rag.llm.generate.return_value = "Docs cover only leave handover [S1].\n\n" + INSUFFICIENT_ANSWER
+        result = self.rag.generate_from_contexts("policy?", self.contexts)
+        self.assertEqual(result.answer, "Docs cover only leave handover [S1].")
+        self.assertFalse(result.insufficient_context)
+
     def test_supported_answer_still_requires_valid_citations(self):
         self.rag.llm.generate.return_value = "Policy text [S1]"
         result = self.rag.generate_from_contexts("policy?", self.contexts)

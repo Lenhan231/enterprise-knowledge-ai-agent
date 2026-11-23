@@ -542,6 +542,22 @@ def _normalize_unambiguous_sql(sql, schema_columns=None):
     return tree.sql(dialect='postgres') if changed else sql
 
 
+def tame_clarification_options(raw):
+    """A model that lists more than three well-formed options (it often adds a fourth "Other") is not malformed:
+    offer the first three. Empty or non-string options still go through decode_query_plan's strict check and repair."""
+    try:
+        payload = parse_json_response(raw)
+    except (TypeError, json.JSONDecodeError):
+        return raw
+    if not isinstance(payload, dict) or payload.get("clarification") is None:
+        return raw
+    options = payload.get("clarification_options")
+    if (not isinstance(options, list) or len(options) <= 3
+            or any(not isinstance(option, str) or not option.strip() for option in options)):
+        return raw
+    return json.dumps({**payload, "clarification_options": options[:3]}, ensure_ascii=False)
+
+
 def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, approved_joins=None,
                       primary_keys=None, date_columns=None, allow_unverified=False) -> QueryPlan:
     try:

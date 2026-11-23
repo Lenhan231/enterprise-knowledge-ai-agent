@@ -28,6 +28,7 @@ from core.agents.sql.sql_validation import (
     approved_join_path,
     current_year_month_range,
     decode_query_plan,
+    tame_clarification_options,
     is_daily_grain_requested,
     inventory_scope_enabled,
     parse_json_response,

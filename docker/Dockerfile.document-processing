@@ -17,6 +17,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libgomp1 libgl1 libglib2.0-0 \
         tesseract-ocr tesseract-ocr-eng tesseract-ocr-osd tesseract-ocr-vie \
+        libreoffice-writer-nogui libreoffice-calc-nogui libreoffice-impress-nogui fonts-liberation \
     && rm -rf /var/lib/apt/lists/* \
     && python -m pip install --no-cache-dir --upgrade pip \
     && python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
@@ -38,11 +39,7 @@ RUN python -m venv /opt/invoice-worker \
     && /opt/invoice-worker/bin/python -m pip install --no-cache-dir \
         "transformers==4.57.6" "accelerate==1.15.0" "peft==0.21.2"
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        libreoffice-writer-nogui libreoffice-calc-nogui libreoffice-impress-nogui fonts-liberation \
-    && rm -rf /var/lib/apt/lists/* \
-    && python -m venv /opt/images \
+RUN python -m venv /opt/images \
     && /opt/images/bin/pip install --no-cache-dir "pillow==12.3.0" "pillow-heif==1.8.0"
 
 ENV DOCUMENT_PROCESSING_IMAGE_PYTHON=/opt/images/bin/python

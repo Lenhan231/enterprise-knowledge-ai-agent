@@ -102,6 +102,8 @@ def _is_compound_office_file(content: bytes) -> bool:
 
 def matches_signature(content: bytes, suffix: str) -> bool:
     """Check container signatures without decoding the upload."""
+    if suffix == ".pdf":
+        return content[:1024].lstrip(b"\x00\t\n\f\r ").startswith(b"%PDF-")
     if suffix in LEGACY_OFFICE_FORMATS:
         return _is_compound_office_file(content)
     if suffix == ".webp":

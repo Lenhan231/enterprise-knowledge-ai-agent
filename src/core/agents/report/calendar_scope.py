@@ -73,7 +73,7 @@ def month_start(year, month):
     return date(index // 12, index % 12 + 1, 1)
 
 
-def parse_request(question, *, today=None, latest=None, topic=r'sales?|revenue|doanh thu|bán hàng|' + FINANCIAL_OVERVIEW, dimensions=('category', 'region', 'product', 'order_source')):
+def parse_request(question, *, today=None, latest=None, topic=r'sales?|revenue|doanh thu|bán hàng|ban hang|' + FINANCIAL_OVERVIEW, dimensions=('category', 'region', 'product', 'order_source')):
     today = today or datetime.now(ZoneInfo('Asia/Ho_Chi_Minh')).date()
     dimension_pattern = '|'.join(dimensions).replace('order_source', 'order[_ ]source')
     filter_pattern = re.compile(r'\b(' + dimension_pattern + r')\s+["\']([^"\']{1,100})["\']', re.I)

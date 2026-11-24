@@ -14,7 +14,7 @@ from core.agents.dashboard.models import StrictModel
 from core.agents.dashboard.store import Conflict, StoreUnavailable
 from core.agents.language import is_vietnamese
 from core.agents.report.document import ReportDocument, ReportEdit
-from core.agents.report.labels import LABELS, uses_vietnamese_labels
+from core.agents.report.labels import COMBINED_REPORT, LABELS, uses_vietnamese_labels
 from core.agents.report.store import create_report_store
 
 router = APIRouter(prefix='/api/reports', tags=['reports'])
@@ -51,9 +51,12 @@ def _accessible_document_ids(identifiers, roles):
 
 
 async def scoped_document(document, user):
-    inventory = document.report['report_type'] == 'inventory_operations'
-    context = document.inventory_context if inventory else document.sales_context
-    if not context.documents:
+    kind = document.report['report_type']
+    inventory = document.inventory_context if kind in {'inventory_operations', COMBINED_REPORT} else None
+    sales = document.sales_context if kind in {'sales_performance', COMBINED_REPORT} else None
+    identifiers = list(dict.fromkeys(e.metadata['document_id'] for context in (inventory, sales) if context
+                                     for e in context.documents))
+    if not identifiers:
         return document
     from core.agents.runtime import run_sync
     from core.agents.report.sales_context import SalesContext
@@ -63,19 +66,23 @@ async def scoped_document(document, user):
     if identity and 'documents:read' in identity.permissions and identity.document_roles:
         try:
             allowed = await run_sync(_accessible_document_ids,
-                [e.metadata['document_id'] for e in context.documents], sorted(identity.document_roles), _timeout=10)
+                identifiers, sorted(identity.document_roles), _timeout=10)
         except Exception:
             status = 'unavailable'
     copy = document.model_copy(deep=True)
-    documents = [e for e in context.documents if e.metadata['document_id'] in allowed]
-    if inventory:
+    if inventory and inventory.documents:
         from core.agents.report.inventory_operations import InventoryContext
+        documents = [e for e in inventory.documents if e.metadata['document_id'] in allowed]
         copy.inventory_context = InventoryContext(retrieval_status='available' if documents else status, documents=documents)
-        if len(documents) != len(context.documents):
+        if len(documents) != len(inventory.documents):
             copy.status = 'partial'
-        return ReportDocument.model_validate(copy.model_dump())
-    copy.sales_context = SalesContext.model_validate({**copy.sales_context.model_dump(), 'documents':documents,
-        'retrieval_status':'available' if documents else status, 'access_limited':len(documents) != len(copy.sales_context.documents)})
+    if sales and sales.documents:
+        documents = [e for e in sales.documents if e.metadata['document_id'] in allowed]
+        limited = len(documents) != len(sales.documents)
+        copy.sales_context = SalesContext.model_validate({**sales.model_dump(), 'documents':documents,
+            'retrieval_status':'available' if documents else status, 'access_limited':limited})
+        if limited and kind == COMBINED_REPORT:
+            copy.status = 'partial'
     return ReportDocument.model_validate(copy.model_dump())
 
 
@@ -106,7 +113,8 @@ async def generate(payload: ReportRequest, request: Request, user=Depends(princi
         report = result.data['report']
         title = payload.question[:160]
         if uses_vietnamese_labels(report):
-            period = report['request']['period']
+            scope = report['reports']['sales_performance'] if report['report_type'] == COMBINED_REPORT else report
+            period = scope['request']['period']
             end = date.fromisoformat(period['end_exclusive']) - timedelta(days=1)
             title = f'{LABELS[report["report_type"]]} · {period["start"]} đến {end}'
         document = ReportDocument(report=report, monthly_decisions=result.data.get('monthly_decisions', []),

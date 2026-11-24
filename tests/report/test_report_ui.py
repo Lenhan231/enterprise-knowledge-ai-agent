@@ -70,9 +70,9 @@ assert.doesNotMatch(copy, /No usable documentary|Validated SQL evidence|Order an
             self.assertEqual(home().headers.get('cache-control'), 'no-cache')
         html = (root / 'src/app/static/index.html').read_text(encoding='utf-8')
         self.assertIn('/static/sales-report.css?v=20261222-merge', html)
-        self.assertIn('/static/sales-report.js?v=20261222-merge', html)
-        self.assertIn('/static/report-workspace.js?v=20261223-enter',html)
-        self.assertIn('/static/app.js?v=20261223-toast2', html)
+        self.assertIn('/static/sales-report.js?v=20261124-combined-report', html)
+        self.assertIn('/static/report-workspace.js?v=20261124-combined-report',html)
+        self.assertIn('/static/app.js?v=20261124-combined-report', html)
 
     def test_fixed_sections_widgets_and_untrusted_text(self):
         script = r"""

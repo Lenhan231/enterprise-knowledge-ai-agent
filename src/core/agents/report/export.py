@@ -53,12 +53,24 @@ def chart_svg(widget, metrics, kind, granularity, *, vi=False):
     return ''.join(parts)
 
 
-def export_pdf(document):
-    if document.report['report_type'] == 'inventory_operations':
+def export_pdf(document, *, paginate=True):
+    from core.agents.report.labels import COMBINED_REPORT, LABELS, SALES_SECTIONS_VI, uses_vietnamese_labels
+
+    kind = document.report['report_type']
+    if kind == COMBINED_REPORT:
+        with fitz.open() as pdf:
+            for part in ('inventory_operations', 'sales_performance'):
+                report = document.report['reports'][part]
+                title = (document.title if part == 'inventory_operations' else
+                         LABELS[part] if uses_vietnamese_labels(report) else 'Sales Performance Report')
+                child = document.model_copy(update={'report': report, 'title': title, 'insights': document.insights[part]})
+                with fitz.open(stream=export_pdf(child, paginate=False), filetype='pdf') as pages:
+                    pdf.insert_pdf(pages)
+            return pdf_bytes(pdf, paginate=paginate)
+    if kind == 'inventory_operations':
         with tempfile.TemporaryDirectory() as directory:
-            return render_pdf(inventory_parts(document, directory), directory)
+            return render_pdf(inventory_parts(document, directory), directory, paginate=paginate)
     report, layout = document.report, document.presentation
-    from core.agents.report.labels import SALES_SECTIONS_VI, uses_vietnamese_labels
     vi = uses_vietnamese_labels(report)
     def label(english, vietnamese):
         return vietnamese if vi else english
@@ -167,7 +179,7 @@ def export_pdf(document):
             note = label(f'{period} decision baseline: current month {current} daily records; preceding month {prior}. Missing coverage or zero prior revenue prevents growth comparisons.',
                          f'Kỳ đối chiếu {period}: tháng hiện tại có {current} ngày dữ liệu, tháng trước có {prior} ngày. Cần đủ ngày và doanh thu tháng trước khác 0 để tính tỷ lệ thay đổi.')
             parts.append(f'<p class="note">{escape(note)}</p>')
-        return render_pdf(parts, directory)
+        return render_pdf(parts, directory, paginate=paginate)
 
 
 def inventory_parts(document, directory):
@@ -311,13 +323,18 @@ def inventory_parts(document, directory):
     return parts
 
 
-def render_pdf(parts, directory):
+def render_pdf(parts, directory, *, paginate=True):
     css = 'body{font-family:sans-serif;font-size:10pt;color:#14211d;line-height:1.3} h1{font-size:24pt;color:#075c4d}h2{font-size:16pt;margin-top:18pt}h3{font-size:10.5pt}h2,h3{page-break-after:avoid}p{margin:6pt 0}table{border-collapse:collapse;width:100%;margin:10pt 0}th,td{border-bottom:1px solid #dfe6e3;padding:7pt;text-align:left}th{background:#edf5f1}.subtitle,.note{color:#52635c}.note{font-size:8.5pt}.kpi{font-size:22pt;color:#075c4d}.new-page{page-break-before:always}.figure{page-break-inside:avoid;margin-top:14pt}img{max-width:100%}a{color:#075c4d;text-decoration:none}blockquote{border-left:2pt solid #0b7a66;padding-left:10pt;margin:10pt 0}'
     # Unfilled inventory headers avoid repeated background bands in MuPDF output.
     css += '.inventory-table th{background:transparent}.inventory-decision{page-break-inside:avoid}'
     story = fitz.Story(html=''.join(parts), user_css=css, archive=fitz.Archive(directory))
     size = fitz.paper_rect('a4')
-    pdf = story.write_with_links(lambda *_: (size, size + (42, 42, -42, -42), None))
-    for index, page in enumerate(pdf):
-        page.insert_text((42, size.height - 22), f'{index + 1} / {len(pdf)}', fontsize=8, color=(.35,.42,.38))
+    with story.write_with_links(lambda *_: (size, size + (42, 42, -42, -42), None)) as pdf:
+        return pdf_bytes(pdf, paginate=paginate)
+
+
+def pdf_bytes(pdf, *, paginate):
+    if paginate:
+        for index, page in enumerate(pdf):
+            page.insert_text((42, page.rect.height - 22), f'{index + 1} / {len(pdf)}', fontsize=8, color=(.35,.42,.38))
     return pdf.tobytes(garbage=4, deflate=True)

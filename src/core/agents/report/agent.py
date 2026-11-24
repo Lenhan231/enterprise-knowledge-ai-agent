@@ -5,6 +5,7 @@ import inspect
 import json
 import time
 import logging
+import re
 from dataclasses import replace
 from io import BytesIO
 
@@ -13,6 +14,7 @@ from docx import Document
 from core.models.agents import AgentResult
 from core.agents.language import VIETNAMESE_STATUS, is_vietnamese
 from core.agents.report.grounding import UNAVAILABLE, UNAVAILABLE_VI, VERIFICATION_SCOPE, validate_section
+from core.agents.report.labels import COMBINED_REPORT
 from core.agents.report.sources import ReportClarificationRequired, authorize_sources, collect_sources, serialize_context
 from core.agents.report.templates import default_report_template, parse_report_template, render_report_template, section_capability
 from core.prompts.report import REPORT_SECTION_PROMPT, REPORT_REPAIR_PROMPT
@@ -25,6 +27,21 @@ MIME_TYPES = {
     "markdown": "text/markdown; charset=utf-8",
     "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 }
+_INVENTORY = r'\b(?:inventory|tồn kho|ton kho)\b'
+_SALES = r'\b(?:sales?|revenue|doanh thu|bán hàng|ban hang)\b'
+_INVENTORY_REPORT = r'\b(?:inventory\s+(?:report|operations|status|overview)|(?:báo cáo|tình hình) tồn kho|(?:bao cao|tinh hinh) ton kho)\b'
+_SALES_REPORT = r'\b(?:sales?\s+(?:performance|report|results|overview)|revenue\s+report|kết quả bán hàng|hiệu suất bán hàng|báo cáo (?:bán hàng|doanh thu)|ket qua ban hang|bao cao (?:ban hang|doanh thu))\b'
+
+
+def _requests_both(question):
+    text = re.sub(r"""["“][^"”]*["”]|'[^']*'""", '', question)
+    if not re.search(_INVENTORY, text, re.I) or not re.search(_SALES, text, re.I):
+        return False
+    if re.search(_INVENTORY_REPORT, text, re.I) and re.search(_SALES_REPORT, text, re.I):
+        return True
+    join = r'\s*(?:,|\band\b|&|\bvà\b|\bva\b|\bplus\b)\s*'
+    return bool(re.search(_INVENTORY + r'(?:\s+(?:operations|report))?' + join +
+                          _SALES + '|' + _SALES + join + _INVENTORY, text, re.I))
 
 
 class ReportAgent:
@@ -72,9 +89,11 @@ class ReportAgent:
     async def _generate_from_template(self, request, filename=None, content=None, *,
                                       source_mode=None, output_format=None,
                                       template_choice=None, accept_supported_scope=False):
-        import re
         vi = is_vietnamese(request.question)
         unavailable = UNAVAILABLE_VI if vi else UNAVAILABLE
+        if filename is None and output_format is None and source_mode != 'documents' and not request.metadata.get('report_type') and _requests_both(request.question):
+            authorize_sources(request, source_mode or 'analytics')
+            return await self._generate_combined(request, vi=vi)
         financial_overview = re.search(FINANCIAL_OVERVIEW, request.question, re.I)
         natural_sales = (filename is None and output_format is None and not request.metadata.get('report_type') and
                          (financial_overview or re.search(r'\bsales?\b|\brevenue\b|doanh thu|bán hàng', request.question, re.I)))
@@ -230,6 +249,44 @@ class ReportAgent:
             document.save(stream)
             payload = stream.getvalue()
         return result, payload, MIME_TYPES[template.format]
+
+    async def _generate_combined(self, request, *, vi):
+        from core.agents.report.inventory_operations import generate_inventory_report, parse_request as inventory_scope
+        from core.agents.report.sales_performance import generate_sales_report, monthly_scopes, parse_request as sales_scope
+
+        try:
+            inventory = inventory_scope(request.question)
+            sales = sales_scope(request.question)
+            if inventory['period'] != sales['period']:
+                raise ValueError('Combined reports use one shared period')
+            list(monthly_scopes(sales))
+        except ValueError as error:
+            message = ('Hãy chọn một kỳ dùng chung cho tồn kho và bán hàng, ví dụ từ tháng 1 đến tháng 10 năm 2026.'
+                       if vi else 'Choose one shared reporting period for inventory and sales, such as January to October 2026.')
+            return AgentResult(answer=message, agent='report', metadata={
+                'ok': False, 'status': 'clarification_required', 'clarification_required': True,
+                'limitations': [str(error)]}), b'', 'application/json'
+
+        inventory_result, sales_result = (item[0] for item in await asyncio.gather(
+            generate_inventory_report(self, request, scope=inventory), generate_sales_report(self, request, scope=sales)))
+        report = {'report_type': COMBINED_REPORT, 'reports': {
+            'inventory_operations': inventory_result.data['report'],
+            'sales_performance': sales_result.data['report'],
+        }}
+        results = (inventory_result, sales_result)
+        complete = all(item.metadata['ok'] for item in results)
+        status = 'complete' if complete else 'partial'
+        evidence = {(e.source_type, e.citation_id): e for item in results for e in item.evidence}
+        payload = json.dumps(report, ensure_ascii=False, allow_nan=False).encode()
+        return AgentResult(answer=payload.decode(), agent='report', evidence=list(evidence.values()), data={
+            'report': report,
+            'section_count': sum(item.data['section_count'] for item in results),
+            'monthly_decisions': sales_result.data['monthly_decisions'],
+            'sales_context': sales_result.data['sales_context'],
+            'inventory_context': inventory_result.data['inventory_context'],
+            'insights': {item.metadata['report_type']: item.data['insights'] for item in results},
+        }, metadata={'ok': complete, 'status': status, 'report_type': COMBINED_REPORT,
+                     'limitations': [note for item in results for note in item.metadata['limitations']]}), payload, 'application/json'
 
     async def _generate(self, prompt):
         timeout = remaining(60)

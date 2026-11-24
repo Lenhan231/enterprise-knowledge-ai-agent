@@ -1,6 +1,8 @@
 """Approved Vietnamese display labels for fixed reports."""
 
+COMBINED_REPORT = 'inventory_and_sales'
 LABELS = {
+    COMBINED_REPORT: 'Báo cáo tồn kho và kết quả bán hàng',
     'sales_performance': 'Báo cáo kết quả bán hàng',
     'company_revenue': 'Doanh thu công ty',
     'company_cogs': 'Giá vốn hàng bán của công ty',
@@ -131,6 +133,8 @@ def localize_labels(report):
 
 
 def uses_vietnamese_labels(report):
+    if report.get('report_type') == COMBINED_REPORT:
+        report = report['reports']['sales_performance']
     metrics = report.get('metrics')
     return (isinstance(metrics, list) and bool(metrics) and isinstance(metrics[0], dict)
             and metrics[0].get('label') in (LABELS['observed_products'], LABELS['company_revenue']))

@@ -107,10 +107,11 @@
       root.append(element('p',copy('Inventory sections, metrics, widgets and decision rules use the fixed contract. You can edit the saved report title.')));
       return;
     }
-    const defaults = SalesPerformanceReport.defaultPresentation(selected.report).chart_types;
+    const sales = selected.report.reports?.sales_performance || selected.report;
+    const defaults = SalesPerformanceReport.defaultPresentation(sales).chart_types;
     selected.presentation.section_order.forEach((key, index, order) => {
       const titles = vi ? SalesPerformanceReport.sectionTitlesVi : SalesPerformanceReport.sectionTitles;
-      const item = element('fieldset'); const title = titles[Object.keys(selected.report.sections).indexOf(key)];
+      const item = element('fieldset'); const title = titles[Object.keys(sales.sections).indexOf(key)];
       item.append(element('legend', title));
       const controls = element('div'); controls.className = 'rw-toolbar';
       for (const [label, delta] of [['Move up', -1], ['Move down', 1]]) {
@@ -128,12 +129,12 @@
       if (['executive_summary','key_findings_and_explanations'].includes(key)) {
         const id = `rw-text-${key}`; const label = element('label', copy('Narrative text')); label.htmlFor = id;
         const input = element('textarea'); input.id = id; input.maxLength = 6000;
-        input.value = selected.presentation.text_edits[key] ?? SalesPerformanceReport.narrative(selected.report,key,selected.monthly_decisions).map(item => item.text).join('\n\n');
+        input.value = selected.presentation.text_edits[key] ?? SalesPerformanceReport.narrative(sales,key,selected.monthly_decisions).map(item => item.text).join('\n\n');
         input.addEventListener('input', () => { selected.presentation.text_edits[key] = input.value; preview(); status('Unsaved text changes.'); });
         const reset = element('button',copy('Restore generated text')); reset.type = 'button'; reset.addEventListener('click', () => { delete selected.presentation.text_edits[key]; editor(); preview(); });
         item.append(label,input,reset);
       }
-      if (key === 'performance_analysis') selected.report.dashboard.widgets.filter(w => !['sales_kpis','order_kpis'].includes(w.id)).forEach(widget => {
+      if (key === 'performance_analysis') sales.dashboard.widgets.filter(w => !['sales_kpis','order_kpis'].includes(w.id)).forEach(widget => {
         const label = element('label',widget.title); label.htmlFor = `rw-type-${widget.id}`;
         const select = element('select'); select.id = label.htmlFor;
         for (const [value,text] of [['line','Line chart'],['bar','Bar chart'],['kpi_row','KPI'],['table','Table']]) {
@@ -149,7 +150,8 @@
   function display(doc, reload = true) {
     el('report-fold').open = true;
     selected = JSON.parse(JSON.stringify(doc)); el('rw-title').value = selected.title; el('rw-editor').hidden = false;
-    setLanguage(SalesPerformanceReport.vietnamese(selected.report.metrics[0]?.label));
+    const primary = selected.report.reports?.sales_performance || selected.report;
+    setLanguage(SalesPerformanceReport.vietnamese(primary.metrics[0]?.label));
     el('rw-meta').textContent = `${vi ? 'Phiên bản đã lưu' : 'Saved revision'} ${selected.revision} · ${new Date(selected.updated_at).toLocaleString(vi ? 'vi-VN' : undefined)}`;
     preview(); editor(); showTab(false);
     setBusy(busy);

@@ -9,6 +9,7 @@ from core.agents.dashboard.models import StrictModel, now
 from core.agents.report.sales_performance import load_contract, validate_report, validate_monthly_decisions
 from core.agents.report.sales_context import SalesContext, build_insights
 from core.agents.report.inventory_operations import InventoryContext, SECTION_TITLES as INVENTORY_SECTIONS
+from core.agents.report.labels import COMBINED_REPORT, LABELS, uses_vietnamese_labels
 
 SECTION_IDS = tuple(load_contract()['sections'])
 WIDGET_IDS = tuple(w['id'] for w in load_contract()['dashboard']['widgets'])
@@ -65,12 +66,21 @@ class ReportDocument(StrictModel):
     status: Literal['complete', 'partial'] = 'partial'
     presentation: ReportPresentation | InventoryPresentation = Field(default_factory=ReportPresentation)
 
+    def _inventory_insights(self, report):
+        from core.agents.report.inventory_operations import validate_report as validate_inventory, policy_notes
+        from core.agents.report.presentation import inventory_insights
+
+        validate_inventory(report)
+        context = self.inventory_context.model_dump(mode='json')
+        report['data_quality']['limitations'] = [note for note in report['data_quality']['limitations']
+            if not note.startswith(('Policy Evidence:', 'Policy source ['))] + policy_notes(context)
+        return inventory_insights(report)
+
     @model_validator(mode='after')
     def valid_report(self):
-        from core.agents.report.labels import LABELS, uses_vietnamese_labels
-        if self.report.get('report_type') == 'inventory_operations':
-            from core.agents.report.inventory_operations import validate_report as validate_inventory, policy_notes
-            validate_inventory(self.report)
+        kind = self.report.get('report_type')
+        if kind == 'inventory_operations':
+            self.insights = self._inventory_insights(self.report)
             if 'title' not in self.model_fields_set:
                 self.title = LABELS['inventory_operations'] if uses_vietnamese_labels(self.report) else 'Inventory & Operations Report'
             if self.monthly_decisions:
@@ -79,20 +89,35 @@ class ReportDocument(StrictModel):
                 self.presentation = InventoryPresentation()
             if not isinstance(self.presentation, InventoryPresentation):
                 raise ValueError('Inventory presentation must preserve the contract')
-            context = self.inventory_context.model_dump(mode='json')
-            self.report['data_quality']['limitations'] = [note for note in self.report['data_quality']['limitations']
-                if not note.startswith(('Policy Evidence:', 'Policy source ['))] + policy_notes(context)
-            from core.agents.report.presentation import inventory_insights
-            self.insights = inventory_insights(self.report)
             return self
         if not isinstance(self.presentation, ReportPresentation):
             raise ValueError('Sales reports require a sales presentation')
-        validate_report(self.report)
-        if 'title' not in self.model_fields_set and uses_vietnamese_labels(self.report):
-            self.title = LABELS['sales_performance']
-        validate_monthly_decisions(self.report, self.monthly_decisions)
-        self.insights = build_insights(self.report, self.monthly_decisions, self.sales_context)
+        combined = kind == COMBINED_REPORT
+        sales = self.report
+        if combined:
+            reports = self.report.get('reports')
+            if (set(self.report) != {'report_type', 'reports'} or not isinstance(reports, dict)
+                    or set(reports) != {'inventory_operations', 'sales_performance'}
+                    or any(not isinstance(part, dict) or part.get('report_type') != key for key, part in reports.items())):
+                raise ValueError('A combined report requires one inventory part and one sales part')
+            sales, inventory = reports['sales_performance'], reports['inventory_operations']
+
+        validate_report(sales)
+        validate_monthly_decisions(sales, self.monthly_decisions)
+        sales_insights = build_insights(sales, self.monthly_decisions, self.sales_context)
+        if combined:
+            inventory_insights = self._inventory_insights(inventory)
+            if sales['request']['period'] != inventory['request']['period'] or uses_vietnamese_labels(sales) != uses_vietnamese_labels(inventory):
+                raise ValueError('Combined report parts must share the period and language')
+            self.insights = {'inventory_operations': inventory_insights, 'sales_performance': sales_insights}
+        else:
+            self.insights = sales_insights
+        if 'title' not in self.model_fields_set:
+            if uses_vietnamese_labels(sales):
+                self.title = LABELS[kind]
+            elif combined:
+                self.title = 'Inventory and Sales Performance Report'
         if 'presentation' not in self.model_fields_set:
             from core.agents.report.presentation import default_chart_types
-            self.presentation.chart_types = default_chart_types(self.report)
+            self.presentation.chart_types = default_chart_types(sales)
         return self

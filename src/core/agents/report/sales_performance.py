@@ -180,13 +180,14 @@ def validate_report(report, comparison=None):
     return report
 
 
-async def generate_sales_report(agent, request):
+async def generate_sales_report(agent, request, *, scope=None):
     from core.models.agents import AgentResult, Evidence
     from core.agents.dashboard.charts import sales_report_widgets
     sql = agent.analytics_agent
     from core.agents.sql.agent import SQLAnalyticsAgent
     SQLAnalyticsAgent._authorize(request)
-    scope = parse_request(request.question, latest=await sql.sales_report_latest(request) if 'latest' in scope_text(request.question) else None)
+    if scope is None:
+        scope = parse_request(request.question, latest=await sql.sales_report_latest(request) if 'latest' in scope_text(request.question) else None)
     result = await sql.run_sales_report(request, scope)
     report = deepcopy(load_contract()['runtime_output_template'])
     report['request'] = scope

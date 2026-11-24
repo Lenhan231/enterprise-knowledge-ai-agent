@@ -283,7 +283,7 @@
         <form id="report-agent-form" class="review-form">
           <label for="report-agent-question" data-report-vi="Yêu cầu báo cáo">Report request</label>
           <textarea id="report-agent-question" name="question" minlength="3" maxlength="2000" required aria-describedby="report-agent-help" placeholder="Monthly revenue report for May 2026"></textarea>
-          <p id="report-agent-help" class="report-agent-help" data-report-vi="Nêu nội dung báo cáo bán hàng hoặc tồn kho và kỳ cần xem theo tháng, quý hoặc năm. Ví dụ: Báo cáo tồn kho tháng 5/2026.">Describe a sales or inventory report and a month, quarter, or year. For example: Monthly inventory report for May 2026. Generate, save or download a PDF. Inventory reports use fixed sections and charts.</p>
+          <p id="report-agent-help" class="report-agent-help" data-report-vi="Chọn báo cáo bán hàng, tồn kho hoặc cả hai. Nêu một kỳ theo tháng, quý hoặc năm. Ví dụ: Báo cáo tồn kho và bán hàng tháng 5/2026.">Request sales, inventory, or both for one month, quarter, year, or calendar range. For example: Inventory and sales performance report for May 2026.</p>
           <button id="report-agent-submit" type="submit" class="primary-button" data-report-vi="Tạo báo cáo">Generate report</button>
           <p id="report-agent-status" class="corpus-note" role="status" aria-live="polite"></p>
         </form>
@@ -577,11 +577,11 @@
   </dialog>
   <link rel="stylesheet" href="/static/dashboard.css?v=20261119-home">
   <link rel="stylesheet" href="/static/sales-report.css?v=20261222-merge">
-  <script src="/static/sales-report.js?v=20261222-merge" defer></script>
+  <script src="/static/sales-report.js?v=20261124-combined-report" defer></script>
   <script src="/static/dashboard-format.js?v=20261119-overview" defer></script>
   <script src="/static/business-overview.js?v=20261222-refresh" defer></script>
-  <script src="/static/app.js?v=20261223-toast2-pdf-checkpoints-1-access-matrix-20261123b" defer></script>
-  <script src="/static/report-workspace.js?v=20261223-enter" defer></script>
+  <script src="/static/app.js?v=20261124-combined-report" defer></script>
+  <script src="/static/report-workspace.js?v=20261124-combined-report" defer></script>
   <script src="/static/dashboard.js?v=20261222-refresh" defer></script>
   <script src="/static/sonar-grid.js?v=20261216-sonar" defer></script>
 </body>

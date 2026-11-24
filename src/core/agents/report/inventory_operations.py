@@ -59,7 +59,7 @@ def parse_request(question, *, today=None, latest=None):
         if match[1].casefold() not in {'category', 'segment', 'product'}:
             raise ValueError('Unsupported inventory dimension filter')
     scope = parse_calendar_request(question, today=today, latest=latest,
-                                   topic=r'inventory|stock|tồn kho', dimensions=('category', 'segment', 'product'))
+                                   topic=r'inventory|stock|tồn kho|ton kho', dimensions=('category', 'segment', 'product'))
     text = scope_text(question, dimensions=('category', 'segment', 'product'))
     if re.search(r'\bsnapshot\b', text):
         scope['granularity'] = 'snapshot'
@@ -229,13 +229,14 @@ def policy_notes(context):
     return notes
 
 
-async def generate_inventory_report(agent, request):
+async def generate_inventory_report(agent, request, *, scope=None):
     from core.agents.sql.agent import SQLAnalyticsAgent
     from core.agents.sql.inventory_report import latest
     from core.agents.dashboard.charts import sales_report_widgets
     SQLAnalyticsAgent._authorize(request)
-    is_latest = bool(re.search(r'\blatest\b', scope_text(request.question, dimensions=('category', 'segment', 'product'))))
-    scope = parse_request(request.question, latest=await latest(agent.analytics_agent, request) if is_latest else None)
+    if scope is None:
+        is_latest = bool(re.search(r'\blatest\b', scope_text(request.question, dimensions=('category', 'segment', 'product'))))
+        scope = parse_request(request.question, latest=await latest(agent.analytics_agent, request) if is_latest else None)
     result = await agent.analytics_agent.run_inventory_report(request, scope)
     report = deepcopy(load_contract()['runtime_output_template'])
     report['request'] = scope

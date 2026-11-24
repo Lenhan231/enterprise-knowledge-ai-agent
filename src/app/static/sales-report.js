@@ -164,6 +164,19 @@ const SalesPerformanceReport = (() => {
     };
   }
   function render(root, report, options = {}) {
+    if (report.report_type === 'inventory_and_sales') {
+      const vi = vietnamese(report.reports.sales_performance.metrics[0]?.label);
+      const title = options.title || (vi ? 'Báo cáo tồn kho và kết quả bán hàng' : 'Inventory and Sales Performance Report');
+      root.setAttribute('lang', vi ? 'vi' : 'en');
+      root.replaceChildren(node('h2', title));
+      for (const kind of ['inventory_operations', 'sales_performance']) {
+        const section = node('section');
+        section.dataset.reportType = kind;
+        render(section, report.reports[kind], {...options, title: undefined, insights: options.insights?.[kind]});
+        root.append(section);
+      }
+      return;
+    }
     if (report.report_type === 'inventory_operations') return renderInventory(root, report, options);
     root.replaceChildren();
     const vi = vietnamese(report.metrics[0]?.label);

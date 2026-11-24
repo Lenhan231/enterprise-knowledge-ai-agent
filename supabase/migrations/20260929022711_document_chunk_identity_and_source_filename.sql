@@ -10,4 +10,6 @@ WHERE documents.document_id = chunks.metadata->>'document_id'
   AND chunks.document_name = documents.document_id
   AND documents.storage_path IS NOT NULL;
 
+ALTER TABLE public.document_chunks
+    DROP CONSTRAINT IF EXISTS document_chunks_document_name_chunk_index_key;
 DROP INDEX IF EXISTS public.document_chunks_document_name_chunk_index_key;

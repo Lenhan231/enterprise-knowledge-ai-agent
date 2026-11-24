@@ -392,24 +392,30 @@ function mountInvoiceImageViewer(wrapper, url) {
   wrapper.querySelector(".invoice-zoom")?.remove();
   const viewer = document.createElement("div");
   viewer.className = "invoice-zoom";
-  viewer.innerHTML = `<div class="invoice-zoom-bar" role="toolbar" aria-label="Zoom the original invoice">
+  viewer.innerHTML = `<div class="invoice-zoom-bar" role="toolbar" aria-label="View the original invoice">
       <button type="button" data-zoom="out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
       <output aria-live="polite">100%</output>
       <button type="button" data-zoom="in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
       <button type="button" data-zoom="fit" class="invoice-zoom-fit">Fit</button>
       <button type="button" data-zoom="actual" class="invoice-zoom-fit">100%</button>
+      <button type="button" data-view="rotate" aria-label="Rotate clockwise 90 degrees" title="Rotate clockwise 90°">↻ 90°</button>
     </div>
-    <div class="invoice-zoom-stage" tabindex="0" aria-label="Original invoice image"><img alt="Original invoice" draggable="false"></div>`;
+    <div class="invoice-zoom-stage" tabindex="0" aria-label="Original invoice image"><div class="invoice-zoom-image-frame"><img alt="Original invoice" draggable="false"></div></div>`;
   wrapper.prepend(viewer);
   const stage = viewer.querySelector(".invoice-zoom-stage");
+  const frame = viewer.querySelector(".invoice-zoom-image-frame");
   const image = viewer.querySelector("img");
   const label = viewer.querySelector("output");
   let scale = 1;
   let fitScale = 1;
+  let rotation = 0;
   const apply = (next, anchor = null) => {
     const previous = scale;
     scale = Math.min(6, Math.max(0.1, next));
     image.style.width = `${Math.round(image.naturalWidth * scale)}px`;
+    frame.style.width = `${Math.round((rotation % 180 ? image.naturalHeight : image.naturalWidth) * scale)}px`;
+    frame.style.height = `${Math.round((rotation % 180 ? image.naturalWidth : image.naturalHeight) * scale)}px`;
+    image.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
     label.textContent = `${Math.round(scale * 100)}%`;
     viewer.querySelector("[data-zoom=fit]").setAttribute("aria-pressed", String(Math.abs(scale - fitScale) < 0.005));
     if (anchor) {
@@ -420,7 +426,9 @@ function mountInvoiceImageViewer(wrapper, url) {
   };
   const fit = () => {
     if (!image.naturalWidth) return;
-    fitScale = Math.min((stage.clientWidth - 24) / image.naturalWidth, (stage.clientHeight - 24) / image.naturalHeight, 1.5);
+    const rotatedWidth = rotation % 180 ? image.naturalHeight : image.naturalWidth;
+    const rotatedHeight = rotation % 180 ? image.naturalWidth : image.naturalHeight;
+    fitScale = Math.min((stage.clientWidth - 24) / rotatedWidth, (stage.clientHeight - 24) / rotatedHeight, 1.5);
     apply(fitScale);
     stage.scrollTo(0, 0);
   };
@@ -429,6 +437,10 @@ function mountInvoiceImageViewer(wrapper, url) {
   viewer.querySelector(".invoice-zoom-bar").addEventListener("click", (event) => {
     const action = event.target.closest("[data-zoom]")?.dataset.zoom;
     const centre = { x: stage.clientWidth / 2, y: stage.clientHeight / 2 };
+    if (event.target.closest("[data-view=rotate]")) {
+      rotation = (rotation + 90) % 360;
+      fit();
+    }
     if (action === "in") apply(scale * 1.25, centre);
     if (action === "out") apply(scale / 1.25, centre);
     if (action === "fit") fit();

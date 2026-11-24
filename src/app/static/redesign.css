@@ -954,7 +954,8 @@
 :root .invoice-zoom-stage{flex:1;min-height:0;overflow:auto;padding:12px;cursor:grab;outline:none;text-align:center}
 :root .invoice-zoom-stage:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
 :root .invoice-zoom-stage.is-panning{cursor:grabbing;user-select:none}
-:root .invoice-zoom-stage img{display:inline-block;max-width:none;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgb(20 33 29 / .12);vertical-align:top}
+:root .invoice-zoom-image-frame{position:relative;display:inline-block;vertical-align:top}
+:root .invoice-zoom-stage img{position:absolute;top:50%;left:50%;display:block;max-width:none;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgb(20 33 29 / .12);transform-origin:center}
 
 /* ---------- Monitoring bars: length is run volume, the jade part is what completed ---------- */
 :root .monitoring-agent i{display:flex;overflow:hidden}

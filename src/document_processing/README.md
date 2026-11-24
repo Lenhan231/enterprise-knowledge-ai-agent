@@ -43,6 +43,8 @@ configured and otherwise uses the isolated local invoice worker.
 
 For local commands and image build notes, see [development](docs/development.md).
 
+See the [four-class layout detection benchmark](../../artifacts/layout-detection/README.md) for the v8 results and visual comparison.
+
 ## CPU OCR performance
 
 VietOCR's RapidOCR detector uses maximum-edge resizing on CPU. Layout crops

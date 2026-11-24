@@ -1,0 +1,221 @@
+{
+  "cohort": {
+    "pages": 51,
+    "documents": 8,
+    "regions": 712
+  },
+  "matching": {
+    "class_aware": true,
+    "minimum_iou": 0.5,
+    "one_to_one": true,
+    "assignment": "maximum-cardinality bipartite matching"
+  },
+  "confidence_threshold": 0.25,
+  "text_area_method": "Intersection of box unions per page, summed in normalized page area units",
+  "classes": [
+    "text",
+    "title",
+    "table",
+    "figure"
+  ],
+  "models": {
+    "pp_doclayout_v3_production": {
+      "page_count": 51,
+      "per_class": {
+        "text": {
+          "tp": 284,
+          "fp": 265,
+          "fn": 107,
+          "precision": 0.517304189435337,
+          "recall": 0.7263427109974424,
+          "f1": 0.6042553191489362,
+          "f1_iou_075": 0.5085106382978724,
+          "median_matched_iou": 0.8743418546539337
+        },
+        "title": {
+          "tp": 84,
+          "fp": 16,
+          "fn": 67,
+          "precision": 0.84,
+          "recall": 0.5562913907284768,
+          "f1": 0.6693227091633466,
+          "f1_iou_075": 0.47808764940239046,
+          "median_matched_iou": 0.8090907449369115
+        },
+        "table": {
+          "tp": 42,
+          "fp": 3,
+          "fn": 18,
+          "precision": 0.9333333333333333,
+          "recall": 0.7,
+          "f1": 0.8,
+          "f1_iou_075": 0.7428571428571429,
+          "median_matched_iou": 0.9657349264937521
+        },
+        "figure": {
+          "tp": 55,
+          "fp": 15,
+          "fn": 55,
+          "precision": 0.7857142857142857,
+          "recall": 0.5,
+          "f1": 0.6111111111111112,
+          "f1_iou_075": 0.5111111111111111,
+          "median_matched_iou": 0.8630440370619704
+        }
+      },
+      "macro_f1": 0.6711722848558485,
+      "micro": {
+        "tp": 465,
+        "fp": 299,
+        "fn": 247,
+        "precision": 0.6086387434554974,
+        "recall": 0.6530898876404494,
+        "f1": 0.6300813008130081
+      },
+      "text_area": {
+        "precision": 0.7276912111235263,
+        "recall": 0.8575854642840618,
+        "dice": 0.7873167060713236
+      },
+      "latency_seconds_per_page": {
+        "mean": 6.418484,
+        "median": 6.346546,
+        "total": 327.342684
+      }
+    },
+    "heron_101": {
+      "page_count": 51,
+      "per_class": {
+        "text": {
+          "tp": 332,
+          "fp": 1397,
+          "fn": 59,
+          "precision": 0.1920185078079815,
+          "recall": 0.8491048593350383,
+          "f1": 0.3132075471698113,
+          "f1_iou_075": 0.23018867924528302,
+          "median_matched_iou": 0.8354488916381049
+        },
+        "title": {
+          "tp": 133,
+          "fp": 196,
+          "fn": 18,
+          "precision": 0.40425531914893614,
+          "recall": 0.8807947019867549,
+          "f1": 0.5541666666666667,
+          "f1_iou_075": 0.3625,
+          "median_matched_iou": 0.7891359088844181
+        },
+        "table": {
+          "tp": 53,
+          "fp": 26,
+          "fn": 7,
+          "precision": 0.6708860759493671,
+          "recall": 0.8833333333333333,
+          "f1": 0.762589928057554,
+          "f1_iou_075": 0.7338129496402878,
+          "median_matched_iou": 0.9610603535072871
+        },
+        "figure": {
+          "tp": 88,
+          "fp": 112,
+          "fn": 22,
+          "precision": 0.44,
+          "recall": 0.8,
+          "f1": 0.567741935483871,
+          "f1_iou_075": 0.44516129032258067,
+          "median_matched_iou": 0.8323189692741467
+        }
+      },
+      "macro_f1": 0.5494265193444757,
+      "micro": {
+        "tp": 606,
+        "fp": 1731,
+        "fn": 106,
+        "precision": 0.2593068035943517,
+        "recall": 0.851123595505618,
+        "f1": 0.3975073794686782
+      },
+      "text_area": {
+        "precision": 0.5584164317764541,
+        "recall": 0.8876180896107918,
+        "dice": 0.685544527533384
+      },
+      "latency_seconds_per_page": {
+        "mean": 8.406868,
+        "median": 8.296364,
+        "total": 428.750268
+      }
+    },
+    "doclayout_yolo_docstructbench": {
+      "page_count": 51,
+      "per_class": {
+        "text": {
+          "tp": 166,
+          "fp": 179,
+          "fn": 225,
+          "precision": 0.4811594202898551,
+          "recall": 0.42455242966751916,
+          "f1": 0.45108695652173914,
+          "f1_iou_075": 0.41304347826086957,
+          "median_matched_iou": 0.9284409275425782
+        },
+        "title": {
+          "tp": 71,
+          "fp": 47,
+          "fn": 80,
+          "precision": 0.6016949152542372,
+          "recall": 0.47019867549668876,
+          "f1": 0.5278810408921933,
+          "f1_iou_075": 0.3271375464684015,
+          "median_matched_iou": 0.7978235223852703
+        },
+        "table": {
+          "tp": 27,
+          "fp": 12,
+          "fn": 33,
+          "precision": 0.6923076923076923,
+          "recall": 0.45,
+          "f1": 0.5454545454545455,
+          "f1_iou_075": 0.4444444444444444,
+          "median_matched_iou": 0.9459153524286454
+        },
+        "figure": {
+          "tp": 4,
+          "fp": 7,
+          "fn": 106,
+          "precision": 0.36363636363636365,
+          "recall": 0.03636363636363636,
+          "f1": 0.06611570247933883,
+          "f1_iou_075": 0.03305785123966942,
+          "median_matched_iou": 0.6748746744983973
+        }
+      },
+      "macro_f1": 0.3976345613369542,
+      "micro": {
+        "tp": 268,
+        "fp": 245,
+        "fn": 444,
+        "precision": 0.5224171539961013,
+        "recall": 0.37640449438202245,
+        "f1": 0.43755102040816324
+      },
+      "text_area": {
+        "precision": 0.742989014155854,
+        "recall": 0.7862806845536867,
+        "dice": 0.7640220834288464
+      },
+      "latency_seconds_per_page": {
+        "mean": 3.031681019607843,
+        "median": 2.938682,
+        "total": 154.615732
+      }
+    }
+  },
+  "provenance": {
+    "scoring_reference": "artifacts/layout-detection/references/layout-four-classes-v8.jsonl",
+    "scoring_reference_sha256": "9423421eacb2d746ee20526495d88f75508a6d666a82965b6237fd337d9e9b6f",
+    "source_reference": "artifacts/layout-detection/archive/references/layout-four-classes-v7.jsonl",
+    "source_reference_sha256": "51ec22c95200b3343dada22e21a488371d76d3d3cf0bac67cb56c7a22a7db060"
+  }
+}

@@ -1,0 +1,2209 @@
+{
+  "source_reference": "artifacts/layout-detection/archive/references/layout-four-classes-v7.jsonl",
+  "source_reference_sha256": "51ec22c95200b3343dada22e21a488371d76d3d3cf0bac67cb56c7a22a7db060",
+  "edited_reference_sha256": "9423421eacb2d746ee20526495d88f75508a6d666a82965b6237fd337d9e9b6f",
+  "review_scope": "65 distinct title and figure GT regions that overlap unmatched PP text at IoU >= 0.50. Review based on source crops.",
+  "audited_regions": [
+    {
+      "sample_id": "page-001",
+      "gt": {
+        "region_id": "R07",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.9591950810508664,
+          0.5761082745082488,
+          0.9960871995528228,
+          0.7003722338991116
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9627450980392157,
+          0.5849952516619183,
+          0.9836601307189542,
+          0.6965811965811965
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7661427855491638
+      },
+      "iou": 0.5090837805937869,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-002",
+      "gt": {
+        "region_id": "R09",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.9558412520961431,
+          0.5758590800518184,
+          0.9837898267188373,
+          0.7068563416390211
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9563008130081301,
+          0.5806213017751479,
+          0.975609756097561,
+          0.7011834319526628
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7924222946166992
+      },
+      "iou": 0.6358395446950142,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-003",
+      "gt": {
+        "region_id": "R15",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.9536053661263275,
+          0.575051154778233,
+          0.9860257126886529,
+          0.6974370694230869
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9562118126272913,
+          0.5755555555555556,
+          0.9786150712830958,
+          0.6962962962962963
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.6741247773170471
+      },
+      "iou": 0.6817355447036128,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-005",
+      "gt": {
+        "label": "seal",
+        "bbox_norm": [
+          0,
+          0.499,
+          0.047,
+          0.623
+        ],
+        "region_id": "V3-S01",
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1",
+        "benchmark_label": "figure"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.0,
+          0.5014814814814815,
+          0.042726347914547304,
+          0.6281481481481481
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.26435214281082153
+      },
+      "iou": 0.8584780906986753,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-007",
+      "gt": {
+        "label": "seal",
+        "bbox_norm": [
+          0.963,
+          0.585,
+          0.987,
+          0.697
+        ],
+        "region_id": "V3-S01",
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1",
+        "benchmark_label": "figure"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9592668024439919,
+          0.5866666666666667,
+          0.9826883910386965,
+          0.7140740740740741
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7690566778182983
+      },
+      "iou": 0.6206888993239917,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-011",
+      "gt": {
+        "region_id": "R09",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.9625489100055897,
+          0.5271718825018761,
+          1,
+          0.6575654314323042
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9711021505376344,
+          0.5311163895486936,
+          0.9973118279569892,
+          0.6555819477434679
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7925687432289124
+      },
+      "iou": 0.6680212828525863,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-013",
+      "gt": {
+        "region_id": "R15",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.956,
+          0.578,
+          0.976,
+          0.72
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9550653594771242,
+          0.5744807121661721,
+          0.9779411764705882,
+          0.6925816023738872
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7151453495025635
+      },
+      "iou": 0.7051127141138531,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-015",
+      "gt": {
+        "region_id": "R07",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.881,
+          0.34,
+          0.908,
+          0.462
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.8773109243697479,
+          0.33729216152019004,
+          0.9109243697478991,
+          0.45961995249406173
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.8479338884353638
+      },
+      "iou": 0.7733826781457671,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-019",
+      "gt": {
+        "region_id": "V7-stamp",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.87,
+          0.32,
+          0.889,
+          0.396
+        ],
+        "coordinate_system": "normalized_top_left_0_1",
+        "bbox_status": "assistant_visual_audit"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.8697478991596639,
+          0.32304038004750596,
+          0.888235294117647,
+          0.39429928741092635
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.5362715125083923
+      },
+      "iou": 0.8888226739510598,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-023",
+      "gt": {
+        "region_id": "R11",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.894,
+          0.328,
+          0.929,
+          0.441
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.8873949579831932,
+          0.32779097387173395,
+          0.9302521008403362,
+          0.44061757719714967
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7633641362190247
+      },
+      "iou": 0.8129035102482978,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-024",
+      "gt": {
+        "region_id": "R04",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.897,
+          0.378,
+          0.932,
+          0.492
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.892436974789916,
+          0.37410926365795727,
+          0.9310924369747899,
+          0.48931116389548696
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.517639696598053
+      },
+      "iou": 0.8163968602741837,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-026",
+      "gt": {
+        "region_id": "R06",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.905,
+          0.313,
+          0.938,
+          0.435
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9025210084033614,
+          0.31175771971496435,
+          0.938655462184874,
+          0.42874109263657956
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7971182465553284
+      },
+      "iou": 0.8614652009028597,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-027",
+      "gt": {
+        "region_id": "R09",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.977,
+          0.551,
+          0.998,
+          0.683
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9705882352941176,
+          0.5463182897862233,
+          0.9991596638655462,
+          0.6763657957244655
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.28857409954071045
+      },
+      "iou": 0.6829333666415183,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-028",
+      "gt": {
+        "region_id": "R07",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.3681,
+          0.9323,
+          0.6076,
+          0.9555
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.36554621848739494,
+          0.9281472684085511,
+          0.6109243697478992,
+          0.9554631828978623
+        ],
+        "raw_label": "text",
+        "confidence": 0.4443025588989258
+      },
+      "iou": 0.8265729031093261,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-032",
+      "gt": {
+        "region_id": "R14",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.10901621017328117,
+          0.6479400925214184,
+          0.5291553940749022,
+          0.7584904559984191
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.12857142857142856,
+          0.667458432304038,
+          0.5235294117647059,
+          0.7345605700712589
+        ],
+        "raw_label": "text",
+        "confidence": 0.28288280963897705
+      },
+      "iou": 0.5706027895897197,
+      "disposition": "reference_corrected"
+    },
+    {
+      "sample_id": "page-033",
+      "gt": {
+        "region_id": "R07",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.9826718837339296,
+          0.5347597092183993,
+          1,
+          0.6461487773955427
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9764705882352941,
+          0.5320665083135392,
+          0.9991596638655462,
+          0.6472684085510689
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.653176486492157
+      },
+      "iou": 0.6783404264187323,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-034",
+      "gt": {
+        "region_id": "R05",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.975964225824483,
+          0.5331797224357449,
+          1,
+          0.659578665048106
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9764705882352941,
+          0.5285035629453682,
+          0.9991596638655462,
+          0.6573634204275535
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.5222638249397278
+      },
+      "iou": 0.8961320952756421,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-035",
+      "gt": {
+        "region_id": "R18",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.9770821688093907,
+          0.534535860077821,
+          1,
+          0.6593548159075275
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.973109243697479,
+          0.5320665083135392,
+          0.9974789915966387,
+          0.6597387173396675
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7596665620803833
+      },
+      "iou": 0.7431124628207461,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-039",
+      "gt": {
+        "region_id": "R15",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.633,
+          0.722,
+          0.726,
+          0.775
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.5580159433126661,
+          0.7202346041055718,
+          0.7316209034543845,
+          0.7747800586510264
+        ],
+        "raw_label": "text",
+        "confidence": 0.2619856894016266
+      },
+      "iou": 0.5172434798047837,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-041",
+      "gt": {
+        "region_id": "R06",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.975,
+          0.352,
+          1,
+          0.473
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9716563330380869,
+          0.3489736070381232,
+          1.0,
+          0.47096774193548385
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.6484267115592957
+      },
+      "iou": 0.847694530173453,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-044",
+      "gt": {
+        "region_id": "R12",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.93,
+          0.514,
+          0.944,
+          0.606
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9269521410579346,
+          0.5112826603325415,
+          0.945424013434089,
+          0.6068883610451307
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7520971298217773
+      },
+      "iou": 0.7293250909090873,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-045",
+      "gt": {
+        "region_id": "R10",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.898,
+          0.518,
+          0.914,
+          0.613
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.8958858102434929,
+          0.517814726840855,
+          0.9126784214945424,
+          0.6152019002375297
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7584311366081238
+      },
+      "iou": 0.7918805179166355,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-046",
+      "gt": {
+        "region_id": "R14",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.906,
+          0.532,
+          0.924,
+          0.64
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.906801007556675,
+          0.5308788598574822,
+          0.9219143576826196,
+          0.6389548693586699
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.8164454698562622
+      },
+      "iou": 0.8243204482217729,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-048",
+      "gt": {
+        "region_id": "R07",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.885,
+          0.586,
+          0.904,
+          0.665
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.8832913518052057,
+          0.582541567695962,
+          0.9034424853064652,
+          0.6644893111638955
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.6363964676856995
+      },
+      "iou": 0.8490945045523529,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-050",
+      "gt": {
+        "region_id": "R18",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.886,
+          0.598,
+          0.904,
+          0.691
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.8866498740554156,
+          0.5961995249406176,
+          0.9026028547439127,
+          0.6918052256532066
+        ],
+        "raw_label": "footer",
+        "confidence": 0.4021395146846771
+      },
+      "iou": 0.8648019807984969,
+      "disposition": "valid_figure_reference"
+    },
+    {
+      "sample_id": "page-003",
+      "gt": {
+        "region_id": "R04",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.151,
+          0.114,
+          0.8709385131358302,
+          0.143
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.14562118126272913,
+          0.10962962962962963,
+          0.8706720977596741,
+          0.14444444444444443
+        ],
+        "raw_label": "text",
+        "confidence": 0.8450612425804138
+      },
+      "iou": 0.8265462546882093,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-003",
+      "gt": {
+        "region_id": "R05",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.13534879821129123,
+          0.15430763187698354,
+          0.5143487982112912,
+          0.17130763187698353
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.14663951120162932,
+          0.15555555555555556,
+          0.49287169042769857,
+          0.17407407407407408
+        ],
+        "raw_label": "text",
+        "confidence": 0.7292212247848511
+      },
+      "iou": 0.7369274454736934,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-003",
+      "gt": {
+        "region_id": "R07",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.14988205701509225,
+          0.3336812409846932,
+          0.3481492453884852,
+          0.3551208273231288
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1446028513238289,
+          0.3333333333333333,
+          0.34521384928716903,
+          0.35333333333333333
+        ],
+        "raw_label": "text",
+        "confidence": 0.5834037661552429
+      },
+      "iou": 0.867633624017774,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-003",
+      "gt": {
+        "region_id": "R09",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.151,
+          0.41174721821541915,
+          0.41689826718837336,
+          0.4281208273231287
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1446028513238289,
+          0.4096296296296296,
+          0.40835030549898166,
+          0.42814814814814817
+        ],
+        "raw_label": "text",
+        "confidence": 0.6850653886795044
+      },
+      "iou": 0.8386958856768788,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-003",
+      "gt": {
+        "region_id": "R11",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.151,
+          0.594,
+          0.3206875349357183,
+          0.6101208273231287
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.14562118126272913,
+          0.5903703703703703,
+          0.32077393075356414,
+          0.6103703703703703
+        ],
+        "raw_label": "text",
+        "confidence": 0.45824965834617615
+      },
+      "iou": 0.7808908103178869,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-004",
+      "gt": {
+        "region_id": "R02",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.143,
+          0.119,
+          0.4,
+          0.138
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1417733522996681,
+          0.11335504885993486,
+          0.4006638217164533,
+          0.13745928338762214
+        ],
+        "raw_label": "text",
+        "confidence": 0.6921908855438232
+      },
+      "iou": 0.7436584564743927,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-004",
+      "gt": {
+        "region_id": "V4-T02",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.143,
+          0.177,
+          0.814,
+          0.201
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.14035087719298245,
+          0.17068403908794788,
+          0.8141299193930773,
+          0.1993485342019544
+        ],
+        "raw_label": "text",
+        "confidence": 0.8517612218856812
+      },
+      "iou": 0.7343114805637203,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-004",
+      "gt": {
+        "region_id": "V7-title",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.143,
+          0.214,
+          0.281,
+          0.239
+        ],
+        "coordinate_system": "normalized_top_left_0_1",
+        "bbox_status": "assistant_visual_audit"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1417733522996681,
+          0.21433224755700325,
+          0.28117591275486015,
+          0.23973941368078175
+        ],
+        "raw_label": "text",
+        "confidence": 0.8010836243629456
+      },
+      "iou": 0.9488458738516535,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-004",
+      "gt": {
+        "region_id": "R03",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.14,
+          0.25,
+          0.5,
+          0.285
+        ],
+        "bbox_status": "owner_reviewed_against_original_source",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1417733522996681,
+          0.2534201954397394,
+          0.41963015647226176,
+          0.2807817589576547
+        ],
+        "raw_label": "text",
+        "confidence": 0.8473221659660339
+      },
+      "iou": 0.6033806822423318,
+      "disposition": "reference_corrected"
+    },
+    {
+      "sample_id": "page-005",
+      "gt": {
+        "region_id": "R03",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.16,
+          0.26,
+          0.46,
+          0.285
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1607324516785351,
+          0.2607407407407407,
+          0.4547304170905392,
+          0.277037037037037
+        ],
+        "raw_label": "text",
+        "confidence": 0.6182410717010498
+      },
+      "iou": 0.6388103939816396,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-008",
+      "gt": {
+        "region_id": "R02",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.124,
+          0.075,
+          0.6074566797093348,
+          0.102
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.11974789915966387,
+          0.07195845697329377,
+          0.6039915966386554,
+          0.10459940652818991
+        ],
+        "raw_label": "text",
+        "confidence": 0.839228630065918
+      },
+      "iou": 0.8150938420508631,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-008",
+      "gt": {
+        "region_id": "R06",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.11170262716601453,
+          0.4915790512026434,
+          0.44044158747903867,
+          0.5086837951894259
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1207983193277311,
+          0.48887240356083084,
+          0.44012605042016806,
+          0.5074183976261127
+        ],
+        "raw_label": "text",
+        "confidence": 0.5173624157905579
+      },
+      "iou": 0.7796679513285669,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-008",
+      "gt": {
+        "region_id": "R09",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.12400000000000011,
+          0.6846314231960348,
+          0.41454443823365017,
+          0.6985780647775299
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1207983193277311,
+          0.6824925816023739,
+          0.40441176470588236,
+          0.7010385756676558
+        ],
+        "raw_label": "text",
+        "confidence": 0.6777070760726929
+      },
+      "iou": 0.7240604138825412,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-009",
+      "gt": {
+        "region_id": "R02",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.17475899317889962,
+          0.8073503549390233,
+          0.2069419618310968,
+          0.9568247541480305
+        ],
+        "bbox_status": "owner_reviewed_against_original_source",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.18010752688172044,
+          0.8109263657957244,
+          0.2056451612903226,
+          0.9510688836104513
+        ],
+        "raw_label": "text",
+        "confidence": 0.7442100048065186
+      },
+      "iou": 0.7439738358222859,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-009",
+      "gt": {
+        "region_id": "R06",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.22917831190609278,
+          0.6389152219091414,
+          0.257126886528787,
+          0.9566013229396391
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.22916666666666666,
+          0.6399049881235155,
+          0.2567204301075269,
+          0.9505938242280285
+        ],
+        "raw_label": "text",
+        "confidence": 0.653532862663269
+      },
+      "iou": 0.9633590316167885,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-010",
+      "gt": {
+        "region_id": "R02",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.124,
+          0.072,
+          0.38964225824482956,
+          0.10351683280505979
+        ],
+        "bbox_status": "owner_reviewed_against_original_source",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.12163978494623656,
+          0.07220902612826603,
+          0.38776881720430106,
+          0.10498812351543943
+        ],
+        "raw_label": "header",
+        "confidence": 0.6823689341545105
+      },
+      "iou": 0.9344140241071259,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-011",
+      "gt": {
+        "region_id": "R02",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.124,
+          0.072,
+          0.558205701509223,
+          0.10588762460379483
+        ],
+        "bbox_status": "owner_reviewed_against_original_source",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.12029569892473119,
+          0.07173396674584323,
+          0.5557795698924731,
+          0.10356294536817102
+        ],
+        "raw_label": "header",
+        "confidence": 0.6258720755577087
+      },
+      "iou": 0.9117723166949341,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-012",
+      "gt": {
+        "region_id": "R02",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.074,
+          0.877,
+          0.105
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.14297385620915032,
+          0.07299703264094956,
+          0.7573529411764706,
+          0.10385756676557864
+        ],
+        "raw_label": "text",
+        "confidence": 0.7851123213768005
+      },
+      "iou": 0.7786683254213463,
+      "disposition": "reference_corrected"
+    },
+    {
+      "sample_id": "page-012",
+      "gt": {
+        "region_id": "R03",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.116,
+          0.878,
+          0.146
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.14297385620915032,
+          0.11216617210682493,
+          0.8709150326797386,
+          0.14718100890207717
+        ],
+        "raw_label": "text",
+        "confidence": 0.809869647026062
+      },
+      "iou": 0.8438273156644235,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-012",
+      "gt": {
+        "region_id": "R04",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.14460344008180404,
+          0.15817758777024635,
+          0.573442960113619,
+          0.17871140446135578
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1437908496732026,
+          0.15845697329376854,
+          0.5718954248366013,
+          0.1768545994065282
+        ],
+        "raw_label": "text",
+        "confidence": 0.6923714876174927
+      },
+      "iou": 0.8912209003262099,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-013",
+      "gt": {
+        "region_id": "R03",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.074,
+          0.765,
+          0.104
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1437908496732026,
+          0.07299703264094956,
+          0.7598039215686274,
+          0.10385756676557864
+        ],
+        "raw_label": "text",
+        "confidence": 0.8149518966674805
+      },
+      "iou": 0.9487605507709287,
+      "disposition": "reference_corrected"
+    },
+    {
+      "sample_id": "page-013",
+      "gt": {
+        "region_id": "R05",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.113,
+          0.881,
+          0.146
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1437908496732026,
+          0.11216617210682493,
+          0.8717320261437909,
+          0.14658753709198813
+        ],
+        "raw_label": "text",
+        "confidence": 0.8444096446037292
+      },
+      "iou": 0.941669354590025,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-013",
+      "gt": {
+        "region_id": "R06",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.158,
+          0.403,
+          0.176
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1454248366013072,
+          0.15786350148367953,
+          0.38235294117647056,
+          0.1768545994065282
+        ],
+        "raw_label": "text",
+        "confidence": 0.7264107465744019
+      },
+      "iou": 0.8659831829827258,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-013",
+      "gt": {
+        "region_id": "R09",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.35,
+          0.744,
+          0.365
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1454248366013072,
+          0.34777448071216616,
+          0.7573529411764706,
+          0.36676557863501486
+        ],
+        "raw_label": "text",
+        "confidence": 0.7631372809410095
+      },
+      "iou": 0.7692846128170889,
+      "disposition": "reference_corrected"
+    },
+    {
+      "sample_id": "page-017",
+      "gt": {
+        "region_id": "R06",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.897708216880939,
+          0.31909150133171554,
+          0.9290106204583566,
+          0.4296905761175316
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.9,
+          0.32363420427553447,
+          0.9235294117647059,
+          0.42636579572446553
+        ],
+        "raw_label": "aside_text",
+        "confidence": 0.7818922996520996
+      },
+      "iou": 0.6982097442779942,
+      "disposition": "reference_corrected"
+    },
+    {
+      "sample_id": "page-026",
+      "gt": {
+        "region_id": "V4-T03",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.154,
+          0.114,
+          0.484,
+          0.129
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.15546218487394958,
+          0.11401425178147269,
+          0.4756302521008403,
+          0.13123515439429928
+        ],
+        "raw_label": "text",
+        "confidence": 0.7280407547950745
+      },
+      "iou": 0.846854140584829,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-027",
+      "gt": {
+        "region_id": "R01",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.124,
+          0.072,
+          0.607,
+          0.103
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.12184873949579832,
+          0.07244655581947744,
+          0.6067226890756302,
+          0.10451306413301663
+        ],
+        "raw_label": "text",
+        "confidence": 0.7218199968338013
+      },
+      "iou": 0.935105959475785,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-030",
+      "gt": {
+        "region_id": "R02",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.126,
+          0.07163001982601822,
+          0.423,
+          0.09163001982601822
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.12184873949579832,
+          0.07244655581947744,
+          0.4218487394957983,
+          0.09026128266033254
+        ],
+        "raw_label": "text",
+        "confidence": 0.7831289768218994
+      },
+      "iou": 0.8763726585670437,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-031",
+      "gt": {
+        "region_id": "R02",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.125,
+          0.075,
+          0.503,
+          0.089
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.12016806722689076,
+          0.07304038004750593,
+          0.4991596638655462,
+          0.09085510688836104
+        ],
+        "raw_label": "text",
+        "confidence": 0.4233720004558563
+      },
+      "iou": 0.7697178721880997,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-033",
+      "gt": {
+        "region_id": "R01",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.123,
+          0.073,
+          0.468,
+          0.102
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.12184873949579832,
+          0.07244655581947744,
+          0.46554621848739497,
+          0.10451306413301663
+        ],
+        "raw_label": "text",
+        "confidence": 0.6186251044273376
+      },
+      "iou": 0.8955587700968202,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-034",
+      "gt": {
+        "region_id": "R10",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.12409167132476244,
+          0.07516786636305153,
+          0.4762437115707099,
+          0.10439762184216006
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1226890756302521,
+          0.07244655581947744,
+          0.46974789915966386,
+          0.10332541567695962
+        ],
+        "raw_label": "header",
+        "confidence": 0.4872031807899475
+      },
+      "iou": 0.8630488835918207,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-035",
+      "gt": {
+        "region_id": "R01",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.12,
+          0.073,
+          0.604,
+          0.104
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.11932773109243698,
+          0.07244655581947744,
+          0.6025210084033613,
+          0.10451306413301663
+        ],
+        "raw_label": "text",
+        "confidence": 0.7095291614532471
+      },
+      "iou": 0.9625474673990643,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-035",
+      "gt": {
+        "region_id": "R11",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.18,
+          0.7768400264346911,
+          0.4,
+          0.7938400264346911
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.18319327731092436,
+          0.7761282660332541,
+          0.37478991596638656,
+          0.7921615201900237
+        ],
+        "raw_label": "text",
+        "confidence": 0.5719994902610779
+      },
+      "iou": 0.7572925238827424,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-035",
+      "gt": {
+        "region_id": "R13",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.18,
+          0.83,
+          0.4269133594186697,
+          0.847
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1815126050420168,
+          0.827790973871734,
+          0.426890756302521,
+          0.8444180522565321
+        ],
+        "raw_label": "text",
+        "confidence": 0.7377338409423828
+      },
+      "iou": 0.746454241206497,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-035",
+      "gt": {
+        "region_id": "R15",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.18,
+          0.8768400264346911,
+          0.358,
+          0.8928400264346911
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.18235294117647058,
+          0.8758907363420427,
+          0.3142857142857143,
+          0.8925178147268409
+        ],
+        "raw_label": "text",
+        "confidence": 0.5879286527633667
+      },
+      "iou": 0.6956762199539891,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-036",
+      "gt": {
+        "region_id": "R07",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.12,
+          0.193,
+          0.721,
+          0.21
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.11780336581045173,
+          0.19296187683284458,
+          0.7183348095659876,
+          0.2099706744868035
+        ],
+        "raw_label": "text",
+        "confidence": 0.6291631460189819
+      },
+      "iou": 0.9880290773702948,
+      "disposition": "reference_corrected"
+    },
+    {
+      "sample_id": "page-037",
+      "gt": {
+        "region_id": "R19",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.172,
+          0.696,
+          0.322,
+          0.712
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.1691762621789194,
+          0.6956011730205278,
+          0.3232949512843224,
+          0.7120234604105572
+        ],
+        "raw_label": "text",
+        "confidence": 0.815475583076477
+      },
+      "iou": 0.9482487684729042,
+      "disposition": "reference_corrected"
+    },
+    {
+      "sample_id": "page-037",
+      "gt": {
+        "region_id": "R23",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.62,
+          0.696,
+          0.771,
+          0.712
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.6191319751992914,
+          0.6961876832844575,
+          0.7697077059344553,
+          0.7108504398826979
+        ],
+        "raw_label": "text",
+        "confidence": 0.691004753112793
+      },
+      "iou": 0.9038179580626395,
+      "disposition": "reference_corrected"
+    },
+    {
+      "sample_id": "page-045",
+      "gt": {
+        "region_id": "R04",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.209,
+          0.152,
+          0.795,
+          0.213
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.20654911838790932,
+          0.15201900237529692,
+          0.7951301427371956,
+          0.21437054631828978
+        ],
+        "raw_label": "text",
+        "confidence": 0.7091886401176453
+      },
+      "iou": 0.973434908701489,
+      "disposition": "valid_title_reference"
+    },
+    {
+      "sample_id": "page-051",
+      "gt": {
+        "region_id": "R03",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.231,
+          0.393,
+          0.7333795063096616,
+          0.5283410013671626
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "pred": {
+        "bbox_norm": [
+          0.22670025188916876,
+          0.39347181008902077,
+          0.7220822837951302,
+          0.5246290801186944
+        ],
+        "raw_label": "text",
+        "confidence": 0.25849229097366333
+      },
+      "iou": 0.9395027800866796,
+      "disposition": "valid_title_reference"
+    }
+  ],
+  "edits": [
+    {
+      "sample_id": "page-004",
+      "region_id": "R03",
+      "before": {
+        "region_id": "R03",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.14,
+          0.25,
+          0.5,
+          0.285
+        ],
+        "bbox_status": "owner_reviewed_against_original_source",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R03",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.141,
+          0.254,
+          0.42,
+          0.278
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Tighten the table heading to the actual printed line."
+    },
+    {
+      "sample_id": "page-012",
+      "region_id": "R02",
+      "before": {
+        "region_id": "R02",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.074,
+          0.877,
+          0.105
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R02",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.072,
+          0.472,
+          0.087
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Separate the document heading from the explanation below."
+    },
+    {
+      "sample_id": "page-012",
+      "region_id": "V8-note",
+      "before": null,
+      "after": {
+        "region_id": "V8-note",
+        "label": "text",
+        "benchmark_label": "text",
+        "bbox_norm": [
+          0.148,
+          0.088,
+          0.73,
+          0.101
+        ],
+        "coordinate_system": "normalized_top_left_0_1",
+        "bbox_status": "assistant_visual_audit"
+      },
+      "reason": "The explanatory sentence below the title is running text."
+    },
+    {
+      "sample_id": "page-013",
+      "region_id": "R02",
+      "before": {
+        "region_id": "R02",
+        "label": "text",
+        "benchmark_label": "text",
+        "bbox_norm": [
+          0.148,
+          0.036,
+          0.884,
+          0.067
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": null,
+      "reason": "Duplicate masthead region with the same content and extent as R01."
+    },
+    {
+      "sample_id": "page-013",
+      "region_id": "R03",
+      "before": {
+        "region_id": "R03",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.074,
+          0.765,
+          0.104
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R03",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.072,
+          0.476,
+          0.087
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Exclude the separate explanatory sentence from the title box."
+    },
+    {
+      "sample_id": "page-013",
+      "region_id": "R04",
+      "before": {
+        "region_id": "R04",
+        "label": "text",
+        "benchmark_label": "text",
+        "bbox_norm": [
+          0.148,
+          0.088,
+          0.877,
+          0.105
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R04",
+        "label": "text",
+        "benchmark_label": "text",
+        "bbox_norm": [
+          0.148,
+          0.088,
+          0.733,
+          0.102
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Tighten the existing explanatory sentence under the document heading."
+    },
+    {
+      "sample_id": "page-013",
+      "region_id": "R09",
+      "before": {
+        "region_id": "R09",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.35,
+          0.744,
+          0.365
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R09",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.148,
+          0.349,
+          0.754,
+          0.367
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Include the end of the heading visible just beyond the right edge."
+    },
+    {
+      "sample_id": "page-017",
+      "region_id": "R06",
+      "before": {
+        "region_id": "R06",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.897708216880939,
+          0.31909150133171554,
+          0.9290106204583566,
+          0.4296905761175316
+        ],
+        "bbox_status": null,
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R06",
+        "label": "seal",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.897708216880939,
+          0.31909150133171554,
+          0.9290106204583566,
+          0.4296905761175316
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Red partial stamp at the page edge."
+    },
+    {
+      "sample_id": "page-032",
+      "region_id": "R14",
+      "before": {
+        "region_id": "R14",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.10901621017328117,
+          0.6479400925214184,
+          0.5291553940749022,
+          0.7584904559984191
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R14",
+        "label": "figure",
+        "benchmark_label": "figure",
+        "bbox_norm": [
+          0.118,
+          0.649,
+          0.517,
+          0.755
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Tighten to visible handwritten strokes. Printed organization line has its own text region."
+    },
+    {
+      "sample_id": "page-036",
+      "region_id": "R07",
+      "before": {
+        "region_id": "R07",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.12,
+          0.193,
+          0.721,
+          0.21
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R07",
+        "label": "text",
+        "benchmark_label": "text",
+        "bbox_norm": [
+          0.12,
+          0.193,
+          0.721,
+          0.21
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Introductory full sentence ending in a colon before the board-member table."
+    },
+    {
+      "sample_id": "page-036",
+      "region_id": "R09",
+      "before": {
+        "region_id": "R09",
+        "label": "title_table",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.119,
+          0.354,
+          0.888,
+          0.37
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R09",
+        "label": "text",
+        "benchmark_label": "text",
+        "bbox_norm": [
+          0.119,
+          0.354,
+          0.888,
+          0.37
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Introductory full sentence ending in a colon before the management table."
+    },
+    {
+      "sample_id": "page-037",
+      "region_id": "R19",
+      "before": {
+        "region_id": "R19",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.172,
+          0.696,
+          0.322,
+          0.712
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R19",
+        "label": "text",
+        "benchmark_label": "text",
+        "bbox_norm": [
+          0.172,
+          0.696,
+          0.322,
+          0.712
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Printed role adjacent to a signature, consistent with the text policy."
+    },
+    {
+      "sample_id": "page-037",
+      "region_id": "R23",
+      "before": {
+        "region_id": "R23",
+        "label": "title",
+        "benchmark_label": "title",
+        "bbox_norm": [
+          0.62,
+          0.696,
+          0.771,
+          0.712
+        ],
+        "bbox_status": "assistant_draft",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "after": {
+        "region_id": "R23",
+        "label": "text",
+        "benchmark_label": "text",
+        "bbox_norm": [
+          0.62,
+          0.696,
+          0.771,
+          0.712
+        ],
+        "bbox_status": "assistant_visual_audit",
+        "coordinate_system": "normalized_top_left_0_1"
+      },
+      "reason": "Printed role adjacent to a signature, consistent with the text policy."
+    }
+  ]
+}

@@ -1601,7 +1601,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
                 <span class="citation-id">${escapeHtml(source.id)}</span>
                 <strong>${escapeHtml(source.title)}</strong>
                 <span>${escapeHtml(location)}</span>
-                ${Number.isFinite(Number(source.score)) && source.score !== null && source.score !== "" ? `<span class="citation-meta"><span class="citation-used">✓ Đã dùng</span><span class="citation-score" title="Điểm liên quan"><span class="citation-score-bar" aria-hidden="true"><span style="width:${Math.round(Math.max(0, Math.min(1, Number(source.score))) * 100)}%"></span></span>${Number(source.score).toFixed(2)}</span></span>` : ""}
+                ${Number.isFinite(Number(source.score)) && source.score !== null && source.score !== "" ? `<span class="citation-meta"><span class="citation-used">✓ Đã dùng</span></span>` : ""}
               </div>
               ${referenceScope}
               ${ocrNote}
@@ -1623,7 +1623,6 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       ${outcome.next ? "" : `<button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">${ICONS.copy}<span class="action-label">Copy</span></button>`}
     </div>`;
 
-  bindRetrievedChunks(panel);
   // Inline [S1] chips scroll to and highlight their source card.
   panel.querySelectorAll(".cite-ref").forEach((ref) => ref.addEventListener("click", (event) => {
     event.preventDefault();
@@ -1791,40 +1790,25 @@ function relevanceScore(raw, reranked) {
 }
 
 // Every passage the answer model saw (metadata.retrieved), after the 21st.dev Retrieved Chunks list: rank, document,
-// page, used mark and relevance bar; a Rank / Score switch reorders the rows in place.
+// page and used mark.
 function renderRetrievedChunks(rows) {
   // The cited passages are already the source cards above; list only the other passages the model saw,
   // keeping their overall rank so the order of retrieval stays visible.
   if (!Array.isArray(rows) || !rows.some((row) => !row.used)) return "";
   const items = rows.map((row, index) => row.used ? "" : (() => {
-    const score = Number(row.score);
-    const hasScore = row.score !== null && row.score !== undefined && Number.isFinite(score);
     const page = row.page_number ? `trang ${escapeHtml(row.page_number)}` : Number.isInteger(row.chunk_index) ? `đoạn ${row.chunk_index}` : "";
-    return `<li class="retrieved-row${row.used ? " is-used" : ""}" data-rank="${index + 1}" data-score="${hasScore ? score : -1}">
+    return `<li class="retrieved-row${row.used ? " is-used" : ""}" data-rank="${index + 1}">
       <span class="retrieved-rank">${index + 1}</span>
       <span class="retrieved-doc"><strong>${escapeHtml(row.document || "")}</strong>${page ? ` <span>${page}</span>` : ""}</span>
       ${row.used ? `<span class="citation-used">✓ Đã dùng</span>` : ""}
-      ${hasScore ? `<span class="citation-score"><span class="citation-score-bar" aria-hidden="true"><span style="width:${Math.round(Math.max(0, Math.min(1, score)) * 100)}%"></span></span>${score.toFixed(2)}</span>` : ""}
     </li>`;
   })()).join("");
   const unused = rows.filter((row) => !row.used).length;
   return `<div class="retrieved-chunks">
     <div class="retrieved-head"><h5>Đoạn khác đã tìm, không dùng (${unused})</h5>
-      ${unused > 1 ? `<div class="retrieved-sort" role="group" aria-label="Thứ tự"><button type="button" data-sort="rank" aria-pressed="true">Thứ hạng</button><button type="button" data-sort="score" aria-pressed="false">Điểm</button></div>` : ""}
     </div>
     <ol>${items}</ol>
   </div>`;
-}
-
-function bindRetrievedChunks(root) {
-  root.querySelectorAll(".retrieved-sort button").forEach((button) => button.addEventListener("click", () => {
-    const box = button.closest(".retrieved-chunks");
-    const key = button.dataset.sort;
-    box.querySelectorAll(".retrieved-sort button").forEach((other) => other.setAttribute("aria-pressed", String(other === button)));
-    const list = box.querySelector("ol");
-    [...list.children].sort((a, b) => key === "score" ? b.dataset.score - a.dataset.score : a.dataset.rank - b.dataset.rank)
-      .forEach((row) => list.append(row));
-  }));
 }
 
 function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = true) {

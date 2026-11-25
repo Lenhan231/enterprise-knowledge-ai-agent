@@ -12,6 +12,9 @@ using a role-filtered PostgreSQL/pgvector corpus and a FastAPI dashboard.
 
 Quick start
 
+This runs the API in Python and uses Supabase for data and storage. For the
+containerized backend flow, see [Local Docker deployment](#local-docker-deployment).
+
 1. Create a Python virtualenv and install dependencies:
 
 ```bash
@@ -89,12 +92,95 @@ backend still calls its private Docker service with internal service authenticat
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
 - docker-compose.yml: Agents API, private Retrieval API, document processing, chunking worker, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
 
-### Optional local PostgreSQL with pgvector
+## Local Docker deployment
 
-The application Compose stack uses Supabase; it does not start a database. For a standalone local PostgreSQL database with the vector extension, run:
+This runs the backend services on your machine. Supabase remains external: the
+Compose stack does not start a database, Auth, Storage, or the frontend. Use a
+development Supabase project and keep its credentials in `.env`.
+
+### 1. Prepare configuration
+
+Install Docker Engine and Docker Compose v2. If `.env` does not exist, create
+it from the example:
+
+```bash
+cp .env.example .env
+```
+
+Set the Supabase URL and server secret, `DATABASE_URL`, provider keys, demo
+passwords, and a random `AUTH_SECRET_KEY` of at least 32 characters in `.env`.
+Generate a separate private service token and copy its output into
+`INTERNAL_SERVICE_TOKEN`:
+
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+See [configuration details](docs/deployment-guide.md#configuration). Do not
+commit `.env` or use a production database for local setup.
+
+### 2. Update the development database
+
+Apply the canonical Supabase migrations to the development database configured
+by `DATABASE_URL` before starting the chunking worker. This updates its schema;
+review the target before running:
+
+```bash
+npx supabase db push --db-url "$DATABASE_URL"
+```
+
+Keep `DATABASE_URL` in your local secret environment and make it available in
+the shell running this command. The timestamped migration history is described
+in [the deployment guide](docs/deployment-guide.md#database-migrations).
+
+### 3. Build and start the services
+
+From the repository root, validate the Compose configuration, then build and
+start the backend. The first build and model downloads can take a while:
+
+```bash
+docker compose config --quiet
+docker compose up -d --build --wait --wait-timeout 1800
+```
+
+### 4. Check that the stack is running
+
+```bash
+docker compose ps
+curl -fsS http://127.0.0.1:8000/health
+docker compose logs --tail=50
+```
+
+The health endpoint confirms that the API responds; it does not verify every
+database, model, storage, or provider operation. See the
+[Docker deployment guide](docs/deployment-guide.md#docker) for service roles
+and further checks.
+
+### 5. Stop the services
+
+```bash
+docker compose down
+```
+
+This stops the containers and preserves model-cache volumes. Do not add `-v`
+unless you intend to delete those volumes.
+
+## Optional standalone local PostgreSQL
+
+Use this only when you need a local PostgreSQL/pgvector database for direct
+database development. It is not a local Supabase replacement and does not
+provide the Auth, Storage, or Data API used by the full application.
+
+Generate a local password and connection string in the same shell session:
 
 ```bash
 export POSTGRES_PASSWORD="$(openssl rand -hex 24)"
+export DATABASE_URL="postgresql://postgres:${POSTGRES_PASSWORD}@127.0.0.1:5432/enterprise_knowledge"
+```
+
+Create the persistent volume and start PostgreSQL, bound to loopback:
+
+```bash
 docker volume create enterprise-knowledge-ai-agent-dbdata
 docker run --detach --name enterprise-knowledge-ai-agent-db \
   --restart unless-stopped \
@@ -104,39 +190,27 @@ docker run --detach --name enterprise-knowledge-ai-agent-db \
   --env "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" \
   --volume enterprise-knowledge-ai-agent-dbdata:/var/lib/postgresql/data \
   pgvector/pgvector:pg16
+```
 
+Enable pgvector, then verify the database accepts connections:
+
+```bash
 docker exec enterprise-knowledge-ai-agent-db psql -U postgres -d enterprise_knowledge \
   -c 'CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;'
-export DATABASE_URL="postgresql://postgres:${POSTGRES_PASSWORD}@127.0.0.1:5432/enterprise_knowledge"
 docker exec enterprise-knowledge-ai-agent-db pg_isready -U postgres -d enterprise_knowledge
 ```
 
-Keep `POSTGRES_PASSWORD` and `DATABASE_URL` in your local environment; do not commit them. This creates PostgreSQL plus pgvector only. It does not provide Supabase Auth, Storage, or Data API, and Supabase migrations that use those services still require a Supabase environment.
-
-Backend Docker quick start (configure `.env` first, including a random
-`INTERNAL_SERVICE_TOKEN` shared only by the backend containers):
-
-Apply `supabase/migrations/20261028090548_add_chunking_document_statuses.sql`
-and `supabase/migrations/20261028091543_align_processing_outputs_with_parser.sql`
-through the normal database migration workflow before starting the chunking
-worker. It consumes `parsed` documents and leaves them `chunked`, without
-embedding or retrieval activation. See the [worker guide](src/core/chunking/README.md#chunking-worker-service).
+Open a SQL shell inside the container with:
 
 ```bash
-docker compose config --quiet
-docker compose build
-docker compose up -d --wait
-curl http://127.0.0.1:8000/health
+docker exec -it enterprise-knowledge-ai-agent-db psql -U postgres -d enterprise_knowledge
 ```
 
-Each backend service has its own `docker/Dockerfile.<service>` and runtime.
-Only the API publishes a host port. Model services use persistent caches and
-load one model copy each; first startup downloads the configured weights.
-The API calls those services instead of loading inference/OCR models itself.
-Document processing remains synchronous; an unavailable service fails the
-request rather than silently changing retrieval or parser behavior.
-See [deployment instructions](docs/deployment-guide.md#docker) for Vercel,
-HTTPS ingress, checks and safe retirement of old containers.
+Use `DATABASE_URL` for clients on the host. Keep the generated values in a
+private local environment; do not commit them. Stop and restart this database
+with `docker stop enterprise-knowledge-ai-agent-db` and
+`docker start enterprise-knowledge-ai-agent-db`; its named volume preserves
+the data.
 
 Production invoice uploads use Docling OCR/table extraction followed by a
 text-only model selected for each upload. The form offers Gemini 3.1 Flash-Lite,

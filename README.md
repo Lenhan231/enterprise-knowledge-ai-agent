@@ -89,6 +89,30 @@ backend still calls its private Docker service with internal service authenticat
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
 - docker-compose.yml: Agents API, private Retrieval API, document processing, chunking worker, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
 
+### Optional local PostgreSQL with pgvector
+
+The application Compose stack uses Supabase; it does not start a database. For a standalone local PostgreSQL database with the vector extension, run:
+
+```bash
+export POSTGRES_PASSWORD="$(openssl rand -hex 24)"
+docker volume create enterprise-knowledge-ai-agent-dbdata
+docker run --detach --name enterprise-knowledge-ai-agent-db \
+  --restart unless-stopped \
+  --publish 127.0.0.1:5432:5432 \
+  --env POSTGRES_USER=postgres \
+  --env POSTGRES_DB=enterprise_knowledge \
+  --env "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" \
+  --volume enterprise-knowledge-ai-agent-dbdata:/var/lib/postgresql/data \
+  pgvector/pgvector:pg16
+
+docker exec enterprise-knowledge-ai-agent-db psql -U postgres -d enterprise_knowledge \
+  -c 'CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;'
+export DATABASE_URL="postgresql://postgres:${POSTGRES_PASSWORD}@127.0.0.1:5432/enterprise_knowledge"
+docker exec enterprise-knowledge-ai-agent-db pg_isready -U postgres -d enterprise_knowledge
+```
+
+Keep `POSTGRES_PASSWORD` and `DATABASE_URL` in your local environment; do not commit them. This creates PostgreSQL plus pgvector only. It does not provide Supabase Auth, Storage, or Data API, and Supabase migrations that use those services still require a Supabase environment.
+
 Backend Docker quick start (configure `.env` first, including a random
 `INTERNAL_SERVICE_TOKEN` shared only by the backend containers):
 

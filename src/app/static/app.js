@@ -1601,7 +1601,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
                 <span class="citation-id">${escapeHtml(source.id)}</span>
                 <strong>${escapeHtml(source.title)}</strong>
                 <span>${escapeHtml(location)}</span>
-                ${Number.isFinite(Number(source.score)) && source.score !== null && source.score !== "" ? `<span class="citation-meta"><span class="citation-used">✓ Đã dùng</span><span class="citation-score" title="Điểm liên quan"><span class="citation-score-bar" aria-hidden="true"><span style="width:${Math.round(Math.max(0, Math.min(1, Number(source.score))) * 100)}%"></span></span>${Number(source.score).toFixed(2)}</span></span>` : ""}
+                ${Number.isFinite(Number(source.score)) && source.score !== null && source.score !== "" ? `<span class="citation-meta"><span class="citation-used">✓ Đã dùng</span></span>` : ""}
               </div>
               ${referenceScope}
               ${ocrNote}

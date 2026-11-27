@@ -159,14 +159,14 @@ class DocumentRepository:
             cursor.execute(
                 """
                 INSERT INTO documents (
-                    document_id, domain, title, year_or_version, format, ingestion_format,
+                    document_id, domain, title, year_or_version, format,
                     verification,
                     document_type, source_type,
                     allowed_roles, storage_path, processing_status,
                     knowledge_base_active
                 ) VALUES (
                     %(document_id)s, %(domain)s, %(title)s, %(year_or_version)s,
-                    %(format)s, %(format)s,
+                    %(format)s,
                     %(verification)s, %(document_type)s,
                     %(source_type)s,
                     %(allowed_roles)s, %(storage_path)s, %(processing_status)s,
@@ -177,7 +177,6 @@ class DocumentRepository:
                     title = EXCLUDED.title,
                     year_or_version = EXCLUDED.year_or_version,
                     format = EXCLUDED.format,
-                    ingestion_format = EXCLUDED.ingestion_format,
                     verification = EXCLUDED.verification,
                     document_type = EXCLUDED.document_type,
                     source_type = EXCLUDED.source_type,

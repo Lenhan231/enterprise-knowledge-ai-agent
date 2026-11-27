@@ -195,14 +195,14 @@ class DocumentRepository:
             cursor.execute(
                 """
                 INSERT INTO documents (
-                    document_id, domain, title, year_or_version, format, ingestion_format,
+                    document_id, domain, title, year_or_version, format,
                     verification,
                     document_type, source_type,
                     allowed_roles, storage_path, processing_status,
                     uploaded_by, uploaded_at
                 ) VALUES (
                     %(document_id)s, %(domain)s, %(title)s, %(year_or_version)s,
-                    %(format)s, %(format)s,
+                    %(format)s,
                     %(verification)s, %(document_type)s,
                     %(source_type)s,
                     %(allowed_roles)s, %(storage_path)s,

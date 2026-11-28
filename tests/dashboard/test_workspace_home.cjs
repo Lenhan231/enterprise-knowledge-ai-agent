@@ -108,6 +108,7 @@ test('empty chat offers the Sales prompt and sales wording only to roles with an
     vm.runInContext(source.slice(start,end)+source.slice(source.indexOf('function hasPermission('),source.indexOf('function syncWorkspaceTabs('))+corpus,env.context);
     await env.context.loadWorkspace({username:role,role,permissions});
     assert.equal(env.node('chat-prompt-sales').hidden,!sees,role);
+    assert.equal(env.node('general-chat-question').placeholder.includes('sales data'),sees,role);
     env.context.document.querySelector=()=>env.node('status-dot');
     env.context.renderCorpus({documents:[],document_count:8,chunk_count:1});
     assert.equal(env.node('chat-library-head').innerHTML.includes('sales data'),sees,role);

@@ -2461,6 +2461,7 @@ async function loadWorkspace(user) {
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section", "#chat-prompt-sales"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
+  $("#general-chat-question").placeholder = canUseAnalytics ? "Ask about your documents or the sales data…" : "Ask about your documents…";
   ["sql"].forEach((mode) => {
     $("#agent-mode option[value='" + mode + "']").hidden = !canUseAnalytics;
   });

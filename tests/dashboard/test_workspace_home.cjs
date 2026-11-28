@@ -51,11 +51,17 @@ test('slow login metadata does not reveal report headers or refresh home twice',
   resolve();await pending;
   assert.equal(env.shows.length,1);
 });
-test('home preserves role restrictions and refuses navigation when signed out',()=>{
+test('a role without analytics lands on its first allowed tab, never a blank home or Reports',()=>{
   const env=workspace('employee');env.context.syncWorkspaceTabs();
-  assert.deepEqual(env.shows,[['home',false]]);
+  assert.equal(env.context.activeTab,'general-chat');
+  assert.equal(env.node('tab-general-chat').hidden,false);
+  assert.equal(env.node('workspace-home').hidden,true);
+  assert.equal(env.buttons.find(b=>b.dataset.tabTarget==='knowledge').hidden,true,'Reports needs view_analytics like its API');
+  assert.deepEqual(env.shows,[]);
   env.context.selectWorkspaceTab('dashboard');
-  assert.equal(env.context.activeTab,'home');
+  assert.equal(env.context.activeTab,'general-chat');
+  env.context.selectWorkspaceTab('home');
+  assert.deepEqual(env.shows,[['home',false]]);
   env.context.currentUser=null;
   env.context.selectWorkspaceTab('home');
   assert.equal(env.shows.length,1);
@@ -73,4 +79,16 @@ test('restored sessions and a different login start at home and home is outside 
   assert(!html.includes('id="dw-overview"'));
   assert(html.indexOf('id="workspace-home"')<html.indexOf('id="tab-dashboard"'));
   assert(html.indexOf('/static/business-overview.js')<html.indexOf('/static/app.js'));
+});
+test('a 403 chat error says the user lacks access; other errors keep the service message',()=>{
+  const start=source.indexOf('function renderChatTranscript('),end=source.indexOf('\n}\n',start)+2;
+  const made=[],el=()=>{const e={dataset:{},append(){},innerHTML:''};made.push(e);return e;};
+  const context=vm.createContext({document:{createElement:el},escapeHtml:s=>String(s),displayName:(_,v)=>v});
+  vm.runInContext(source.slice(start,end),context);
+  const root={replaceChildren(){},append(){}};
+  context.renderChatTranscript(root,[{id:1,mode:'auto',question:'q',state:'error',error:'Forbidden',errorStatus:403}],false);
+  assert.match(made.at(-1).innerHTML,/không có quyền/);
+  assert.doesNotMatch(made.at(-1).innerHTML,/service configuration/);
+  context.renderChatTranscript(root,[{id:2,mode:'auto',question:'q',state:'error',error:'Server error',errorStatus:503}],false);
+  assert.match(made.at(-1).innerHTML,/service configuration/);
 });

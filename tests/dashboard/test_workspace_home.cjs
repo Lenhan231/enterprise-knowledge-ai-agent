@@ -114,3 +114,14 @@ test('empty chat offers the Sales prompt and sales wording only to roles with an
     assert.equal(env.node('chat-library-head').innerHTML.includes('sales data'),sees,role);
   }
 });
+test('a withheld answer names a known check reason; an unknown reason keeps the generic wording',()=>{
+  const grab=(head,close)=>{const i=source.indexOf(head);return source.slice(i,source.indexOf(close,i)+close.length);};
+  const context=vm.createContext({escapeHtml:String,formatNumber:String,SEAL_MARK:''});
+  vm.runInContext([grab('const VI_LETTERS','\n'),grab('const OUTCOME_TEXT','\n};\n'),grab('const VERIFICATION_REASONS_VI','\n};\n'),
+    grab('function answerOutcome(','\n}\n'),grab('const VERIFICATION_REASONS = {','\n};\n')].join('\n'),context);
+  const badge=(reason,answer)=>context.answerOutcome({answer,claim_verification:{status:'rejected',reason}},[{id:'S1'}]).badge;
+  assert.match(badge('arithmetic_mismatch','Chưa hiển thị câu trả lời'),/phép tính trong bản nháp không khớp với số liệu nguồn/);
+  assert.match(badge('something_new','Chưa hiển thị câu trả lời'),/chưa đối chiếu được với nguồn/);
+  assert.match(badge('arithmetic_mismatch','Answer withheld'),/does not match the source figures/);
+  assert.match(badge('something_new','Answer withheld'),/could not be matched to its sources/);
+});

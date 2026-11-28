@@ -1375,6 +1375,12 @@ const VERIFICATION_REASONS_VI = {
   contradicted: "có ý mâu thuẫn với nguồn",
   unsupported_arithmetic: "phép tính không khớp với nguồn",
   uncited_answer: "câu trả lời không trích dẫn nguồn",
+  arithmetic_mismatch: "phép tính trong bản nháp không khớp với số liệu nguồn",
+  invalid_arithmetic: "bản nháp có phép tính không hợp lệ",
+  unverified_arithmetic: "chưa kiểm được phép tính trong bản nháp",
+  unknown_citation: "bản nháp trích một đoạn không có trong kết quả tìm",
+  uncited_or_oversized_draft: "bản nháp quá dài hoặc không trích nguồn nên chưa kiểm được",
+  verification_input_budget: "bản nháp và nguồn quá dài để kiểm",
 };
 function answerOutcome(data, citations) {
   const check = data.claim_verification;
@@ -2192,6 +2198,9 @@ const VERIFICATION_REASONS = {
   uncited_or_oversized_draft: "the draft was too long or not cited, so it could not be checked",
   uncited_answer: "the draft cited no source",
   unknown_citation: "the draft cited a passage that was not retrieved",
+  arithmetic_mismatch: "a calculation in the draft does not match the source figures",
+  invalid_arithmetic: "the draft contains an invalid calculation",
+  verification_input_budget: "the draft and its sources were too long to check",
 };
 
 // What the system actually did for this answer: route, search queries, passages, claim check, time.

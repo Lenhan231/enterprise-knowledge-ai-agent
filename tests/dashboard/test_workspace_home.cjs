@@ -88,9 +88,16 @@ test('a 403 chat error says the user lacks access; other errors keep the service
   const root={replaceChildren(){},append(){}};
   context.renderChatTranscript(root,[{id:1,mode:'auto',question:'q',state:'error',error:'Forbidden',errorStatus:403}],false);
   assert.match(made.at(-1).innerHTML,/không có quyền/);
-  assert.doesNotMatch(made.at(-1).innerHTML,/service configuration/);
-  context.renderChatTranscript(root,[{id:2,mode:'auto',question:'q',state:'error',error:'Server error',errorStatus:503}],false);
-  assert.match(made.at(-1).innerHTML,/service configuration/);
+  assert.doesNotMatch(made.at(-1).innerHTML,/service configuration|error-message|role="alert"/);
+  context.renderChatTranscript(root,[{id:2,mode:'auto',question:'q',state:'error',error:'Server error',errorStatus:500}],false);
+  assert.match(made.at(-1).innerHTML,/class="error-message" role="alert">Server error\. Please check service configuration/);
+  const announce=source.slice(source.indexOf('function announceTurn('),source.indexOf('\n}\n',source.indexOf('function announceTurn('))+2);
+  const announcer={textContent:''};
+  vm.runInContext(announce,Object.assign(context,{$:()=>announcer,document:{querySelector:()=>null}}));
+  context.announceTurn({id:1,state:'error',errorStatus:403});
+  assert.equal(announcer.textContent,'Bạn không có quyền xem dữ liệu này.');
+  context.announceTurn({id:2,state:'error',errorStatus:500});
+  assert.equal(announcer.textContent,'The answer could not be completed');
 });
 test('empty chat offers the Sales prompt and sales wording only to roles with analytics',async()=>{
   const start=source.indexOf('async function loadWorkspace('),end=source.indexOf('$("#workspace-tabs").addEventListener',start);

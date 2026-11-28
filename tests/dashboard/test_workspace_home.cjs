@@ -92,3 +92,17 @@ test('a 403 chat error says the user lacks access; other errors keep the service
   context.renderChatTranscript(root,[{id:2,mode:'auto',question:'q',state:'error',error:'Server error',errorStatus:503}],false);
   assert.match(made.at(-1).innerHTML,/service configuration/);
 });
+test('empty chat offers the Sales prompt and sales wording only to roles with analytics',async()=>{
+  const start=source.indexOf('async function loadWorkspace('),end=source.indexOf('$("#workspace-tabs").addEventListener',start);
+  const corpus=source.slice(source.indexOf('function renderCorpus('),source.indexOf('function renderParsedChunkInspector('));
+  for (const [role,permissions,sees] of [['employee',['view_corpus','ask_documents'],false],['admin',['view_corpus','ask_documents','view_analytics'],true]]) {
+    const env=workspace();
+    Object.assign(env.context,{sessionSubject:'previous',sessionGeneration:1,chooseBackend(){},backendTimer:1,clearInvoiceReviewCaches(){},resetConversationState(){},loadCorpusStats:async()=>{},hasPermission:undefined,formatNumber:String});
+    vm.runInContext(source.slice(start,end)+source.slice(source.indexOf('function hasPermission('),source.indexOf('function syncWorkspaceTabs('))+corpus,env.context);
+    await env.context.loadWorkspace({username:role,role,permissions});
+    assert.equal(env.node('chat-prompt-sales').hidden,!sees,role);
+    env.context.document.querySelector=()=>env.node('status-dot');
+    env.context.renderCorpus({documents:[],document_count:8,chunk_count:1});
+    assert.equal(env.node('chat-library-head').innerHTML.includes('sales data'),sees,role);
+  }
+});

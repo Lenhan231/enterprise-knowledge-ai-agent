@@ -148,7 +148,7 @@ function renderCorpus(data) {
   const inFlight = data.documents.filter((doc) => !["ready", "parsed"].includes(doc.processing_status)).length;
   $("#processing-count").textContent = formatNumber(inFlight);
   $("#connection-status").textContent = "Agent workspace";
-  if (data.document_count) $("#chat-library-head").innerHTML = `<strong>${formatNumber(data.document_count)} documents</strong> and the sales data are ready to ask. Try one of these:`;
+  if (data.document_count) $("#chat-library-head").innerHTML = `<strong>${formatNumber(data.document_count)} documents</strong>${hasPermission(currentUser, "view_analytics") ? " and the sales data" : ""} are ready to ask. Try one of these:`;
   document.querySelector(".status-dot").classList.add("connected");
 }
 
@@ -2458,7 +2458,7 @@ async function loadWorkspace(user) {
   $("#logout-button").hidden = false;
   const canUseAnalytics = hasPermission(user, "view_analytics");
   $("#reports-workspace").hidden = !canUseAnalytics;
-  ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
+  ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section", "#chat-prompt-sales"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
   ["sql"].forEach((mode) => {

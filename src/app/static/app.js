@@ -3032,7 +3032,7 @@ function renderChatTranscript(root, turns, shouldScroll) {
     if (turn.state === "pending") renderSkeletonAnswer(response, turn);
     else if (turn.state === "stopped") response.innerHTML = '<p class="answer-stopped">You stopped this answer. Ask again whenever you are ready.</p>';
     else if (turn.state === "error") response.innerHTML = turn.errorStatus === 403
-      ? `<p class="answer-stopped answer-denied"><span aria-hidden="true">🔒</span> Bạn không có quyền xem dữ liệu này.</p>`
+      ? `<p class="answer-stopped answer-denied">Bạn không có quyền xem dữ liệu này.</p>`
       : `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) {
       renderAgentResult(turn.result, response, false);

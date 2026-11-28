@@ -101,7 +101,7 @@ function syncWorkspaceTabs(user = currentUser) {
   const available = {
     // General Chat is the one chat (with Route to); the Reports tab (id "knowledge") keeps the report generator; its old chat box stays hidden.
     dashboard: hasPermission(user, "view_analytics"),
-    knowledge: hasPermission(user, "ask_documents"),
+    knowledge: hasPermission(user, "view_analytics"),
     "general-chat": hasPermission(user, "ask_documents"),
     upload: hasPermission(user, "upload_documents"),
     "invoice-review": hasPermission(user, "upload_documents"),
@@ -114,7 +114,7 @@ function syncWorkspaceTabs(user = currentUser) {
   document.querySelectorAll(".workspace-tab").forEach((button) => {
     button.hidden = !available[button.dataset.tabTarget];
   });
-  if (activeTab !== "home" && !available[activeTab]) {
+  if (activeTab === "home" ? !available.dashboard : !available[activeTab]) {
     activeTab = available.processing ? "processing" : available["general-chat"] ? "general-chat" : available.upload ? "upload" : available["ocr-lab"] ? "ocr-lab" : "home";
   }
   selectWorkspaceTab(activeTab);
@@ -3030,7 +3030,9 @@ function renderChatTranscript(root, turns, shouldScroll) {
     root.append(entry);
     if (turn.state === "pending") renderSkeletonAnswer(response, turn);
     else if (turn.state === "stopped") response.innerHTML = '<p class="answer-stopped">You stopped this answer. Ask again whenever you are ready.</p>';
-    else if (turn.state === "error") response.innerHTML = `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
+    else if (turn.state === "error") response.innerHTML = turn.errorStatus === 403
+      ? `<p class="error-message" role="alert">Bạn không có quyền xem dữ liệu này.</p>`
+      : `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) {
       renderAgentResult(turn.result, response, false);
       if (turn.clarificationResponded) {
@@ -3144,6 +3146,7 @@ async function sendChatMessage({ question, displayQuestion, requestMetadata, mod
     if (turn.stopped) turn.state = "stopped";
     else {
       turn.error = error.name === "TimeoutError" ? "The request timed out. No answer was received; try again or choose a specialist" : error.message;
+      turn.errorStatus = error.status;
       turn.state = "error";
     }
   } finally {
